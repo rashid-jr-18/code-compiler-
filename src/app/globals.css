@@ -1,26 +1,72 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: 220 14% 96%;
+  --foreground: 220 9% 9%;
+  --primary: 220 13% 13%;
+  --primary-foreground: 210 20% 98%;
+  --secondary: 220 14% 96%;
+  --secondary-foreground: 220 9% 9%;
+  --muted: 220 14% 96%;
+  --muted-foreground: 220 9% 46%;
+  --accent: 220 14% 96%;
+  --accent-foreground: 220 9% 9%;
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 220 13% 91%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 20% 98%;
+  --radius: 0.5rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --background: 220 13% 4%;
+  --foreground: 210 20% 98%;
+  --primary: 210 20% 98%;
+  --primary-foreground: 220 13% 4%;
+  --secondary: 220 13% 13%;
+  --secondary-foreground: 210 20% 98%;
+  --muted: 220 13% 13%;
+  --muted-foreground: 217 10% 65%;
+  --accent: 220 13% 13%;
+  --accent-foreground: 210 20% 98%;
+  --border: 220 13% 18%;
+  --input: 220 13% 18%;
+  --ring: 220 13% 18%;
+  --destructive: 0 76% 60%;
+  --destructive-foreground: 210 20% 98%;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 220 13% 4%;
+    --foreground: 210 20% 98%;
+    --primary: 210 20% 98%;
+    --primary-foreground: 220 13% 4%;
+    --secondary: 220 13% 13%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 220 13% 13%;
+    --muted-foreground: 217 10% 65%;
+    --accent: 220 13% 13%;
+    --accent-foreground: 210 20% 98%;
+    --border: 220 13% 18%;
+    --input: 220 13% 18%;
+    --ring: 220 13% 18%;
+    --destructive: 0 76% 60%;
+    --destructive-foreground: 210 20% 98%;
   }
 }
 
+* {
+  border-color: hsl(var(--border));
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings:
+    'rlig' 1,
+    'calt' 1;
 }
