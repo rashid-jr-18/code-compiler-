@@ -31,7 +31,7 @@ function getProxyHeaders() {
   return headers;
 }
 
-function encodeSourceToBase64(body: any): any {
+function encodeSourceToBase64(body: Record<string, unknown>): Record<string, unknown> {
   if (!body || typeof body !== 'object') {
     return body;
   }
@@ -47,7 +47,7 @@ function encodeSourceToBase64(body: any): any {
   return modifiedBody;
 }
 
-function decodeBase64Response(data: any): any {
+function decodeBase64Response(data: Record<string, unknown>): Record<string, unknown> {
   if (!data || typeof data !== 'object') {
     return data;
   }
@@ -88,7 +88,7 @@ async function handleRequest(
       try {
         const requestBody = await request.json();
         body = JSON.stringify(encodeSourceToBase64(requestBody));
-      } catch (error) {
+      } catch {
         // If JSON parsing fails, keep body as null
       }
     }

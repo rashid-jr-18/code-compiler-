@@ -10,11 +10,11 @@ export class Judge0ProxyClient {
   /**
    * Submit code for execution
    */
-  async submit(
+async submit(
     source_code: string,
     language_id: number,
     stdin: string = '',
-    additionalParams: Record<string, any> = {}
+    additionalParams: Record<string, unknown> = {}
   ): Promise<SubmissionResponse> {
     const response = await fetch(`${this.baseUrl}/submissions`, {
       method: 'POST',
@@ -91,7 +91,7 @@ export class Judge0ProxyClient {
     source_code: string,
     language_id: number,
     stdin: string = '',
-    additionalParams: Record<string, any> = {}
+    additionalParams: Record<string, unknown> = {}
   ): Promise<ExecutionResult> {
     const submission = await this.submit(source_code, language_id, stdin, additionalParams);
     return this.pollSubmission(submission.token);
@@ -100,7 +100,7 @@ export class Judge0ProxyClient {
   /**
    * Get system information
    */
-  async getSystemInfo(): Promise<any> {
+async getSystemInfo(): Promise<Record<string, unknown>> {
     const response = await fetch(`${this.baseUrl}/system_info`, {
       method: 'GET',
       headers: {
@@ -119,7 +119,7 @@ export class Judge0ProxyClient {
   /**
    * Get languages
    */
-  async getLanguages(): Promise<any[]> {
+async getLanguages(): Promise<Record<string, unknown>[]> {
     const response = await fetch(`${this.baseUrl}/languages`, {
       method: 'GET',
       headers: {
@@ -138,7 +138,7 @@ export class Judge0ProxyClient {
   /**
    * Get statistics
    */
-  async getStatistics(): Promise<any> {
+async getStatistics(): Promise<Record<string, unknown>> {
     const response = await fetch(`${this.baseUrl}/statistics`, {
       method: 'GET',
       headers: {
