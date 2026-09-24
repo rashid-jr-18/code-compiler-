@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# legacy archives
+legacy_judge0_archive.tar.gz
+*.tar.gz
+*.tgz
+.next_old_root/
+tmole
+data/piston/
+

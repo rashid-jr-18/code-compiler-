@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Judge0Api, judge0Config } from '@/lib/judge0';
+import { getSubmission } from '@/lib/storage';
 
 export async function GET(
   request: NextRequest,
@@ -7,8 +7,14 @@ export async function GET(
 ) {
   try {
     const { token } = await params;
-    const judge0 = new Judge0Api(judge0Config);
-    const result = await judge0.getSubmission(token);
+    const result = getSubmission(token);
+
+    if (!result) {
+      return NextResponse.json(
+        { error: 'Submission not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json(result);
   } catch (error) {

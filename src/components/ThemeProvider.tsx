@@ -12,11 +12,13 @@ type ThemeProviderProps = {
 
 type ThemeProviderState = {
   theme: Theme;
+  resolvedTheme: 'dark' | 'light';
   setTheme: (theme: Theme) => void;
 };
 
 const initialState: ThemeProviderState = {
   theme: 'system',
+  resolvedTheme: 'dark',
   setTheme: () => null,
 };
 
@@ -29,35 +31,48 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
-    // Only access localStorage on the client side
     if (typeof window !== 'undefined') {
       return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
     }
     return defaultTheme;
   });
 
+  const [resolvedTheme, setResolvedTheme] = useState<'dark' | 'light'>('dark');
+
   useEffect(() => {
     const root = window.document.documentElement;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-    root.classList.remove('light', 'dark');
+    const updateTheme = () => {
+      root.classList.remove('light', 'dark');
 
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches
-        ? 'dark'
-        : 'light';
+      let current: 'dark' | 'light';
+      if (theme === 'system') {
+        current = mediaQuery.matches ? 'dark' : 'light';
+      } else {
+        current = theme;
+      }
 
-      root.classList.add(systemTheme);
-      return;
-    }
+      root.classList.add(current);
+      setResolvedTheme(current);
+    };
 
-    root.classList.add(theme);
+    updateTheme();
+
+    const listener = () => {
+      if (theme === 'system') {
+        updateTheme();
+      }
+    };
+
+    mediaQuery.addEventListener('change', listener);
+    return () => mediaQuery.removeEventListener('change', listener);
   }, [theme]);
 
   const value = {
     theme,
+    resolvedTheme,
     setTheme: (theme: Theme) => {
-      // Only access localStorage on the client side
       if (typeof window !== 'undefined') {
         localStorage.setItem(storageKey, theme);
       }
@@ -80,3 +95,4 @@ export const useTheme = () => {
 
   return context;
 };
+

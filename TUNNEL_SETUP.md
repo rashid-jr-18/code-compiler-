@@ -1,6 +1,6 @@
-# Tmole Tunneling Setup for Brightspace Judge0
+# Tmole Tunneling Setup for EduTech Judge0
 
-This document outlines the setup process for tmole tunneling to enable Brightspace callback access to the local Judge0 instance.
+This document outlines the setup process for tmole tunneling to enable EduTech callback access to the local Judge0 instance.
 
 ## Prerequisites
 
@@ -44,7 +44,7 @@ npm run tunnel
 Once the tunnel is running and you have the public URL, update your environment variables:
 
 - Update `NEXT_PUBLIC_JUDGE0_URL` in your `.env.local` file to use the tmole URL
-- Update Brightspace settings to use the public tunnel URL for callbacks
+- Update EduTech settings to use the public tunnel URL for callbacks
 
 ## Example URLs
 

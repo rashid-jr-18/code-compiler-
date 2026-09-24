@@ -1,0 +1,1743 @@
+{
+  "users": [
+    {
+      "id": "usr_admin",
+      "name": "System Administrator",
+      "email": "admin@edutech.edu",
+      "role": "ADMIN",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "usr_faculty",
+      "name": "Prof. Alan Turing",
+      "email": "turing@faculty.edutech.edu",
+      "role": "FACULTY",
+      "ltiSubject": "d2l_faculty_turing_101",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "usr_faculty_lovelace",
+      "name": "Prof. Ada Lovelace",
+      "email": "lovelace@faculty.edutech.edu",
+      "role": "FACULTY",
+      "ltiSubject": "d2l_faculty_lovelace_202",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "usr_student_alice",
+      "name": "Alice Johnson",
+      "email": "alice@student.edutech.edu",
+      "role": "LEARNER",
+      "ltiSubject": "d2l_learner_alice_01",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "usr_student_bob",
+      "name": "Bob Williams",
+      "email": "bob@student.edutech.edu",
+      "role": "LEARNER",
+      "ltiSubject": "d2l_learner_bob_02",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "usr_student_charlie",
+      "name": "Charlie Brown",
+      "email": "charlie@student.edutech.edu",
+      "role": "LEARNER",
+      "ltiSubject": "d2l_learner_charlie_03",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "usr_student_david",
+      "name": "David Miller",
+      "email": "david@student.edutech.edu",
+      "role": "LEARNER",
+      "ltiSubject": "d2l_learner_david_04",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "usr_student_emma",
+      "name": "Emma Watson",
+      "email": "emma@student.edutech.edu",
+      "role": "LEARNER",
+      "ltiSubject": "d2l_learner_emma_05",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "usr_student_frank",
+      "name": "Frank Castle",
+      "email": "frank@student.edutech.edu",
+      "role": "LEARNER",
+      "ltiSubject": "d2l_learner_frank_06",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "usr_student_grace",
+      "name": "Grace Hopper",
+      "email": "grace@student.edutech.edu",
+      "role": "LEARNER",
+      "ltiSubject": "d2l_learner_grace_07",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    }
+  ],
+  "courses": [
+    {
+      "id": "crs_cs101",
+      "title": "CS101: Introduction to Programming & Python",
+      "code": "CS101",
+      "term": "Fall 2026",
+      "facultyId": "usr_faculty",
+      "ltiContextId": "d2l_course_cs101_ctx",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "crs_cs202",
+      "title": "CS202: Data Structures & Algorithms",
+      "code": "CS202",
+      "term": "Fall 2026",
+      "facultyId": "usr_faculty_lovelace",
+      "ltiContextId": "d2l_course_cs202_ctx",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    }
+  ],
+  "courseMembers": [
+    {
+      "id": "cm_101_fac",
+      "courseId": "crs_cs101",
+      "userId": "usr_faculty",
+      "role": "FACULTY",
+      "user": {
+        "id": "usr_faculty",
+        "name": "Prof. Alan Turing",
+        "email": "turing@faculty.edutech.edu",
+        "role": "FACULTY",
+        "ltiSubject": "d2l_faculty_turing_101",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_101_alice",
+      "courseId": "crs_cs101",
+      "userId": "usr_student_alice",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_alice",
+        "name": "Alice Johnson",
+        "email": "alice@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_alice_01",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_101_bob",
+      "courseId": "crs_cs101",
+      "userId": "usr_student_bob",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_bob",
+        "name": "Bob Williams",
+        "email": "bob@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_bob_02",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_101_charlie",
+      "courseId": "crs_cs101",
+      "userId": "usr_student_charlie",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_charlie",
+        "name": "Charlie Brown",
+        "email": "charlie@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_charlie_03",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_101_david",
+      "courseId": "crs_cs101",
+      "userId": "usr_student_david",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_david",
+        "name": "David Miller",
+        "email": "david@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_david_04",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_101_emma",
+      "courseId": "crs_cs101",
+      "userId": "usr_student_emma",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_emma",
+        "name": "Emma Watson",
+        "email": "emma@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_emma_05",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_101_frank",
+      "courseId": "crs_cs101",
+      "userId": "usr_student_frank",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_frank",
+        "name": "Frank Castle",
+        "email": "frank@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_frank_06",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_101_grace",
+      "courseId": "crs_cs101",
+      "userId": "usr_student_grace",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_grace",
+        "name": "Grace Hopper",
+        "email": "grace@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_grace_07",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_202_fac",
+      "courseId": "crs_cs202",
+      "userId": "usr_faculty_lovelace",
+      "role": "FACULTY",
+      "user": {
+        "id": "usr_faculty_lovelace",
+        "name": "Prof. Ada Lovelace",
+        "email": "lovelace@faculty.edutech.edu",
+        "role": "FACULTY",
+        "ltiSubject": "d2l_faculty_lovelace_202",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_202_alice",
+      "courseId": "crs_cs202",
+      "userId": "usr_student_alice",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_alice",
+        "name": "Alice Johnson",
+        "email": "alice@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_alice_01",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_202_bob",
+      "courseId": "crs_cs202",
+      "userId": "usr_student_bob",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_bob",
+        "name": "Bob Williams",
+        "email": "bob@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_bob_02",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_202_charlie",
+      "courseId": "crs_cs202",
+      "userId": "usr_student_charlie",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_charlie",
+        "name": "Charlie Brown",
+        "email": "charlie@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_charlie_03",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_202_david",
+      "courseId": "crs_cs202",
+      "userId": "usr_student_david",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_david",
+        "name": "David Miller",
+        "email": "david@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_david_04",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_202_emma",
+      "courseId": "crs_cs202",
+      "userId": "usr_student_emma",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_emma",
+        "name": "Emma Watson",
+        "email": "emma@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_emma_05",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_202_frank",
+      "courseId": "crs_cs202",
+      "userId": "usr_student_frank",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_frank",
+        "name": "Frank Castle",
+        "email": "frank@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_frank_06",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    },
+    {
+      "id": "cm_202_grace",
+      "courseId": "crs_cs202",
+      "userId": "usr_student_grace",
+      "role": "LEARNER",
+      "user": {
+        "id": "usr_student_grace",
+        "name": "Grace Hopper",
+        "email": "grace@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_grace_07",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "id": "q_two_sum",
+      "title": "Two Sum",
+      "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+      "difficulty": "Easy",
+      "category": "Arrays & Hashing",
+      "supportedLanguages": [
+        71,
+        63,
+        62,
+        54,
+        50
+      ],
+      "timeLimit": 3,
+      "memoryLimit": 128,
+      "sampleInput": "[2,7,11,15]\n9",
+      "sampleOutput": "[0, 1]",
+      "testCases": [
+        {
+          "id": "tc_1",
+          "input": "[2,7,11,15]\n9",
+          "expectedOutput": "[0, 1]",
+          "points": 15,
+          "isHidden": false
+        },
+        {
+          "id": "tc_2",
+          "input": "[3,2,4]\n6",
+          "expectedOutput": "[1, 2]",
+          "points": 15,
+          "isHidden": false
+        },
+        {
+          "id": "tc_3",
+          "input": "[3,3]\n6",
+          "expectedOutput": "[0, 1]",
+          "points": 20,
+          "isHidden": true
+        }
+      ],
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "q_palindrome",
+      "title": "Palindrome Number",
+      "description": "Given an integer `x`, return `true` if `x` is a palindrome, and `false` otherwise.",
+      "difficulty": "Easy",
+      "category": "Math",
+      "supportedLanguages": [
+        71,
+        63,
+        62,
+        54,
+        50
+      ],
+      "timeLimit": 2,
+      "memoryLimit": 64,
+      "sampleInput": "121",
+      "sampleOutput": "true",
+      "testCases": [
+        {
+          "id": "tc_4",
+          "input": "121",
+          "expectedOutput": "true",
+          "points": 15,
+          "isHidden": false
+        },
+        {
+          "id": "tc_5",
+          "input": "-121",
+          "expectedOutput": "false",
+          "points": 15,
+          "isHidden": false
+        },
+        {
+          "id": "tc_6",
+          "input": "10",
+          "expectedOutput": "false",
+          "points": 20,
+          "isHidden": true
+        }
+      ],
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "q_13",
+      "title": "Permutations",
+      "description": "Given a collection of distinct integers, return all possible permutations.",
+      "difficulty": "Medium",
+      "category": "Backtracking",
+      "supportedLanguages": [],
+      "testCases": [
+        {
+          "id": "tc1",
+          "input": "[1,2,3]",
+          "expectedOutput": "[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]",
+          "points": 40,
+          "description": "Simple permutation",
+          "isHidden": false
+        },
+        {
+          "id": "tc2",
+          "input": "[0,1]",
+          "expectedOutput": "[[0,1],[1,0]]",
+          "points": 20,
+          "description": "Two elements",
+          "isHidden": false
+        },
+        {
+          "id": "tc3",
+          "input": "[1]",
+          "expectedOutput": "[[1]]",
+          "points": 20,
+          "description": "Single element",
+          "isHidden": true
+        }
+      ],
+      "timeLimit": 10,
+      "memoryLimit": 64,
+      "sampleInput": "[1,2,3]",
+      "sampleOutput": "[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]",
+      "tags": [
+        "backtracking"
+      ],
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "q_14",
+      "title": "Unique Paths",
+      "description": "A robot is located at the top-left corner of a m x n grid. The robot can only move either down or right at any point in time. The robot is trying to reach the bottom-right corner of the grid. How many possible unique paths are there?",
+      "difficulty": "Medium",
+      "category": "Dynamic Programming",
+      "supportedLanguages": [],
+      "testCases": [
+        {
+          "id": "tc1",
+          "input": "3 7",
+          "expectedOutput": "28",
+          "points": 40,
+          "description": "3x7 grid",
+          "isHidden": false
+        },
+        {
+          "id": "tc2",
+          "input": "3 2",
+          "expectedOutput": "3",
+          "points": 20,
+          "description": "3x2 grid",
+          "isHidden": false
+        },
+        {
+          "id": "tc3",
+          "input": "7 3",
+          "expectedOutput": "28",
+          "points": 20,
+          "description": "7x3 grid",
+          "isHidden": true
+        }
+      ],
+      "timeLimit": 8,
+      "memoryLimit": 128,
+      "sampleInput": "3 7",
+      "sampleOutput": "28",
+      "tags": [
+        "dynamic-programming",
+        "combinatorics"
+      ],
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "q_15",
+      "title": "Rotate Image",
+      "description": "You are given an n x n 2D matrix representing an image, rotate the image by 90 degrees (clockwise) in-place.",
+      "difficulty": "Medium",
+      "category": "Matrix",
+      "supportedLanguages": [],
+      "testCases": [
+        {
+          "id": "tc1",
+          "input": "[[1,2,3],[4,5,6],[7,8,9]]",
+          "expectedOutput": "[[7,4,1],[8,5,2],[9,6,3]]",
+          "points": 40,
+          "description": "3x3 matrix",
+          "isHidden": false
+        },
+        {
+          "id": "tc2",
+          "input": "[[5,1,9,11],[2,4,8,10],[13,3,6,7],[15,14,12,16]]",
+          "expectedOutput": "[[15,13,2,5],[14,3,4,1],[12,6,8,9],[16,7,10,11]]",
+          "points": 20,
+          "description": "4x4 matrix",
+          "isHidden": false
+        }
+      ],
+      "timeLimit": 10,
+      "memoryLimit": 128,
+      "sampleInput": "[[1,2,3],[4,5,6],[7,8,9]]",
+      "sampleOutput": "[[7,4,1],[8,5,2],[9,6,3]]",
+      "tags": [
+        "matrix",
+        "rotation"
+      ],
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "q_16",
+      "title": "Word Search",
+      "description": "Given a 2D board and a word, find if the word exists in the grid. The word can be constructed from letters of sequentially adjacent cells, where adjacent cells are horizontally or vertically neighboring. The same letter cell may not be used more than once.",
+      "difficulty": "Medium",
+      "category": "Backtracking",
+      "supportedLanguages": [],
+      "testCases": [
+        {
+          "id": "tc1",
+          "input": "[['A','B','C','E'],['S','F','C','S'],['A','D','E','E']]\nABCCED",
+          "expectedOutput": "true",
+          "points": 40,
+          "description": "Word found",
+          "isHidden": false
+        },
+        {
+          "id": "tc2",
+          "input": "[['A','B','C','E'],['S','F','C','S'],['A','D','E','E']]\nSEE",
+          "expectedOutput": "true",
+          "points": 20,
+          "description": "Word found, different path",
+          "isHidden": false
+        },
+        {
+          "id": "tc3",
+          "input": "[['A','B','C','E'],['S','F','C','S'],['A','D','E','E']]\nABCB",
+          "expectedOutput": "false",
+          "points": 20,
+          "description": "Word not found",
+          "isHidden": true
+        }
+      ],
+      "timeLimit": 12,
+      "memoryLimit": 128,
+      "sampleInput": "[['A','B','C','E'],['S','F','C','S'],['A','D','E','E']]\nABCCED",
+      "sampleOutput": "true",
+      "tags": [
+        "backtracking",
+        "matrix"
+      ],
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "q_10",
+      "title": "Reverse Linked List",
+      "description": "Given the head of a singly linked list, reverse the list, and return the reversed list.\n\n**Example 1:**\nInput: head = [1,2,3,4,5]\nOutput: [5,4,3,2,1]\n\n**Example 2:**\nInput: head = [1,2]\nOutput: [2,1]\n\n**Example 3:**\nInput: head = []\nOutput: []",
+      "difficulty": "Easy",
+      "category": "Linked List",
+      "supportedLanguages": [],
+      "testCases": [
+        {
+          "id": "tc1",
+          "input": "[1,2,3,4,5]",
+          "expectedOutput": "[5,4,3,2,1]",
+          "points": 25,
+          "description": "Multiple elements",
+          "isHidden": false
+        },
+        {
+          "id": "tc2",
+          "input": "[1,2]",
+          "expectedOutput": "[2,1]",
+          "points": 25,
+          "description": "Two elements",
+          "isHidden": false
+        },
+        {
+          "id": "tc3",
+          "input": "[]",
+          "expectedOutput": "[]",
+          "points": 25,
+          "description": "Empty list",
+          "isHidden": true
+        },
+        {
+          "id": "tc4",
+          "input": "[1]",
+          "expectedOutput": "[1]",
+          "points": 25,
+          "description": "Single element",
+          "isHidden": true
+        }
+      ],
+      "timeLimit": 5,
+      "memoryLimit": 64,
+      "sampleInput": "[1,2,3,4,5]",
+      "sampleOutput": "[5,4,3,2,1]",
+      "tags": [
+        "linked-list",
+        "recursion"
+      ],
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "q_11",
+      "title": "Find First and Last Position of Element in Sorted Array",
+      "description": "Given an array of integers nums sorted in non-decreasing order, find the starting and ending position of a given target value.\n\nIf target is not found in the array, return [-1, -1].\n\nYou must write an algorithm with O(log n) runtime complexity.\n\n**Example 1:**\nInput: nums = [5,7,7,8,8,8,10], target = 8\nOutput: [3,5]\n\n**Example 2:**\nInput: nums = [5,7,7,8,8,8,10], target = 6\nOutput: [-1,-1]\n\n**Example 3:**\nInput: nums = [], target = 0\nOutput: [-1,-1]",
+      "difficulty": "Medium",
+      "category": "Binary Search",
+      "supportedLanguages": [],
+      "testCases": [
+        {
+          "id": "tc1",
+          "input": "[5,7,7,8,8,8,10]\n8",
+          "expectedOutput": "[3,5]",
+          "points": 30,
+          "description": "Target found multiple times",
+          "isHidden": false
+        },
+        {
+          "id": "tc2",
+          "input": "[5,7,7,8,8,8,10]\n6",
+          "expectedOutput": "[-1,-1]",
+          "points": 30,
+          "description": "Target not found",
+          "isHidden": false
+        },
+        {
+          "id": "tc3",
+          "input": "[]\n0",
+          "expectedOutput": "[-1,-1]",
+          "points": 20,
+          "description": "Empty array",
+          "isHidden": true
+        },
+        {
+          "id": "tc4",
+          "input": "[1]\n1",
+          "expectedOutput": "[0,0]",
+          "points": 20,
+          "description": "Single element match",
+          "isHidden": true
+        }
+      ],
+      "timeLimit": 8,
+      "memoryLimit": 128,
+      "sampleInput": "[5,7,7,8,8,8,10]\n8",
+      "sampleOutput": "[3,5]",
+      "tags": [
+        "binary-search",
+        "array"
+      ],
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "q_12",
+      "title": "Group Anagrams",
+      "description": "Given an array of strings strs, group the anagrams together. You can return the answer in any order.\n\nAn Anagram is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.\n\n**Example 1:**\nInput: strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]\nOutput: [[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]\n\n**Example 2:**\nInput: strs = [\"\"]\nOutput: [[\"\"]]\n\n**Example 3:**\nInput: strs = [\"a\"]\nOutput: [[\"a\"]]",
+      "difficulty": "Medium",
+      "category": "Hash Table",
+      "supportedLanguages": [],
+      "testCases": [
+        {
+          "id": "tc1",
+          "input": "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+          "expectedOutput": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]",
+          "points": 30,
+          "description": "Multiple anagram groups",
+          "isHidden": false
+        },
+        {
+          "id": "tc2",
+          "input": "[\"\"]",
+          "expectedOutput": "[[\"\"]]",
+          "points": 30,
+          "description": "Empty string",
+          "isHidden": false
+        },
+        {
+          "id": "tc3",
+          "input": "[\"a\"]",
+          "expectedOutput": "[[\"a\"]]",
+          "points": 20,
+          "description": "Single character",
+          "isHidden": true
+        },
+        {
+          "id": "tc4",
+          "input": "[\"abc\",\"bca\",\"cab\",\"xyz\"]",
+          "expectedOutput": "[[\"abc\",\"bca\",\"cab\"],[\"xyz\"]]",
+          "points": 20,
+          "description": "Mixed groups",
+          "isHidden": true
+        }
+      ],
+      "timeLimit": 10,
+      "memoryLimit": 256,
+      "sampleInput": "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+      "sampleOutput": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]",
+      "tags": [
+        "hash-table",
+        "string",
+        "sorting"
+      ],
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "q_17",
+      "title": "Two Sum",
+      "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+      "difficulty": "Easy",
+      "category": "Array",
+      "supportedLanguages": [],
+      "testCases": [
+        {
+          "id": "tc1",
+          "input": "[2,7,11,15]\n9",
+          "expectedOutput": "[0,1]",
+          "points": 50,
+          "description": "Simple two sum",
+          "isHidden": false
+        }
+      ],
+      "timeLimit": 5,
+      "memoryLimit": 64,
+      "sampleInput": "[2,7,11,15]\n9",
+      "sampleOutput": "[0,1]",
+      "tags": [
+        "array",
+        "hash-table"
+      ],
+      "createdAt": "2025-08-05T06:45:15.361Z",
+      "updatedAt": "2025-08-05T06:45:15.361Z"
+    },
+    {
+      "id": "q_18",
+      "title": "Add Two Numbers",
+      "description": "You are given two non-empty linked lists representing two non-negative integers. The digits are stored in reverse order...",
+      "difficulty": "Medium",
+      "category": "Linked List",
+      "supportedLanguages": [],
+      "testCases": [
+        {
+          "id": "tc1",
+          "input": "[2,4,3]\n[5,6,4]",
+          "expectedOutput": "[7,0,8]",
+          "points": 50,
+          "description": "Addition of linked list numbers",
+          "isHidden": false
+        }
+      ],
+      "timeLimit": 6,
+      "memoryLimit": 128,
+      "sampleInput": "[2,4,3]\n[5,6,4]",
+      "sampleOutput": "[7,0,8]",
+      "tags": [
+        "linked-list",
+        "math"
+      ],
+      "createdAt": "2025-08-05T06:45:15.362Z",
+      "updatedAt": "2025-08-05T06:45:15.362Z"
+    },
+    {
+      "title": "Temp Delete Test",
+      "description": "Will be deleted",
+      "difficulty": "Easy",
+      "category": "Testing",
+      "supportedLanguages": [
+        71
+      ],
+      "timeLimit": 5,
+      "memoryLimit": 128,
+      "tags": [],
+      "createdBy": "usr_faculty",
+      "testCases": [
+        {
+          "id": "tc_1789110598238_0",
+          "questionId": "",
+          "input": "1",
+          "expectedOutput": "1",
+          "points": 10,
+          "isHidden": false
+        }
+      ],
+      "id": "q_1789110598238_sycwfr",
+      "createdAt": "2026-09-11T07:09:58.238Z",
+      "updatedAt": "2026-09-11T07:09:58.238Z"
+    },
+    {
+      "title": "Longest Substring Without Repeating Characters",
+      "description": "Given a string `s`, find the length of the **longest** **substring** without duplicate characters.\n\n \n\n### Example 1:\n\n```text\nInput: s = \"abcabcbb\"\nOutput: 3\nExplanation: The answer is \"abc\", with the length of 3. Note that \"bca\" and \"cab\" are also correct answers.\n```\n\n### Example 2:\n\n```text\nInput: s = \"bbbbb\"\nOutput: 1\nExplanation: The answer is \"b\", with the length of 1.\n```\n\n### Example 3:\n\n```text\nInput: s = \"pwwkew\"\nOutput: 3\nExplanation: The answer is \"wke\", with the length of 3.\nNotice that the answer must be a substring, \"pwke\" is a subsequence and not a substring.\n```\n\n \n\n### Constraints:\n\n\t- `0 <= s.length <= 10^(5)`\n\n\t- `s` consists of English letters, digits, symbols and spaces.",
+      "difficulty": "Medium",
+      "category": "Hash Table, String",
+      "supportedLanguages": [
+        71,
+        63,
+        100,
+        62,
+        4,
+        54,
+        50,
+        74
+      ],
+      "timeLimit": 5,
+      "memoryLimit": 128,
+      "sampleInput": "s = \"abcabcbb\"",
+      "sampleOutput": "3",
+      "tags": [
+        "Hash Table",
+        "String",
+        "Sliding Window"
+      ],
+      "createdBy": "usr_faculty",
+      "testCases": [
+        {
+          "id": "tc_1790142631671_0",
+          "questionId": "",
+          "input": "s = \"abcabcbb\"",
+          "expectedOutput": "3",
+          "points": 34,
+          "description": "Example 1",
+          "isHidden": false
+        },
+        {
+          "id": "tc_1790142631671_1",
+          "questionId": "",
+          "input": "s = \"bbbbb\"",
+          "expectedOutput": "1",
+          "points": 33,
+          "description": "Example 2",
+          "isHidden": false
+        },
+        {
+          "id": "tc_1790142631671_2",
+          "questionId": "",
+          "input": "s = \"pwwkew\"",
+          "expectedOutput": "3",
+          "points": 33,
+          "description": "Example 3",
+          "isHidden": false
+        }
+      ],
+      "id": "q_1790142631671_7rm975",
+      "createdAt": "2026-09-23T05:50:31.671Z",
+      "updatedAt": "2026-09-23T05:50:31.671Z"
+    }
+  ],
+  "containers": [
+    {
+      "id": "cnt_cs101_default",
+      "courseId": "crs_cs101",
+      "name": "Programming",
+      "description": "Core programming assessments and practical challenges",
+      "resourceLinkId": "d2l_resource_link_cs101_1",
+      "createdBy": "usr_faculty",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "cnt_cs202_default",
+      "courseId": "crs_cs202",
+      "name": "Data Structures Lab",
+      "description": "Advanced data structures and algorithmic challenges",
+      "resourceLinkId": "d2l_resource_link_cs202_1",
+      "createdBy": "usr_faculty_lovelace",
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    }
+  ],
+  "assignments": [
+    {
+      "id": "asg_cs101_a1",
+      "containerId": "cnt_cs101_default",
+      "courseId": "crs_cs101",
+      "title": "CS101 Assignment 1: Python Basics & Math",
+      "instructions": "Solve the two programming problems provided. Test your solutions against the sample cases before final submission.",
+      "maxPoints": 100,
+      "dueDate": "2026-09-18T06:50:45.877Z",
+      "createdBy": "usr_faculty",
+      "status": "PUBLISHED",
+      "resourceLinkId": "d2l_resource_link_cs101_1",
+      "lineItemUrl": "https://brightspace.institution.edu/d2l/api/lti/ags/2.0/lineitems/li_cs101_1",
+      "questions": [
+        {
+          "id": "aq_101_1",
+          "assignmentId": "asg_cs101_a1",
+          "questionId": "q_two_sum",
+          "points": 50,
+          "order": 1,
+          "question": {
+            "id": "q_two_sum",
+            "title": "Two Sum",
+            "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+            "difficulty": "Easy",
+            "category": "Arrays & Hashing",
+            "supportedLanguages": [
+              71,
+              63,
+              62,
+              54,
+              50
+            ],
+            "timeLimit": 3,
+            "memoryLimit": 128,
+            "sampleInput": "[2,7,11,15]\n9",
+            "sampleOutput": "[0, 1]",
+            "testCases": [
+              {
+                "id": "tc_1",
+                "input": "[2,7,11,15]\n9",
+                "expectedOutput": "[0, 1]",
+                "points": 15,
+                "isHidden": false
+              },
+              {
+                "id": "tc_2",
+                "input": "[3,2,4]\n6",
+                "expectedOutput": "[1, 2]",
+                "points": 15,
+                "isHidden": false
+              },
+              {
+                "id": "tc_3",
+                "input": "[3,3]\n6",
+                "expectedOutput": "[0, 1]",
+                "points": 20,
+                "isHidden": true
+              }
+            ],
+            "createdAt": "2026-09-11T06:50:45.876Z",
+            "updatedAt": "2026-09-11T06:50:45.876Z"
+          }
+        },
+        {
+          "id": "aq_101_2",
+          "assignmentId": "asg_cs101_a1",
+          "questionId": "q_palindrome",
+          "points": 50,
+          "order": 2,
+          "question": {
+            "id": "q_palindrome",
+            "title": "Palindrome Number",
+            "description": "Given an integer `x`, return `true` if `x` is a palindrome, and `false` otherwise.",
+            "difficulty": "Easy",
+            "category": "Math",
+            "supportedLanguages": [
+              71,
+              63,
+              62,
+              54,
+              50
+            ],
+            "timeLimit": 2,
+            "memoryLimit": 64,
+            "sampleInput": "121",
+            "sampleOutput": "true",
+            "testCases": [
+              {
+                "id": "tc_4",
+                "input": "121",
+                "expectedOutput": "true",
+                "points": 15,
+                "isHidden": false
+              },
+              {
+                "id": "tc_5",
+                "input": "-121",
+                "expectedOutput": "false",
+                "points": 15,
+                "isHidden": false
+              },
+              {
+                "id": "tc_6",
+                "input": "10",
+                "expectedOutput": "false",
+                "points": 20,
+                "isHidden": true
+              }
+            ],
+            "createdAt": "2026-09-11T06:50:45.876Z",
+            "updatedAt": "2026-09-11T06:50:45.876Z"
+          }
+        }
+      ],
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "asg_cs202_a1",
+      "containerId": "cnt_cs202_default",
+      "courseId": "crs_cs202",
+      "title": "CS202 Midterm: Linked Lists & Anagrams",
+      "instructions": "Complete the core algorithmic challenges. Solutions must meet the time and space complexity constraints.",
+      "maxPoints": 100,
+      "dueDate": "2026-09-21T06:50:45.877Z",
+      "createdBy": "usr_faculty_lovelace",
+      "status": "PUBLISHED",
+      "resourceLinkId": "d2l_resource_link_cs202_1",
+      "lineItemUrl": "https://brightspace.institution.edu/d2l/api/lti/ags/2.0/lineitems/li_cs202_1",
+      "questions": [
+        {
+          "id": "aq_202_1",
+          "assignmentId": "asg_cs202_a1",
+          "questionId": "q_10",
+          "points": 50,
+          "order": 1,
+          "question": {
+            "id": "q_10",
+            "title": "Reverse Linked List",
+            "description": "Given the head of a singly linked list, reverse the list, and return the reversed list.\n\n**Example 1:**\nInput: head = [1,2,3,4,5]\nOutput: [5,4,3,2,1]\n\n**Example 2:**\nInput: head = [1,2]\nOutput: [2,1]\n\n**Example 3:**\nInput: head = []\nOutput: []",
+            "difficulty": "Easy",
+            "category": "Linked List",
+            "supportedLanguages": [],
+            "testCases": [
+              {
+                "id": "tc1",
+                "input": "[1,2,3,4,5]",
+                "expectedOutput": "[5,4,3,2,1]",
+                "points": 25,
+                "description": "Multiple elements",
+                "isHidden": false
+              },
+              {
+                "id": "tc2",
+                "input": "[1,2]",
+                "expectedOutput": "[2,1]",
+                "points": 25,
+                "description": "Two elements",
+                "isHidden": false
+              },
+              {
+                "id": "tc3",
+                "input": "[]",
+                "expectedOutput": "[]",
+                "points": 25,
+                "description": "Empty list",
+                "isHidden": true
+              },
+              {
+                "id": "tc4",
+                "input": "[1]",
+                "expectedOutput": "[1]",
+                "points": 25,
+                "description": "Single element",
+                "isHidden": true
+              }
+            ],
+            "timeLimit": 5,
+            "memoryLimit": 64,
+            "sampleInput": "[1,2,3,4,5]",
+            "sampleOutput": "[5,4,3,2,1]",
+            "tags": [
+              "linked-list",
+              "recursion"
+            ],
+            "createdAt": "2026-09-11T06:50:45.876Z",
+            "updatedAt": "2026-09-11T06:50:45.876Z"
+          }
+        },
+        {
+          "id": "aq_202_2",
+          "assignmentId": "asg_cs202_a1",
+          "questionId": "q_12",
+          "points": 50,
+          "order": 2,
+          "question": {
+            "id": "q_12",
+            "title": "Group Anagrams",
+            "description": "Given an array of strings strs, group the anagrams together. You can return the answer in any order.\n\nAn Anagram is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.\n\n**Example 1:**\nInput: strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]\nOutput: [[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]\n\n**Example 2:**\nInput: strs = [\"\"]\nOutput: [[\"\"]]\n\n**Example 3:**\nInput: strs = [\"a\"]\nOutput: [[\"a\"]]",
+            "difficulty": "Medium",
+            "category": "Hash Table",
+            "supportedLanguages": [],
+            "testCases": [
+              {
+                "id": "tc1",
+                "input": "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+                "expectedOutput": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]",
+                "points": 30,
+                "description": "Multiple anagram groups",
+                "isHidden": false
+              },
+              {
+                "id": "tc2",
+                "input": "[\"\"]",
+                "expectedOutput": "[[\"\"]]",
+                "points": 30,
+                "description": "Empty string",
+                "isHidden": false
+              },
+              {
+                "id": "tc3",
+                "input": "[\"a\"]",
+                "expectedOutput": "[[\"a\"]]",
+                "points": 20,
+                "description": "Single character",
+                "isHidden": true
+              },
+              {
+                "id": "tc4",
+                "input": "[\"abc\",\"bca\",\"cab\",\"xyz\"]",
+                "expectedOutput": "[[\"abc\",\"bca\",\"cab\"],[\"xyz\"]]",
+                "points": 20,
+                "description": "Mixed groups",
+                "isHidden": true
+              }
+            ],
+            "timeLimit": 10,
+            "memoryLimit": 256,
+            "sampleInput": "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+            "sampleOutput": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]",
+            "tags": [
+              "hash-table",
+              "string",
+              "sorting"
+            ],
+            "createdAt": "2026-09-11T06:50:45.876Z",
+            "updatedAt": "2026-09-11T06:50:45.876Z"
+          }
+        }
+      ],
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "updatedAt": "2026-09-11T06:50:45.876Z"
+    }
+  ],
+  "assignmentLearners": [
+    {
+      "id": "al_101_alice",
+      "assignmentId": "asg_cs101_a1",
+      "learnerId": "usr_student_alice",
+      "status": "EXPORTED",
+      "score": 100,
+      "reviewed": true,
+      "reviewedAt": "2026-09-11T06:50:45.876Z",
+      "reviewedBy": "usr_faculty",
+      "exported": true,
+      "learner": {
+        "id": "usr_student_alice",
+        "name": "Alice Johnson",
+        "email": "alice@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_alice_01",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "exportedAt": "2026-09-11T06:51:02.786Z",
+      "exportedBy": "usr_faculty",
+      "passbackStatus": "SUCCESS",
+      "updatedAt": "2026-09-11T06:51:02.787Z"
+    },
+    {
+      "id": "al_101_bob",
+      "assignmentId": "asg_cs101_a1",
+      "learnerId": "usr_student_bob",
+      "status": "REVIEWED",
+      "score": 70,
+      "reviewed": true,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_bob",
+        "name": "Bob Williams",
+        "email": "bob@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_bob_02",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "reviewedAt": "2026-09-18T04:36:41.981Z",
+      "reviewedBy": "usr_faculty",
+      "updatedAt": "2026-09-18T04:36:41.981Z"
+    },
+    {
+      "id": "al_101_charlie",
+      "assignmentId": "asg_cs101_a1",
+      "learnerId": "usr_student_charlie",
+      "status": "REVIEWED",
+      "score": 50,
+      "reviewed": true,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_charlie",
+        "name": "Charlie Brown",
+        "email": "charlie@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_charlie_03",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z",
+      "reviewedAt": "2026-09-18T04:36:43.792Z",
+      "reviewedBy": "usr_faculty",
+      "updatedAt": "2026-09-18T04:36:43.792Z"
+    },
+    {
+      "id": "al_101_david",
+      "assignmentId": "asg_cs101_a1",
+      "learnerId": "usr_student_david",
+      "status": "ASSIGNED",
+      "score": 0,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_david",
+        "name": "David Miller",
+        "email": "david@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_david_04",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "al_101_emma",
+      "assignmentId": "asg_cs101_a1",
+      "learnerId": "usr_student_emma",
+      "status": "EXPORTED",
+      "score": 80,
+      "reviewed": true,
+      "reviewedAt": "2026-09-11T06:50:45.876Z",
+      "reviewedBy": "usr_faculty",
+      "exported": true,
+      "exportedAt": "2026-09-11T06:50:45.876Z",
+      "exportedBy": "usr_faculty",
+      "passbackStatus": "SUCCESS",
+      "learner": {
+        "id": "usr_student_emma",
+        "name": "Emma Watson",
+        "email": "emma@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_emma_05",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "al_101_frank",
+      "assignmentId": "asg_cs101_a1",
+      "learnerId": "usr_student_frank",
+      "status": "ASSIGNED",
+      "score": 0,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_frank",
+        "name": "Frank Castle",
+        "email": "frank@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_frank_06",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "al_101_grace",
+      "assignmentId": "asg_cs101_a1",
+      "learnerId": "usr_student_grace",
+      "status": "SUBMITTED",
+      "score": 90,
+      "reviewed": true,
+      "reviewedAt": "2026-09-11T06:50:45.876Z",
+      "reviewedBy": "usr_faculty",
+      "exported": false,
+      "learner": {
+        "id": "usr_student_grace",
+        "name": "Grace Hopper",
+        "email": "grace@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_grace_07",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "al_202_alice",
+      "assignmentId": "asg_cs202_a1",
+      "learnerId": "usr_student_alice",
+      "status": "SUBMITTED",
+      "score": 85,
+      "reviewed": true,
+      "reviewedAt": "2026-09-11T06:50:45.876Z",
+      "reviewedBy": "usr_faculty_lovelace",
+      "exported": false,
+      "learner": {
+        "id": "usr_student_alice",
+        "name": "Alice Johnson",
+        "email": "alice@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_alice_01",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "al_202_bob",
+      "assignmentId": "asg_cs202_a1",
+      "learnerId": "usr_student_bob",
+      "status": "ASSIGNED",
+      "score": 0,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_bob",
+        "name": "Bob Williams",
+        "email": "bob@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_bob_02",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "al_202_charlie",
+      "assignmentId": "asg_cs202_a1",
+      "learnerId": "usr_student_charlie",
+      "status": "ASSIGNED",
+      "score": 0,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_charlie",
+        "name": "Charlie Brown",
+        "email": "charlie@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_charlie_03",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "al_202_david",
+      "assignmentId": "asg_cs202_a1",
+      "learnerId": "usr_student_david",
+      "status": "SUBMITTED",
+      "score": 65,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_david",
+        "name": "David Miller",
+        "email": "david@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_david_04",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "al_202_emma",
+      "assignmentId": "asg_cs202_a1",
+      "learnerId": "usr_student_emma",
+      "status": "SUBMITTED",
+      "score": 90,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_emma",
+        "name": "Emma Watson",
+        "email": "emma@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_emma_05",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "al_202_frank",
+      "assignmentId": "asg_cs202_a1",
+      "learnerId": "usr_student_frank",
+      "status": "ASSIGNED",
+      "score": 0,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_frank",
+        "name": "Frank Castle",
+        "email": "frank@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_frank_06",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "al_202_grace",
+      "assignmentId": "asg_cs202_a1",
+      "learnerId": "usr_student_grace",
+      "status": "SUBMITTED",
+      "score": 100,
+      "reviewed": true,
+      "reviewedAt": "2026-09-11T06:50:45.876Z",
+      "reviewedBy": "usr_faculty_lovelace",
+      "exported": true,
+      "exportedAt": "2026-09-11T06:50:45.876Z",
+      "exportedBy": "usr_faculty_lovelace",
+      "passbackStatus": "SUCCESS",
+      "learner": {
+        "id": "usr_student_grace",
+        "name": "Grace Hopper",
+        "email": "grace@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_grace_07",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-09-11T06:50:45.876Z"
+    }
+  ],
+  "submissions": [],
+  "streaks": [
+    {
+      "userId": "usr_student_alice",
+      "currentStreak": 1,
+      "maxStreak": 3,
+      "lastActiveDate": "2026-09-23",
+      "totalSolved": 2,
+      "totalSubmissions": 6,
+      "activityDates": {
+        "2026-09-23": 3,
+        "2026-09-22": 3
+      }
+    },
+    {
+      "userId": "usr_faculty",
+      "currentStreak": 1,
+      "maxStreak": 3,
+      "lastActiveDate": "2026-09-23",
+      "totalSolved": 2,
+      "totalSubmissions": 5,
+      "activityDates": {
+        "2026-09-23": 2,
+        "2026-09-22": 3
+      }
+    },
+    {
+      "userId": "usr_student_bob",
+      "currentStreak": 1,
+      "maxStreak": 3,
+      "lastActiveDate": "2026-09-23",
+      "totalSolved": 2,
+      "totalSubmissions": 5,
+      "activityDates": {
+        "2026-09-23": 2,
+        "2026-09-22": 3
+      }
+    },
+    {
+      "userId": "usr_student_charlie",
+      "currentStreak": 1,
+      "maxStreak": 3,
+      "lastActiveDate": "2026-09-23",
+      "totalSolved": 2,
+      "totalSubmissions": 5,
+      "activityDates": {
+        "2026-09-23": 2,
+        "2026-09-22": 3
+      }
+    },
+    {
+      "userId": "usr_student_david",
+      "currentStreak": 1,
+      "maxStreak": 3,
+      "lastActiveDate": "2026-09-23",
+      "totalSolved": 2,
+      "totalSubmissions": 5,
+      "activityDates": {
+        "2026-09-23": 2,
+        "2026-09-22": 3
+      }
+    },
+    {
+      "userId": "usr_student_emma",
+      "currentStreak": 1,
+      "maxStreak": 3,
+      "lastActiveDate": "2026-09-23",
+      "totalSolved": 2,
+      "totalSubmissions": 5,
+      "activityDates": {
+        "2026-09-23": 2,
+        "2026-09-22": 3
+      }
+    },
+    {
+      "userId": "usr_student_frank",
+      "currentStreak": 1,
+      "maxStreak": 3,
+      "lastActiveDate": "2026-09-23",
+      "totalSolved": 2,
+      "totalSubmissions": 5,
+      "activityDates": {
+        "2026-09-23": 2,
+        "2026-09-22": 3
+      }
+    },
+    {
+      "userId": "usr_student_grace",
+      "currentStreak": 1,
+      "maxStreak": 3,
+      "lastActiveDate": "2026-09-23",
+      "totalSolved": 2,
+      "totalSubmissions": 5,
+      "activityDates": {
+        "2026-09-23": 2,
+        "2026-09-22": 3
+      }
+    },
+    {
+      "userId": "usr_faculty_lovelace",
+      "currentStreak": 1,
+      "maxStreak": 3,
+      "lastActiveDate": "2026-09-24",
+      "totalSolved": 2,
+      "totalSubmissions": 9,
+      "activityDates": {
+        "2026-09-24": 6,
+        "2026-09-23": 3
+      }
+    }
+  ],
+  "communityPosts": [
+    {
+      "id": "post_demo_1",
+      "courseId": "crs_cs101",
+      "questionId": "q_1",
+      "questionTitle": "Two Sum",
+      "authorId": "usr_student_alice",
+      "authorName": "Alice Johnson",
+      "authorRole": "LEARNER",
+      "title": "How to optimize Two Sum from O(N^2) to O(N)?",
+      "content": "I managed to pass all basic test cases using a nested loop, but on larger inputs it takes too long. What is the recommended hash table approach in Python?",
+      "codeSnippet": "def twoSum(nums, target):\n    for i in range(len(nums)):\n        for j in range(i + 1, len(nums)):\n            if nums[i] + nums[j] == target:\n                return [i, j]",
+      "language": "python",
+      "tags": [
+        "doubt",
+        "optimization",
+        "hash-table",
+        "arrays"
+      ],
+      "upvotes": [
+        "usr_student_bob",
+        "usr_student_charlie"
+      ],
+      "repliesCount": 6,
+      "createdAt": "2026-09-23T07:42:32.018Z",
+      "updatedAt": "2026-09-24T10:13:03.223Z"
+    },
+    {
+      "id": "post_demo_2",
+      "courseId": "crs_cs101",
+      "authorId": "usr_faculty",
+      "authorName": "Prof. Alan Turing",
+      "authorRole": "FACULTY",
+      "title": "📢 Module 1 Practical Practice & Daily Streak Challenge",
+      "content": "Welcome students! Maintain your daily streak by solving at least one challenge every day. Use this community forum to ask questions and discuss different algorithmic approaches!",
+      "tags": [
+        "announcement",
+        "cs101",
+        "streak"
+      ],
+      "upvotes": [
+        "usr_student_alice",
+        "usr_student_bob",
+        "usr_student_emma",
+        "usr_student_grace"
+      ],
+      "repliesCount": 0,
+      "createdAt": "2026-09-22T10:42:32.019Z",
+      "updatedAt": "2026-09-23T10:42:32.018Z"
+    },
+    {
+      "courseId": "crs_cs101",
+      "authorId": "usr_student_alice",
+      "authorName": "Alice Johnson",
+      "authorRole": "LEARNER",
+      "title": "Question about recursive base case in Fibonacci",
+      "content": "Can someone explain why we need both n==0 and n==1 as base cases?",
+      "codeSnippet": "def fib(n):\n    if n <= 1:\n        return n\n    return fib(n-1) + fib(n-2)",
+      "language": "python",
+      "tags": [
+        "fibonacci",
+        "recursion"
+      ],
+      "id": "post_1790160291599_0vblwr",
+      "upvotes": [],
+      "repliesCount": 0,
+      "createdAt": "2026-09-23T10:44:51.599Z",
+      "updatedAt": "2026-09-23T10:44:51.599Z"
+    }
+  ],
+  "communityReplies": [
+    {
+      "id": "reply_demo_1",
+      "postId": "post_demo_1",
+      "authorId": "usr_faculty",
+      "authorName": "Prof. Alan Turing",
+      "authorRole": "FACULTY",
+      "content": "Great question Alice! You can use a dictionary (hash map) to store the complement `target - num` as you iterate in a single pass. This reduces the time complexity to O(N) with O(N) space.",
+      "codeSnippet": "def twoSum(nums, target):\n    seen = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in seen:\n            return [seen[complement], i]\n        seen[num] = i",
+      "language": "python",
+      "isAccepted": true,
+      "upvotes": [
+        "usr_student_alice",
+        "usr_student_david",
+        "usr_student_bob"
+      ],
+      "createdAt": "2026-09-23T08:42:32.018Z"
+    },
+    {
+      "id": "reply_demo_2",
+      "postId": "post_demo_1",
+      "authorId": "usr_student_bob",
+      "authorName": "Bob Smith",
+      "authorRole": "LEARNER",
+      "content": "Thanks Professor! Just tried this in Python and execution time dropped from 120ms to 4ms!",
+      "upvotes": [
+        "usr_student_alice"
+      ],
+      "createdAt": "2026-09-23T09:42:32.019Z"
+    },
+    {
+      "postId": "post_demo_1",
+      "authorId": "usr_faculty_lovelace",
+      "authorName": "Prof. Ada Lovelace",
+      "authorRole": "FACULTY",
+      "content": "dghjj",
+      "language": "python",
+      "id": "reply_1790244050858_b539xx",
+      "upvotes": [],
+      "createdAt": "2026-09-24T10:00:50.858Z",
+      "isAccepted": false
+    },
+    {
+      "postId": "post_demo_1",
+      "authorId": "usr_faculty_lovelace",
+      "authorName": "Prof. Ada Lovelace",
+      "authorRole": "FACULTY",
+      "content": "@Prof. Alan Turing hi sir",
+      "language": "python",
+      "parentReplyId": "reply_demo_1",
+      "replyToAuthorName": "Prof. Alan Turing",
+      "id": "reply_1790244701331_w5ta49",
+      "upvotes": [],
+      "createdAt": "2026-09-24T10:11:41.331Z"
+    },
+    {
+      "postId": "post_demo_1",
+      "authorId": "usr_faculty_lovelace",
+      "authorName": "Prof. Ada Lovelace",
+      "authorRole": "FACULTY",
+      "content": "@Bob Smith i have tried it is not working",
+      "language": "python",
+      "parentReplyId": "reply_demo_2",
+      "replyToAuthorName": "Bob Smith",
+      "id": "reply_1790244729298_vxthyn",
+      "upvotes": [],
+      "createdAt": "2026-09-24T10:12:09.298Z"
+    },
+    {
+      "postId": "post_demo_1",
+      "authorId": "usr_faculty_lovelace",
+      "authorName": "Prof. Ada Lovelace",
+      "authorRole": "FACULTY",
+      "content": "@Prof. Alan Turing check wit cod e",
+      "language": "python",
+      "parentReplyId": "reply_demo_1",
+      "replyToAuthorName": "Prof. Alan Turing",
+      "id": "reply_1790244783223_366k89",
+      "upvotes": [],
+      "createdAt": "2026-09-24T10:13:03.223Z"
+    }
+  ]
+}

@@ -1,0 +1,221 @@
+// Prisma Schema for EduTech Code Compiler & D2L Brightspace Integration
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AppRole {
+  ADMIN
+  FACULTY
+  LEARNER
+}
+
+enum CourseRole {
+  FACULTY
+  LEARNER
+}
+
+enum AssignmentStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum AssignmentLearnerStatus {
+  ASSIGNED
+  IN_PROGRESS
+  SUBMITTED
+  REVIEWED
+  EXPORTED
+}
+
+enum PassbackStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id                 String              @id @default(uuid())
+  name               String
+  email              String              @unique
+  role               AppRole             @default(LEARNER)
+  ltiSubject         String?             @unique
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  
+  courseMemberships  CourseMember[]
+  assignmentsCreated Assignment[]        @relation("AssignmentsCreated")
+  assignedLearners   AssignmentLearner[]
+  submissions        Submission[]
+
+  @@index([ltiSubject])
+  @@index([email])
+}
+
+model Course {
+  id           String         @id @default(uuid())
+  title        String
+  ltiContextId String?        @unique
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  members      CourseMember[]
+  assignments  Assignment[]
+
+  @@index([ltiContextId])
+}
+
+model CourseMember {
+  id        String     @id @default(uuid())
+  courseId  String
+  userId    String
+  role      CourseRole @default(LEARNER)
+  createdAt DateTime   @default(now())
+
+  course    Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, userId])
+  @@index([courseId])
+  @@index([userId])
+}
+
+model Question {
+  id                 String               @id @default(uuid())
+  title              String
+  description        String
+  difficulty         String               // Easy, Medium, Hard
+  category           String
+  timeLimit          Int                  @default(5) // in seconds
+  memoryLimit        Int                  @default(128) // in MB
+  supportedLanguages Int[]                // Language IDs (mapped to Piston)
+  createdBy          String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  testCases          TestCase[]
+  assignmentQuestions AssignmentQuestion[]
+}
+
+model TestCase {
+  id             String       @id @default(uuid())
+  questionId     String
+  input          String
+  expectedOutput String
+  points         Int          @default(10)
+  isHidden       Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  question       Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  testResults    TestResult[]
+
+  @@index([questionId])
+}
+
+model Assignment {
+  id             String               @id @default(uuid())
+  courseId       String
+  title          String
+  instructions   String
+  maxPoints      Int                  @default(100)
+  dueDate        DateTime
+  createdBy      String
+  status         AssignmentStatus     @default(DRAFT)
+  resourceLinkId String?
+  lineItemUrl    String?              // Brightspace AGS LineItem URL
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  course         Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  author         User                 @relation("AssignmentsCreated", fields: [createdBy], references: [id])
+  questions      AssignmentQuestion[]
+  learners       AssignmentLearner[]
+  submissions    Submission[]
+
+  @@index([courseId])
+  @@index([resourceLinkId])
+}
+
+model AssignmentQuestion {
+  id           String     @id @default(uuid())
+  assignmentId String
+  questionId   String
+  points       Int        @default(10)
+  order        Int        @default(0)
+
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  question     Question   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, questionId])
+  @@index([assignmentId])
+  @@index([questionId])
+}
+
+model AssignmentLearner {
+  id             String                  @id @default(uuid())
+  assignmentId   String
+  learnerId      String
+  status         AssignmentLearnerStatus @default(ASSIGNED)
+  score          Int                     @default(0)
+  reviewed       Boolean                 @default(false)
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  exported       Boolean                 @default(false)
+  exportedAt     DateTime?
+  exportedBy     String?
+  passbackStatus PassbackStatus?
+  passbackError  String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+
+  assignment     Assignment              @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  learner        User                    @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, learnerId])
+  @@index([assignmentId])
+  @@index([learnerId])
+}
+
+model Submission {
+  id           String       @id @default(uuid())
+  assignmentId String
+  questionId   String
+  learnerId    String
+  code         String
+  languageId   Int
+  status       String       // Accepted, Wrong Answer, etc.
+  score        Int          @default(0)
+  submittedAt  DateTime     @default(now())
+  createdAt    DateTime     @default(now())
+
+  assignment   Assignment   @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  learner      User         @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  testResults  TestResult[]
+
+  @@index([assignmentId])
+  @@index([learnerId])
+}
+
+model TestResult {
+  id            String     @id @default(uuid())
+  submissionId  String
+  testCaseId    String
+  passed        Boolean
+  actualOutput  String
+  expectedOutput String
+  executionTime Float?
+  memoryUsed    Int?
+  points        Int        @default(0)
+
+  submission    Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  testCase      TestCase   @relation(fields: [testCaseId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+}
+

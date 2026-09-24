@@ -1,5 +1,5 @@
-import CodeCompiler from '@/components/CodeCompiler';
+import MainApp from '@/components/MainApp';
 
 export default function Home() {
-  return <CodeCompiler />;
+  return <MainApp />;
 }

@@ -2,61 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: 220 14% 96%;
-  --foreground: 220 9% 9%;
-  --primary: 220 13% 13%;
-  --primary-foreground: 210 20% 98%;
-  --secondary: 220 14% 96%;
-  --secondary-foreground: 220 9% 9%;
-  --muted: 220 14% 96%;
-  --muted-foreground: 220 9% 46%;
-  --accent: 220 14% 96%;
-  --accent-foreground: 220 9% 9%;
-  --border: 220 13% 91%;
-  --input: 220 13% 91%;
-  --ring: 220 13% 91%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 210 20% 98%;
+:root,
+.light {
+  --background: 220 14% 97%;
+  --foreground: 222.2 47.4% 11.2%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 47.4% 11.2%;
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 30% 94%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 25% 93%;
+  --muted-foreground: 215.4 16.3% 40%;
+  --accent: 210 30% 93%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --border: 216 12% 70%;
+  --input: 216 12% 70%;
+  --ring: 221.2 83.2% 53.3%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
   --radius: 0.5rem;
 }
 
 .dark {
-  --background: 220 13% 4%;
-  --foreground: 210 20% 98%;
-  --primary: 210 20% 98%;
-  --primary-foreground: 220 13% 4%;
-  --secondary: 220 13% 13%;
-  --secondary-foreground: 210 20% 98%;
-  --muted: 220 13% 13%;
-  --muted-foreground: 217 10% 65%;
-  --accent: 220 13% 13%;
-  --accent-foreground: 210 20% 98%;
-  --border: 220 13% 18%;
-  --input: 220 13% 18%;
-  --ring: 220 13% 18%;
-  --destructive: 0 76% 60%;
-  --destructive-foreground: 210 20% 98%;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: 220 13% 4%;
-    --foreground: 210 20% 98%;
-    --primary: 210 20% 98%;
-    --primary-foreground: 220 13% 4%;
-    --secondary: 220 13% 13%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 220 13% 13%;
-    --muted-foreground: 217 10% 65%;
-    --accent: 220 13% 13%;
-    --accent-foreground: 210 20% 98%;
-    --border: 220 13% 18%;
-    --input: 220 13% 18%;
-    --ring: 220 13% 18%;
-    --destructive: 0 76% 60%;
-    --destructive-foreground: 210 20% 98%;
-  }
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 6.5%;
+  --card-foreground: 210 40% 98%;
+  --primary: 217.2 91.2% 59.8%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 217.2 91.2% 59.8%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
 }
 
 * {
@@ -70,3 +55,33 @@ body {
     'rlig' 1,
     'calt' 1;
 }
+
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+}
+
+.dark .glassmorphism {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* Ensure dropdowns appear above everything */
+.dropdown-portal {
+  z-index: 9999 !important;
+  position: relative;
+}
+
+/* Crisp light mode border & contrast enhancements */
+.light .crisp-card {
+  border-color: #cbd5e1;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+}
+
+.light .crisp-header {
+  background-color: #f8fafc;
+  border-bottom: 1px solid #cbd5e1;
+}
+

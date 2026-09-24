@@ -1,3 +1,17 @@
+# EduTech Compiler
+
+A modern, comprehensive coding practice platform built with Next.js, designed for educational institutions and online learning platforms. EduTech Compiler provides a secure, scalable environment for students to practice coding with real-time compilation and execution.
+
+## Features
+
+- **Multi-language Support**: Python, JavaScript, Java, C++, C, C#, PHP, Ruby, Rust, Kotlin
+- **Secure Code Execution**: Sandboxed environment with resource limits
+- **D2L Brightspace Integration**: Seamless LTI integration with automatic grading
+- **Problem Library**: Extensive collection of coding problems with filtering
+- **Admin Dashboard**: Customizable themes and platform settings
+- **Real-time Results**: Instant feedback with detailed test case results
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

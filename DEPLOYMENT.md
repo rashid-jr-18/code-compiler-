@@ -1,4 +1,4 @@
-# Deployment Guide - Brightspace Compiler
+# Deployment Guide - EduTech Compiler
 
 ## Prerequisites Complete ✅
 
