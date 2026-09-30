@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+.gitignore
+.env*.local
+README.md
+data/piston
+data/local_db.json

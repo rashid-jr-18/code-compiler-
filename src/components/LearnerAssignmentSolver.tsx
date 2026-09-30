@@ -23,7 +23,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useEditorPreferences } from '@/hooks/useEditorPreferences';
+import { useEditorPreferences, getEffectiveEditorTheme } from '@/hooks/useEditorPreferences';
 import EditorSettingsModal from '@/components/EditorSettingsModal';
 import DebugModal from '@/components/DebugModal';
 import { registerMonacoThemes } from '@/lib/monaco-themes';
@@ -488,7 +488,7 @@ SELECT * FROM table_name;
           value={code}
           onChange={value => setCode(value || '')}
           beforeMount={registerMonacoThemes}
-          theme={preferences.colorTheme || (resolvedTheme === 'dark' ? 'vs-dark' : 'vs')}
+          theme={getEffectiveEditorTheme(preferences.colorTheme, resolvedTheme)}
           options={{
             minimap: { enabled: false },
             fontSize: preferences.fontSize,

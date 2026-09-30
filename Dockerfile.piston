@@ -1,0 +1,8 @@
+# Piston Execution Engine Image for EduTech Compiler
+# Docker Hub: rashid18/codepiston:latest
+FROM ghcr.io/engineer-man/piston
+
+LABEL maintainer="rashid18"
+LABEL description="Piston Code Execution Engine for EduTech Compiler"
+
+EXPOSE 2000
