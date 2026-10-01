@@ -5,3 +5,4 @@ node_modules
 .env*.local
 README.md
 data/local_db.json
+data/piston
