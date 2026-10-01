@@ -4,15 +4,14 @@ services:
   # Docker Hub: rashid18/codepiston:latest
   # ============================================================================
   piston:
-    image: rashid18/codepiston:latest
-    build:
-      context: .
-      dockerfile: Dockerfile.piston
+    image: ghcr.io/engineer-man/piston:latest
     container_name: piston_api
     restart: always
     privileged: true
     ports:
       - "2000:2000"
+    volumes:
+      - ./data/piston/packages:/piston/packages
     tmpfs:
       - /tmp
     networks:
