@@ -4,5 +4,4 @@ node_modules
 .gitignore
 .env*.local
 README.md
-data/piston
 data/local_db.json

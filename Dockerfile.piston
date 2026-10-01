@@ -1,8 +1,12 @@
-# Piston Execution Engine Image for EduTech Compiler
+# Pre-bundled Piston Code Execution Engine for EduTech Compiler
 # Docker Hub: rashid18/codepiston:latest
 FROM ghcr.io/engineer-man/piston
 
 LABEL maintainer="rashid18"
-LABEL description="Piston Code Execution Engine for EduTech Compiler"
+LABEL description="Pre-bundled Piston Engine with installed language compilers"
+
+# Copy all the pre-installed language packages (Python, GCC, Node, Java, etc.)
+# directly into the image so no installation is needed at runtime!
+COPY data/piston/packages /piston/packages
 
 EXPOSE 2000
