@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuestionStore } from '@/store/questionStore';
 import { Question, TestCase } from '@/types';
@@ -27,93 +27,15 @@ import {
   Sparkles, 
   Globe, 
   ExternalLink,
-  Search,
-  ChevronDown,
-  ChevronUp
+  Search
 } from 'lucide-react';
-
-const ALL_TOPICS = [
-  { id: 'all', name: 'All Topics' },
-  { id: 'array', name: 'Array' },
-  { id: 'string', name: 'String' },
-  { id: 'hash table', name: 'Hash Table' },
-  { id: 'math', name: 'Math' },
-  { id: 'dynamic programming', name: 'Dynamic Programming' },
-  { id: 'sorting', name: 'Sorting' },
-  { id: 'greedy', name: 'Greedy' },
-  { id: 'binary search', name: 'Binary Search' },
-  { id: 'depth-first search', name: 'Depth-First Search' },
-  { id: 'database', name: 'Database' },
-  { id: 'bit manipulation', name: 'Bit Manipulation' },
-  { id: 'matrix', name: 'Matrix' },
-  { id: 'prefix sum', name: 'Prefix Sum' },
-  { id: 'tree', name: 'Tree' },
-  { id: 'two pointers', name: 'Two Pointers' },
-  { id: 'breadth-first search', name: 'Breadth-First Search' },
-  { id: 'heap', name: 'Heap (Priority Queue)' },
-  { id: 'simulation', name: 'Simulation' },
-  { id: 'counting', name: 'Counting' },
-  { id: 'graph', name: 'Graph Theory' },
-  { id: 'stack', name: 'Stack' },
-  { id: 'binary tree', name: 'Binary Tree' },
-  { id: 'sliding window', name: 'Sliding Window' },
-  { id: 'enumeration', name: 'Enumeration' },
-  { id: 'design', name: 'Design' },
-  { id: 'backtracking', name: 'Backtracking' },
-  { id: 'number theory', name: 'Number Theory' },
-  { id: 'union find', name: 'Union-Find' },
-  { id: 'segment tree', name: 'Segment Tree' },
-  { id: 'linked list', name: 'Linked List' },
-  { id: 'ordered set', name: 'Ordered Set' },
-  { id: 'monotonic stack', name: 'Monotonic Stack' },
-  { id: 'divide and conquer', name: 'Divide and Conquer' },
-  { id: 'combinatorics', name: 'Combinatorics' },
-  { id: 'trie', name: 'Trie' },
-  { id: 'queue', name: 'Queue' },
-  { id: 'bitmask', name: 'Bitmask' },
-  { id: 'binary indexed tree', name: 'Binary Indexed Tree' },
-  { id: 'recursion', name: 'Recursion' },
-  { id: 'hash function', name: 'Hash Function' },
-  { id: 'geometry', name: 'Geometry' },
-  { id: 'memoization', name: 'Memoization' },
-  { id: 'shortest path', name: 'Shortest Path' },
-  { id: 'binary search tree', name: 'Binary Search Tree' },
-  { id: 'topological sort', name: 'Topological Sort' },
-  { id: 'string matching', name: 'String Matching' },
-  { id: 'rolling hash', name: 'Rolling Hash' },
-  { id: 'game theory', name: 'Game Theory' },
-  { id: 'monotonic queue', name: 'Monotonic Queue' },
-  { id: 'interactive', name: 'Interactive' },
-  { id: 'data stream', name: 'Data Stream' },
-  { id: 'brainteaser', name: 'Brainteaser' },
-  { id: 'merge sort', name: 'Merge Sort' },
-  { id: 'minimax', name: 'Minimax' },
-  { id: 'doubly-linked list', name: 'Doubly-Linked List' },
-  { id: 'randomized', name: 'Randomized' },
-  { id: 'counting sort', name: 'Counting Sort' },
-  { id: 'iterator', name: 'Iterator' },
-  { id: 'concurrency', name: 'Concurrency' },
-  { id: 'suffix array', name: 'Suffix Array' },
-  { id: 'quickselect', name: 'Quickselect' },
-  { id: 'sweep line', name: 'Sweep Line' },
-];
 
 interface FacultyPageProps {
   onBack?: () => void;
-  initialMode?: 'create' | 'import';
 }
 
-export default function FacultyPage({ onBack, initialMode = 'create' }: FacultyPageProps = {}) {
+export default function FacultyPage({ onBack }: FacultyPageProps = {}) {
   const { addQuestion } = useQuestionStore();
-  
-  // View mode: 'create' for manual creation, 'import' for universal importer
-  const [pageMode, setPageMode] = useState<'create' | 'import'>(initialMode);
-
-  useEffect(() => {
-    if (initialMode) {
-      setPageMode(initialMode);
-    }
-  }, [initialMode]);
   
   // Form state
   const [title, setTitle] = useState('');
@@ -141,50 +63,20 @@ export default function FacultyPage({ onBack, initialMode = 'create' }: FacultyP
 
   // Universal Import state
   const [importMode, setImportMode] = useState<'explore' | 'url' | 'smart-paste'>('explore');
-  const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
+  const [selectedPlatform, setSelectedPlatform] = useState<'codechef' | 'leetcode' | 'hackerrank' | 'geeksforgeeks'>('codechef');
   const [searchTopic, setSearchTopic] = useState('all');
-  const [topicCounts, setTopicCounts] = useState<Record<string, number>>({});
-  const [isTopicsExpanded, setIsTopicsExpanded] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [totalAvailable, setTotalAvailable] = useState<number>(0);
-  const [totalFree, setTotalFree] = useState<number>(0);
   const [isSearching, setIsSearching] = useState(false);
   const [importingSlug, setImportingSlug] = useState<string | null>(null);
-
-  // Client-side cache to instantly restore problems and counts with zero reload latency
-  const searchCacheRef = useRef<Map<string, {
-    results: any[];
-    totalAvailable: number;
-    totalFree: number;
-    topicCounts?: Record<string, number>;
-  }>>(new Map());
 
   const [importInput, setImportInput] = useState('');
   const [smartPasteText, setSmartPasteText] = useState('');
   const [isImporting, setIsImporting] = useState(false);
 
-  // Search platform problems with instant cache retrieval
+  // Search platform problems
   const fetchPlatformProblems = async (plat: string, topic: string, kw: string) => {
-    const cleanKw = kw.trim().toLowerCase();
-    const cacheKey = `${plat}:${topic}:${cleanKw}`;
-
-    // 1. Instant Cache Hit: Return immediately with 0ms latency and no loading spinner
-    if (searchCacheRef.current.has(cacheKey)) {
-      const cached = searchCacheRef.current.get(cacheKey)!;
-      setSearchResults(cached.results);
-      setTotalAvailable(cached.totalAvailable);
-      setTotalFree(cached.totalFree);
-      if (cached.topicCounts) {
-        setTopicCounts(prev => ({ ...prev, ...cached.topicCounts }));
-      }
-      setIsSearching(false);
-      return;
-    }
-
-    // 2. Cache Miss: Clear stale searchResults and fetch from API
     setIsSearching(true);
-    setSearchResults([]);
     try {
       const params = new URLSearchParams();
       if (plat) params.set('platform', plat);
@@ -195,29 +87,6 @@ export default function FacultyPage({ onBack, initialMode = 'create' }: FacultyP
       const json = await res.json();
       if (json.success && json.results) {
         setSearchResults(json.results);
-        setTotalAvailable(json.totalAvailable || json.results.length);
-        setTotalFree(json.totalFree || 0);
-
-        // Save in client cache
-        searchCacheRef.current.set(cacheKey, {
-          results: json.results,
-          totalAvailable: json.totalAvailable || json.results.length,
-          totalFree: json.totalFree || 0,
-          topicCounts: json.topicCounts
-        });
-
-        setTopicCounts(prev => {
-          const updated = { ...prev };
-          if (json.topicCounts) {
-            Object.assign(updated, json.topicCounts);
-          }
-          if (topic && topic !== 'all') {
-            updated[topic] = json.results.length;
-          } else if (topic === 'all') {
-            updated['all'] = json.results.length;
-          }
-          return updated;
-        });
       }
     } catch (err) {
       console.error('Search error:', err);
@@ -282,18 +151,8 @@ export default function FacultyPage({ onBack, initialMode = 'create' }: FacultyP
         setTestCases(p.testCases);
       }
 
-      // Auto-enable SQL language (id: 82) for database questions
-      const isSqlProblem = 
-        p.category?.toLowerCase().includes('sql') || 
-        p.category?.toLowerCase().includes('database') || 
-        p.tags?.some((t: string) => t.toLowerCase().includes('sql') || t.toLowerCase().includes('database'));
-      if (isSqlProblem) {
-        setSupportedLanguages([82]);
-      }
-
       const platformLabel = result.platform ? result.platform.toUpperCase() : 'PLATFORM';
       toast.success(`Successfully imported "${p.title}" from ${platformLabel}!`, { id: toastId });
-      setPageMode('create');
     } catch (err: any) {
       console.error('Import error:', err);
       toast.error(err.message || 'Could not import problem', { id: toastId });
@@ -495,41 +354,12 @@ export default function FacultyPage({ onBack, initialMode = 'create' }: FacultyP
           <p className="text-slate-600 dark:text-slate-400 text-sm">Create and author coding questions with automated test cases</p>
         </motion.div>
 
-        {/* Creation vs Import Navigation Switcher */}
-        <div className="flex items-center gap-2 mb-6 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl w-fit border border-slate-200 dark:border-slate-700 shadow-2xs">
-          <button
-            type="button"
-            onClick={() => setPageMode('create')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              pageMode === 'create'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <Plus size={15} />
-            <span>Create Manually</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setPageMode('import')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-              pageMode === 'import'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <Globe size={15} />
-            <span>Import Problem</span>
-          </button>
-        </div>
-
-        {/* Universal Import Banner / Card - Only displayed when pageMode === 'import' */}
-        {pageMode === 'import' && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 sm:p-5 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50/50 dark:from-blue-950/25 dark:via-indigo-950/20 dark:to-slate-900/30 shadow-xs"
-          >
+        {/* Universal Import Banner / Card */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 sm:p-5 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50/50 dark:from-blue-950/25 dark:via-indigo-950/20 dark:to-slate-900/30 shadow-xs"
+        >
           {/* Header & Supported Platforms */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
             <div className="flex items-center gap-2.5">
@@ -578,32 +408,35 @@ export default function FacultyPage({ onBack, initialMode = 'create' }: FacultyP
           {/* Mode 1: Interactive Platform Explorer (Default) */}
           {importMode === 'explore' && (
             <div className="space-y-3">
-              {/* Compact Platform Selector Pills (All Platforms Covered) */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 shrink-0 mr-1">Platform:</span>
+              {/* 4 Platform Selection Buttons */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: 'all', name: 'All Platforms' },
-                  { id: 'codechef', name: 'CodeChef' },
-                  { id: 'leetcode', name: 'LeetCode' },
-                  { id: 'hackerrank', name: 'HackerRank' },
-                  { id: 'geeksforgeeks', name: 'GeeksforGeeks' },
-                  { id: 'freecodecamp', name: 'freeCodeCamp' },
-                  { id: 'codeforces', name: 'Codeforces' },
-                  { id: 'topcoder', name: 'TopCoder' },
+                  { id: 'codechef', name: 'CodeChef', desc: 'Competitive Practice', color: 'border-amber-500 text-amber-700 dark:text-amber-300 bg-amber-50/70 dark:bg-amber-950/40 ring-amber-500/40' },
+                  { id: 'leetcode', name: 'LeetCode', desc: 'Interview Problems', color: 'border-orange-500 text-orange-700 dark:text-orange-300 bg-orange-50/70 dark:bg-orange-950/40 ring-orange-500/40' },
+                  { id: 'hackerrank', name: 'HackerRank', desc: 'Skill Tracks & Algorithms', color: 'border-emerald-500 text-emerald-700 dark:text-emerald-300 bg-emerald-50/70 dark:bg-emerald-950/40 ring-emerald-500/40' },
+                  { id: 'geeksforgeeks', name: 'GeeksforGeeks', desc: 'DSA & Topic Problems', color: 'border-green-600 text-green-700 dark:text-green-300 bg-green-50/70 dark:bg-green-950/40 ring-green-600/40' },
                 ].map(plat => {
                   const isSelected = selectedPlatform === plat.id;
                   return (
                     <button
                       key={plat.id}
                       type="button"
-                      onClick={() => setSelectedPlatform(plat.id)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 transition-all border ${
+                      onClick={() => setSelectedPlatform(plat.id as any)}
+                      className={`p-2.5 rounded-xl border text-left transition-all relative ${
                         isSelected
-                          ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
-                          : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-400 hover:text-blue-600'
+                          ? `${plat.color} ring-2 font-semibold shadow-xs`
+                          : 'border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-400'
                       }`}
                     >
-                      {plat.name}
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold">{plat.name}</span>
+                        {isSelected && (
+                          <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-0.5 truncate">
+                        {plat.desc}
+                      </span>
                     </button>
                   );
                 })}
@@ -633,101 +466,36 @@ export default function FacultyPage({ onBack, initialMode = 'create' }: FacultyP
                 </Button>
               </div>
 
-              {/* Topic Pills with Expand / Collapse */}
-              <div className="pt-1 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                      Topics ({ALL_TOPICS.length - 1}):
-                    </span>
-                    {searchTopic !== 'all' && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                        <span>Active:</span>
-                        <span className="font-semibold">{ALL_TOPICS.find(t => t.id === searchTopic)?.name || searchTopic}</span>
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); setSearchTopic('all'); }}
-                          className="ml-1 hover:text-blue-900 dark:hover:text-blue-100 font-bold"
-                          title="Reset to All Topics"
-                        >
-                          ✕
-                        </button>
-                      </span>
-                    )}
-                  </div>
+              {/* Topic Pills */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-xs">
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mr-1">Topics:</span>
+                {[
+                  { id: 'all', label: 'All Topics' },
+                  { id: 'arrays', label: 'Arrays' },
+                  { id: 'strings', label: 'Strings' },
+                  { id: 'dynamic programming', label: 'Dynamic Programming' },
+                  { id: 'math', label: 'Math' },
+                  { id: 'sorting', label: 'Sorting' },
+                ].map(topic => (
                   <button
+                    key={topic.id}
                     type="button"
-                    onClick={() => setIsTopicsExpanded(!isTopicsExpanded)}
-                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors border border-blue-200/80 dark:border-blue-800/60"
+                    onClick={() => setSearchTopic(topic.id)}
+                    className={`px-2.5 py-0.5 rounded-full text-[11px] transition-colors ${
+                      searchTopic === topic.id
+                        ? 'bg-blue-600 text-white font-medium shadow-2xs'
+                        : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                    }`}
                   >
-                    <span>{isTopicsExpanded ? 'Collapse Topics' : `Expand All (${ALL_TOPICS.length - 1})`}</span>
-                    {isTopicsExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                    {topic.label}
                   </button>
-                </div>
-
-                <div className={`flex flex-wrap items-center gap-1.5 transition-all duration-200 ${
-                  isTopicsExpanded ? 'max-h-56 overflow-y-auto pr-1 pb-1' : ''
-                }`}>
-                  {(isTopicsExpanded ? ALL_TOPICS : ALL_TOPICS.slice(0, 15)).map(topic => {
-                    const isSelected = searchTopic === topic.id;
-                    // Only use known count for this topic or active results when not searching; never show stale previous topic count
-                    const availableCount = topicCounts[topic.id] !== undefined
-                      ? topicCounts[topic.id]
-                      : (isSelected && !isSearching && searchResults.length > 0 ? searchResults.length : null);
-
-                    return (
-                      <button
-                        key={topic.id}
-                        type="button"
-                        onClick={() => setSearchTopic(topic.id)}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] transition-all cursor-pointer ${
-                          isSelected
-                            ? 'bg-blue-600 text-white font-medium shadow-xs'
-                            : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750 hover:border-slate-300 dark:hover:border-slate-600'
-                        }`}
-                      >
-                        <span>{topic.name}</span>
-                        {availableCount !== null ? (
-                          <span
-                            className={`text-[9px] px-1.5 py-0.5 rounded-full font-mono font-medium ${
-                              isSelected
-                                ? 'bg-blue-500/50 text-white'
-                                : 'bg-slate-100 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300'
-                            }`}
-                          >
-                            {availableCount}
-                          </span>
-                        ) : (isSelected && isSearching ? (
-                          <span className="w-2.5 h-2.5 border-2 border-white/60 border-t-transparent rounded-full animate-spin inline-block" />
-                        ) : null)}
-                      </button>
-                    );
-                  })}
-
-                  {!isTopicsExpanded && (
-                    <button
-                      type="button"
-                      onClick={() => setIsTopicsExpanded(true)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-slate-50 dark:bg-slate-800/80 border border-dashed border-blue-300 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors"
-                    >
-                      <span>+{ALL_TOPICS.length - 15} more topics</span>
-                      <ChevronDown size={11} />
-                    </button>
-                  )}
-                </div>
+                ))}
               </div>
 
               {/* Problem Results Table (LeetCode Single-Row Table Style) */}
               <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-800 overflow-hidden shadow-2xs mt-2">
                 <div className="grid grid-cols-12 gap-2 px-3.5 py-2 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                  <div className="col-span-6 sm:col-span-5 flex items-center gap-1.5 flex-wrap">
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">Problems</span>
-                    {searchResults.length > 0 && !isSearching && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-mono font-medium">
-                        {searchResults.length} Problems Available
-                      </span>
-                    )}
-                  </div>
+                  <div className="col-span-6 sm:col-span-5">Problem Title</div>
                   <div className="hidden sm:block sm:col-span-3">Category & Tags</div>
                   <div className="col-span-3 sm:col-span-2 text-right sm:text-left">Difficulty</div>
                   <div className="col-span-3 sm:col-span-2 text-right">Action</div>
@@ -748,7 +516,7 @@ export default function FacultyPage({ onBack, initialMode = 'create' }: FacultyP
                       const isRowImporting = importingSlug === prob.slug;
                       return (
                         <div
-                          key={`${prob.platform || 'p'}_${prob.slug || 's'}_${idx}`}
+                          key={prob.slug || idx}
                           className="grid grid-cols-12 gap-2 px-3.5 py-2 items-center text-xs hover:bg-blue-50/60 dark:hover:bg-slate-800/60 transition-colors"
                         >
                           <div className="col-span-6 sm:col-span-5 flex items-center gap-1.5 truncate pr-1">
@@ -862,7 +630,6 @@ export default function FacultyPage({ onBack, initialMode = 'create' }: FacultyP
                 <span className="font-semibold text-slate-600 dark:text-slate-300">Quick Try:</span>
                 {[
                   { label: 'LeetCode: Two Sum', val: 'two-sum' },
-                  { label: 'LeetCode SQL: Combine Two Tables', val: 'combine-two-tables' },
                   { label: 'HackerRank: Simple Array Sum', val: 'https://www.hackerrank.com/challenges/simple-array-sum/problem' },
                   { label: 'CodeChef: Number Mirror', val: 'https://www.codechef.com/problems/FLOW001' },
                   { label: 'LeetCode: Valid Parentheses', val: 'valid-parentheses' },
@@ -917,7 +684,6 @@ export default function FacultyPage({ onBack, initialMode = 'create' }: FacultyP
             </div>
           )}
         </motion.div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Question Details */}
@@ -1155,7 +921,7 @@ export default function FacultyPage({ onBack, initialMode = 'create' }: FacultyP
                     <AnimatePresence>
                       {testCases.map((testCase, index) => (
                         <motion.div
-                          key={testCase.id || `tc_${index}`}
+                          key={testCase.id}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -20 }}
