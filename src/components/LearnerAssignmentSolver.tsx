@@ -433,6 +433,7 @@ SELECT * FROM table_name;
   });
 
   const handleSafeExit = () => {
+    setIsViolationModalOpen(false);
     stopCamera();
     if (typeof document !== 'undefined' && document.fullscreenElement) {
       document.exitFullscreen().catch(() => {});
