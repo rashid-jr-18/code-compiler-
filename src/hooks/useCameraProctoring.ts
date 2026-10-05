@@ -27,18 +27,57 @@ export function useCameraProctoring({
   const startCamera = useCallback(async (): Promise<boolean> => {
     try {
       setCameraError(null);
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Camera access is not supported by your browser.');
+
+      // Check for Secure Context (HTTPS or localhost)
+      const isSecure = typeof window !== 'undefined' && (
+        window.isSecureContext ||
+        window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1'
+      );
+
+      if (!isSecure && (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia)) {
+        throw new Error(
+          'INSECURE_HTTP: Browsers require HTTPS (or localhost) to grant camera access. If you are testing over an HTTP IP address, please see the quick instructions below to allow camera testing.'
+        );
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          facingMode: 'user'
-        },
-        audio: false // Privacy: audio is strictly excluded
-      });
+      let stream: MediaStream | null = null;
+
+      // Standard modern API
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            facingMode: 'user'
+          },
+          audio: false // Privacy: audio is strictly excluded
+        });
+      } else {
+        // Fallback for older browser APIs
+        const legacyGetUserMedia =
+          (navigator as any).getUserMedia ||
+          (navigator as any).webkitGetUserMedia ||
+          (navigator as any).mozGetUserMedia ||
+          (navigator as any).msGetUserMedia;
+
+        if (legacyGetUserMedia) {
+          stream = await new Promise<MediaStream>((resolve, reject) => {
+            legacyGetUserMedia.call(
+              navigator,
+              { video: true, audio: false },
+              resolve,
+              reject
+            );
+          });
+        } else {
+          throw new Error('Camera access is not supported by your browser.');
+        }
+      }
+
+      if (!stream) {
+        throw new Error('Unable to start camera stream.');
+      }
 
       streamRef.current = stream;
       if (videoRef.current) {

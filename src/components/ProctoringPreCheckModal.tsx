@@ -172,9 +172,23 @@ export default function ProctoringPreCheckModal({
                 </div>
 
                 {cameraError && (
-                  <p className="text-xs text-rose-600 dark:text-rose-400 text-center font-medium">
-                    ⚠️ {cameraError}
-                  </p>
+                  <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900/60 text-xs text-rose-800 dark:text-rose-200 space-y-2">
+                    <p className="font-semibold flex items-center gap-1.5 text-rose-700 dark:text-rose-300">
+                      ⚠️ Camera Access Restricted by Browser Security (HTTP)
+                    </p>
+                    <p className="leading-relaxed">
+                      Chrome, Edge, and Firefox strictly require <strong>HTTPS (SSL)</strong> or <strong>localhost</strong> to show the Camera permission popup. On plain HTTP IP addresses (e.g. <code>http://IP:4000</code>), browsers automatically disable webcam APIs.
+                    </p>
+                    <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-rose-200 dark:border-rose-800 text-[11px] space-y-1.5">
+                      <p className="font-bold text-slate-800 dark:text-slate-200">How to enable Camera for testing on HTTP:</p>
+                      <ol className="list-decimal pl-4 space-y-1 text-slate-600 dark:text-slate-300">
+                        <li>In your Chrome address bar, open: <br/><code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400 font-mono text-[10px]">chrome://flags/#unsafely-treat-insecure-origin-as-secure</code></li>
+                        <li>Paste your current URL: <code className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-blue-600 dark:text-blue-400 font-mono text-[10px]">{typeof window !== 'undefined' ? window.location.origin : 'http://<IP>:4000'}</code></li>
+                        <li>Set to <strong>Enabled</strong> and click <strong>Relaunch</strong>.</li>
+                        <li>Or access directly via <strong>http://localhost:4000</strong> or your HTTPS domain!</li>
+                      </ol>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
