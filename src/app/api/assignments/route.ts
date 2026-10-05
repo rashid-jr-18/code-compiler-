@@ -100,12 +100,13 @@ export async function POST(request: NextRequest) {
         createdBy: auth.user.id,
         status: 'PUBLISHED',
         proctoringConfig: proctoringConfig || undefined,
-        questions: questions.map((q: { questionId: string; points: number }, idx: number) => ({
+        questions: questions.map((q: { questionId: string; points: number; allowedLanguages?: number[] }, idx: number) => ({
           id: '',
           assignmentId: '',
           questionId: q.questionId,
           points: Number(q.points) || 10,
-          order: idx + 1
+          order: idx + 1,
+          allowedLanguages: Array.isArray(q.allowedLanguages) && q.allowedLanguages.length > 0 ? q.allowedLanguages : undefined
         }))
       },
       validLearners

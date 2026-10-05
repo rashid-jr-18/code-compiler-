@@ -34,7 +34,7 @@ export default function SetAssignment({
   });
   const { questions: storeQuestions } = useQuestionStore();
   const [availableQuestions, setAvailableQuestions] = useState<Question[]>(() => storeQuestions || []);
-  const [selectedQuestions, setSelectedQuestions] = useState<Array<{ questionId: string; points: number }>>([]);
+  const [selectedQuestions, setSelectedQuestions] = useState<Array<{ questionId: string; points: number; allowedLanguages?: number[] }>>([]);
   const [enrolledLearners, setEnrolledLearners] = useState<CourseMember[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -115,7 +115,12 @@ export default function SetAssignment({
       if (exists) {
         return prev.filter(q => q.questionId !== questionId);
       } else {
-        return [...prev, { questionId, points: 50 }];
+        const q = availableQuestions.find(aq => aq.id === questionId);
+        return [...prev, {
+          questionId,
+          points: 50,
+          allowedLanguages: q?.supportedLanguages && q.supportedLanguages.length > 0 ? q.supportedLanguages : undefined
+        }];
       }
     });
   };
@@ -123,6 +128,20 @@ export default function SetAssignment({
   const updateQuestionPoints = (questionId: string, points: number) => {
     setSelectedQuestions(prev =>
       prev.map(q => q.questionId === questionId ? { ...q, points: Math.max(1, points) } : q)
+    );
+  };
+
+  const updateQuestionLanguages = (questionId: string, languageId: number | 'ALL') => {
+    setSelectedQuestions(prev =>
+      prev.map(q => {
+        if (q.questionId === questionId) {
+          return {
+            ...q,
+            allowedLanguages: languageId === 'ALL' ? undefined : [languageId]
+          };
+        }
+        return q;
+      })
     );
   };
 
@@ -489,8 +508,26 @@ export default function SetAssignment({
                         </div>
                       </div>
 
-                      {/* Points Editor & Remove Button */}
+                      {/* Points Editor, Language Selector & Remove Button */}
                       <div className="flex items-center gap-2 shrink-0">
+                        {/* Language Restriction Selector */}
+                        <select
+                          value={item.allowedLanguages && item.allowedLanguages.length === 1 ? item.allowedLanguages[0] : 'ALL'}
+                          onChange={e => updateQuestionLanguages(item.questionId, e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
+                          className="h-7 px-2 text-[11px] font-medium bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                          title="Restrict allowed programming language for this problem"
+                        >
+                          <option value="ALL">🌐 All Languages</option>
+                          <option value="71">🐍 Python 3 only</option>
+                          <option value="62">☕ Java only</option>
+                          <option value="54">⚡ C++ only</option>
+                          <option value="50">🔧 C only</option>
+                          <option value="63">🟡 JavaScript only</option>
+                          <option value="74">🔷 TypeScript only</option>
+                          <option value="82">🗄️ SQL only</option>
+                          <option value="100">🌐 Web (HTML/CSS) only</option>
+                        </select>
+
                         <div className="flex items-center gap-1">
                           <input
                             type="number"

@@ -623,12 +623,13 @@ export default function MainApp() {
         break;
     }
 
-    const isWideView = currentView === 'community' || currentView === 'set-assignment' || currentView === 'compiler';
+    const isSolvingAssessment = Boolean(selectedAssignmentForSolver);
+    const isWideView = currentView === 'community' || currentView === 'set-assignment' || currentView === 'compiler' || isSolvingAssessment;
 
     return (
       <div className={pageBgClass}>
-        <div className={`relative z-10 mx-auto p-4 sm:p-6 ${isWideView ? 'w-full max-w-[1680px]' : 'container max-w-7xl'}`}>
-          {renderNavigation()}
+        <div className={`relative z-10 mx-auto p-4 sm:p-6 ${isSolvingAssessment ? 'w-full max-w-[1720px]' : isWideView ? 'w-full max-w-[1680px]' : 'container max-w-7xl'}`}>
+          {!isSolvingAssessment && renderNavigation()}
           {mainView}
         </div>
       </div>
@@ -638,7 +639,7 @@ export default function MainApp() {
   return (
     <>
       {renderContent()}
-      <DevRoleSwitcher />
+      {!selectedAssignmentForSolver && <DevRoleSwitcher />}
       <LearnerProfileDrawer
         userId={selectedProfileUserId}
         courseId={activeCourse.id}

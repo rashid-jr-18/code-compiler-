@@ -793,10 +793,21 @@ class PersistentDatabase {
   }
 
   private populateAssignment(a: Assignment): Assignment {
-    const populatedQuestions = a.questions.map(q => ({
-      ...q,
-      question: this.questions.get(q.questionId)
-    }));
+    const populatedQuestions = a.questions.map(q => {
+      const qId = q.questionId;
+      const strippedId = qId.replace(/^q_/, '');
+      const question =
+        this.questions.get(qId) ||
+        this.questions.get(`q_${strippedId}`) ||
+        this.questions.get(strippedId) ||
+        sampleQuestions.find(sq => sq.id === qId || sq.id === strippedId || `q_${sq.id}` === qId);
+
+      return {
+        ...q,
+        allowedLanguages: q.allowedLanguages || question?.supportedLanguages,
+        question
+      };
+    });
 
     const learners = Array.from(this.assignmentLearners.values())
       .filter(al => al.assignmentId === a.id)

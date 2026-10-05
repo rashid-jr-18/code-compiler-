@@ -360,6 +360,7 @@ export interface AssignmentQuestion {
   points: number;
   order: number;
   question?: Question;
+  allowedLanguages?: number[];
 }
 
 export type AssignmentLearnerStatus = 'ASSIGNED' | 'IN_PROGRESS' | 'SUBMITTED' | 'REVIEWED' | 'EXPORTED';

@@ -215,6 +215,15 @@ export function useKioskMode({
     };
   }, [isEnforcing]);
 
+  // Immediately exit fullscreen when component unmounts or exam finishes
+  useEffect(() => {
+    return () => {
+      if (typeof document !== 'undefined' && document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    };
+  }, []);
+
   return {
     isFullscreen,
     violationCount,

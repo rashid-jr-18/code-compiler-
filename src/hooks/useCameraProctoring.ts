@@ -19,6 +19,7 @@ export function useCameraProctoring({
 }: UseCameraProctoringOptions) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -80,6 +81,7 @@ export function useCameraProctoring({
       }
 
       streamRef.current = stream;
+      setStream(stream);
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play().catch(e => console.warn('[Proctoring] Video play warning:', e));
@@ -102,6 +104,7 @@ export function useCameraProctoring({
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
+    setStream(null);
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
@@ -174,6 +177,7 @@ export function useCameraProctoring({
 
   return {
     videoRef,
+    stream,
     isStreaming,
     hasPermission,
     cameraError,
