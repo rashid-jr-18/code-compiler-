@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Editor } from '@monaco-editor/react';
 import { motion } from 'framer-motion';
 import { Assignment, Language, ProctoringEventType, Question } from '@/types';
@@ -343,8 +343,22 @@ SELECT * FROM table_name;
     }
   };
 
+  // Refs to avoid stale closures in timeouts and kiosk callbacks
+  const codeRef = useRef(code);
+  codeRef.current = code;
+
+  const questionRef = useRef(question);
+  questionRef.current = question;
+
+  const selectedLanguageRef = useRef(selectedLanguage);
+  selectedLanguageRef.current = selectedLanguage;
+
+  const isSubmittingRef = useRef(isSubmitting);
+  isSubmittingRef.current = isSubmitting;
+
   const handleSubmitAuthoritative = async () => {
-    if (!question) return;
+    const curQ = questionRef.current;
+    if (!curQ || isSubmittingRef.current) return;
 
     setIsSubmitting(true);
     const toastId = toast.loading('Evaluating authoritative test cases...');
@@ -358,9 +372,9 @@ SELECT * FROM table_name;
           'x-user-role': 'LEARNER'
         },
         body: JSON.stringify({
-          questionId: question.id,
-          sourceCode: code,
-          languageId: selectedLanguage.id
+          questionId: curQ.id,
+          sourceCode: codeRef.current,
+          languageId: selectedLanguageRef.current.id
         })
       });
 
@@ -369,6 +383,12 @@ SELECT * FROM table_name;
 
       setSubmissionFeedback(data.result);
       toast.success('Submitted successfully! Score stored locally.', { id: toastId });
+
+      // Clean up proctoring & exit fullscreen once submitted
+      stopCamera();
+      if (typeof document !== 'undefined' && document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
 
       // Record Streak for this learner
       const isFullScore = data.result?.score != null && data.result?.maxScore != null && data.result.score >= data.result.maxScore;
@@ -454,24 +474,77 @@ SELECT * FROM table_name;
     [assignment.id, learnerId, captureFrame]
   );
 
+  // Automatically execute test evaluation and submission when violation limit reached
+  const triggerAutoSubmit = useCallback(async () => {
+    if (isSubmittingRef.current) return;
+    const curQ = questionRef.current;
+    if (!curQ) return;
+
+    setIsSubmitting(true);
+    setIsLimitReached(true);
+    setIsViolationModalOpen(true);
+
+    // Stop camera and release fullscreen immediately
+    stopCamera();
+    if (typeof document !== 'undefined' && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+
+    const toastId = toast.loading('Security violation limit reached (3/3). Auto-submitting test...');
+
+    try {
+      const res = await fetch(`/api/assignments/${assignment.id}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': learnerId,
+          'x-user-role': 'LEARNER'
+        },
+        body: JSON.stringify({
+          questionId: curQ.id,
+          sourceCode: codeRef.current,
+          languageId: selectedLanguageRef.current.id
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Auto-submission failed');
+
+      setSubmissionFeedback(data.result);
+      toast.success('Assessment auto-submitted successfully!', { id: toastId });
+
+      // Mark proctoring session as TERMINATED_VIOLATION
+      fetch('/api/proctoring/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assignmentId: assignment.id,
+          learnerId,
+          status: 'TERMINATED_VIOLATION'
+        })
+      }).catch(() => {});
+
+    } catch (err: unknown) {
+      console.error('Auto submit error:', err);
+      toast.error(err instanceof Error ? err.message : 'Auto-submission failed', { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [assignment.id, learnerId, stopCamera]);
+
   const handleLimitExceeded = useCallback(() => {
     setIsLimitReached(true);
     setIsViolationModalOpen(true);
 
-    if (proctoringConfig?.actionOnLimit === 'AUTO_SUBMIT') {
-      toast.error('Maximum security violation limit reached (3/3)! Exam auto-submitting...', {
-        duration: 8000
-      });
-      // 1.5s delay so the learner clearly sees the Auto-Submit modal before submission completes
-      setTimeout(() => {
-        handleSubmitAuthoritative();
-      }, 1500);
-    } else if (proctoringConfig?.actionOnLimit === 'FLAG_REVIEW') {
-      toast.error('Violation limit exceeded! Your exam attempt has been flagged for faculty review.', {
-        duration: 6000
-      });
-    }
-  }, [proctoringConfig?.actionOnLimit]);
+    toast.error('Maximum security violation limit reached (3/3)! Exam auto-submitting now...', {
+      duration: 8000
+    });
+
+    // Automatically trigger test submission after a short visual pause
+    setTimeout(() => {
+      triggerAutoSubmit();
+    }, 800);
+  }, [triggerAutoSubmit]);
 
   const handleAcknowledgeViolation = async () => {
     setIsViolationModalOpen(false);
@@ -482,7 +555,7 @@ SELECT * FROM table_name;
 
   const { violationCount, enterFullscreen } = useKioskMode({
     enabled: proctoringConfig?.enableKiosk || false,
-    isActive: isPreCheckDone,
+    isActive: isPreCheckDone && !submissionFeedback,
     violationLimit: proctoringConfig?.violationLimit || 3,
     onViolation: handleViolation,
     onLimitExceeded: handleLimitExceeded
@@ -911,7 +984,9 @@ SELECT * FROM table_name;
         reason={lastViolationReason}
         isLimitReached={isLimitReached}
         isSubmitting={isSubmitting}
+        submissionResult={submissionFeedback}
         onAcknowledgeAndReturn={handleAcknowledgeViolation}
+        onFinishAndExit={handleSafeExit}
       />
     </div>
   );
