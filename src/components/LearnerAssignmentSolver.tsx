@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Editor } from '@monaco-editor/react';
 import { motion } from 'framer-motion';
-import { Assignment, Language } from '@/types';
+import { Assignment, Language, ProctoringEventType } from '@/types';
 import { Button } from '@/components/ui/button';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useTheme } from '@/components/ThemeProvider';
@@ -20,7 +20,10 @@ import {
   MemoryStick,
   Settings,
   Bug,
-  MessageSquare
+  MessageSquare,
+  Lock,
+  Camera,
+  AlertTriangle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useEditorPreferences, getEffectiveEditorTheme } from '@/hooks/useEditorPreferences';
@@ -30,6 +33,10 @@ import { registerMonacoThemes } from '@/lib/monaco-themes';
 import WebPreview from '@/components/WebPreview';
 import SqlResultTable from '@/components/SqlResultTable';
 import ResizableSplitPane from '@/components/ui/ResizableSplitPane';
+import { useCameraProctoring } from '@/hooks/useCameraProctoring';
+import { useKioskMode } from '@/hooks/useKioskMode';
+import ProctoringPreCheckModal from '@/components/ProctoringPreCheckModal';
+import FloatingCameraWidget from '@/components/FloatingCameraWidget';
 
 interface LearnerAssignmentSolverProps {
   assignment: Assignment;
@@ -352,6 +359,94 @@ SELECT * FROM table_name;
     }
   };
 
+  // Proctoring & Kiosk Security Logic
+  const proctoringConfig = assignment.proctoringConfig;
+  const isSecurityEnabled = Boolean(
+    proctoringConfig && (proctoringConfig.enableCamera || proctoringConfig.enableKiosk)
+  );
+  const [isPreCheckDone, setIsPreCheckDone] = useState(!isSecurityEnabled);
+
+  // Camera Proctoring Hook
+  const {
+    videoRef,
+    isStreaming,
+    cameraError,
+    startCamera,
+    captureFrame
+  } = useCameraProctoring({
+    assignmentId: assignment.id,
+    learnerId,
+    enabled: isPreCheckDone && (proctoringConfig?.enableCamera || false),
+    snapshotIntervalSeconds: proctoringConfig?.snapshotIntervalSeconds || 30
+  });
+
+  // Handle recorded violations from Kiosk or camera events
+  const handleViolation = useCallback(
+    async (eventType: ProctoringEventType, severity: 'WARNING' | 'CRITICAL', message: string) => {
+      const frameBase64 = captureFrame();
+
+      try {
+        await fetch('/api/proctoring/violation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            assignmentId: assignment.id,
+            learnerId,
+            eventType,
+            severity,
+            snapshotBase64: frameBase64,
+            notes: message
+          })
+        });
+      } catch (err) {
+        console.warn('[Proctoring Solver] Violation sync error:', err);
+      }
+    },
+    [assignment.id, learnerId, captureFrame]
+  );
+
+  const handleLimitExceeded = useCallback(() => {
+    if (proctoringConfig?.actionOnLimit === 'AUTO_SUBMIT') {
+      toast.error('Maximum security violation limit reached! Exam is being auto-submitted immediately.', {
+        duration: 8000
+      });
+      handleSubmitAuthoritative();
+    } else if (proctoringConfig?.actionOnLimit === 'FLAG_REVIEW') {
+      toast.error('Violation limit exceeded! Your exam attempt has been flagged for faculty review.', {
+        duration: 6000
+      });
+    }
+  }, [proctoringConfig?.actionOnLimit]);
+
+  const { violationCount, enterFullscreen } = useKioskMode({
+    enabled: proctoringConfig?.enableKiosk || false,
+    isActive: isPreCheckDone,
+    violationLimit: proctoringConfig?.violationLimit || 3,
+    onViolation: handleViolation,
+    onLimitExceeded: handleLimitExceeded
+  });
+
+  const handleConsentAndStart = async () => {
+    try {
+      await fetch('/api/proctoring/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assignmentId: assignment.id,
+          learnerId,
+          consentAcceptedAt: new Date().toISOString()
+        })
+      });
+    } catch (err) {
+      console.warn('[PreCheck] Session create error:', err);
+    }
+
+    if (proctoringConfig?.enableKiosk) {
+      await enterFullscreen();
+    }
+    setIsPreCheckDone(true);
+  };
+
   // Left Panel (Description, Constraints, Sample Inputs, Scores)
   const leftPanel = (
     <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl shadow-sm h-[720px] overflow-y-auto p-6 space-y-4">
@@ -592,6 +687,33 @@ SELECT * FROM table_name;
           </div>
         </div>
 
+        {/* Security & Proctoring Status Badges */}
+        {isSecurityEnabled && (
+          <div className="flex flex-wrap items-center gap-2">
+            {proctoringConfig?.enableKiosk && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                <Lock size={12} /> Kiosk Mode
+              </span>
+            )}
+            {proctoringConfig?.enableCamera && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                <Camera size={12} /> Camera Live
+              </span>
+            )}
+            <span
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border transition-colors ${
+                violationCount === 0
+                  ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                  : violationCount >= (proctoringConfig?.violationLimit || 3)
+                  ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 border-rose-300 dark:border-rose-800 animate-pulse'
+                  : 'bg-amber-50 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+              }`}
+            >
+              <AlertTriangle size={12} /> Violations: {violationCount} / {proctoringConfig?.violationLimit || 3}
+            </span>
+          </div>
+        )}
+
         {/* Multi-Problem Selector & Top Actions */}
         <div className="flex items-center gap-3">
           {assignment.questions && assignment.questions.length > 1 && (
@@ -677,6 +799,31 @@ SELECT * FROM table_name;
         defaultStdin={question?.sampleInput}
         problemTitle={question?.title}
       />
+
+      {/* Secure Pre-Check Gate Modal */}
+      {isSecurityEnabled && proctoringConfig && !isPreCheckDone && (
+        <ProctoringPreCheckModal
+          isOpen={!isPreCheckDone}
+          assignmentTitle={assignment.title}
+          config={proctoringConfig}
+          videoRef={videoRef}
+          isStreaming={isStreaming}
+          cameraError={cameraError}
+          onStartCamera={startCamera}
+          onConsentAndStart={handleConsentAndStart}
+          onCancel={onBack}
+        />
+      )}
+
+      {/* Mini Floating Live Webcam Widget */}
+      {isSecurityEnabled && proctoringConfig?.enableCamera && isPreCheckDone && (
+        <FloatingCameraWidget
+          videoRef={videoRef}
+          isStreaming={isStreaming}
+          violationCount={violationCount}
+          violationLimit={proctoringConfig.violationLimit || 3}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { ThemeConfig, AdminSettings, AdminUser } from '@/types';
+import { ThemeConfig, AdminSettings, AdminUser, InstitutionPolicy } from '@/types';
 
 interface AdminStore {
   // Theme Management
@@ -22,6 +22,7 @@ interface AdminStore {
   deleteCustomTheme: (id: string) => void;
   
   updateSettings: (settings: Partial<AdminSettings>) => void;
+  updateInstitutionPolicy: (policy: Partial<InstitutionPolicy>) => void;
   resetSettings: () => void;
   
   addUser: (user: AdminUser) => void;
@@ -210,6 +211,13 @@ const defaultSettings: AdminSettings = {
   enableD2LIntegration: false,
   enableAutoGrading: true,
   enableNotifications: true,
+  institutionPolicy: {
+    allowCameraProctoring: true,
+    allowKioskMode: true,
+    allowAutoSubmit: true,
+    minViolationLimit: 3,
+    allowCopyPaste: false,
+  },
 };
 
 export const useAdminStore = create<AdminStore>()(
@@ -243,6 +251,21 @@ export const useAdminStore = create<AdminStore>()(
 
       updateSettings: (newSettings) => set((state) => ({
         settings: { ...state.settings, ...newSettings }
+      })),
+
+      updateInstitutionPolicy: (policy) => set((state) => ({
+        settings: {
+          ...state.settings,
+          institutionPolicy: {
+            allowCameraProctoring: true,
+            allowKioskMode: true,
+            allowAutoSubmit: true,
+            minViolationLimit: 3,
+            allowCopyPaste: false,
+            ...(state.settings.institutionPolicy || {}),
+            ...policy,
+          }
+        }
       })),
 
       resetSettings: () => set({ settings: defaultSettings }),

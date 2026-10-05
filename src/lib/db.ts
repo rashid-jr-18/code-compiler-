@@ -19,7 +19,9 @@ import {
   UserStreak,
   CommunityPost,
   CommunityReply,
-  UserCodingStats
+  UserCodingStats,
+  ProctoringSession,
+  ProctoringEvent
 } from '@/types';
 import { sampleQuestions } from '@/store/questionStore';
 
@@ -35,6 +37,7 @@ interface StoredDbSchema {
   streaks?: UserStreak[];
   communityPosts?: CommunityPost[];
   communityReplies?: CommunityReply[];
+  proctoringSessions?: ProctoringSession[];
 }
 
 class PersistentDatabase {
@@ -49,6 +52,7 @@ class PersistentDatabase {
   streaks: Map<string, UserStreak> = new Map();
   communityPosts: Map<string, CommunityPost> = new Map();
   communityReplies: Map<string, CommunityReply> = new Map();
+  proctoringSessions: Map<string, ProctoringSession> = new Map();
 
   private dbPath: string;
 
@@ -81,6 +85,7 @@ class PersistentDatabase {
         (data.streaks || []).forEach(st => this.streaks.set(st.userId, st));
         (data.communityPosts || []).forEach(cp => this.communityPosts.set(cp.id, cp));
         (data.communityReplies || []).forEach(cr => this.communityReplies.set(cr.id, cr));
+        (data.proctoringSessions || []).forEach(ps => this.proctoringSessions.set(ps.id, ps));
 
         // Ensure default container exists if upgrading from previous db schema
         if (this.containers.size === 0 && this.courses.has('crs_cs101')) {
@@ -110,7 +115,7 @@ class PersistentDatabase {
           this.persist();
         }
 
-        console.log(`[Local DB] Successfully loaded persistent database from ${this.dbPath} (${this.users.size} users, ${this.courses.size} courses, ${this.containers.size} containers, ${this.questions.size} problems, ${this.communityPosts.size} discussions)`);
+        console.log(`[Local DB] Successfully loaded persistent database from ${this.dbPath} (${this.users.size} users, ${this.courses.size} courses, ${this.containers.size} containers, ${this.questions.size} problems, ${this.communityPosts.size} discussions, ${this.proctoringSessions.size} proctoring sessions)`);
         return;
       } catch (err) {
         console.error('[Local DB] Error reading local_db.json, re-seeding default database:', err);
@@ -136,7 +141,8 @@ class PersistentDatabase {
         submissions: Array.from(this.submissions.values()),
         streaks: Array.from(this.streaks.values()),
         communityPosts: Array.from(this.communityPosts.values()),
-        communityReplies: Array.from(this.communityReplies.values())
+        communityReplies: Array.from(this.communityReplies.values()),
+        proctoringSessions: Array.from(this.proctoringSessions.values())
       };
       fs.writeFileSync(this.dbPath, JSON.stringify(data, null, 2), 'utf-8');
     } catch (err) {
@@ -1359,6 +1365,93 @@ class PersistentDatabase {
     };
     this.communityPosts.set(post2.id, post2);
   }
+
+  getOrCreateProctoringSession(assignmentId: string, learnerId: string, consentAcceptedAt?: string): ProctoringSession {
+    const existing = Array.from(this.proctoringSessions.values()).find(
+      s => s.assignmentId === assignmentId && s.learnerId === learnerId
+    );
+    if (existing) {
+      if (consentAcceptedAt && !existing.consentAcceptedAt) {
+        existing.consentAcceptedAt = consentAcceptedAt;
+        this.persist();
+      }
+      return existing;
+    }
+
+    const newSession: ProctoringSession = {
+      id: `psess_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      assignmentId,
+      learnerId,
+      startedAt: new Date().toISOString(),
+      consentAcceptedAt: consentAcceptedAt || new Date().toISOString(),
+      totalViolations: 0,
+      status: 'IN_PROGRESS',
+      events: []
+    };
+    this.proctoringSessions.set(newSession.id, newSession);
+    this.persist();
+    return newSession;
+  }
+
+  getProctoringSession(assignmentId: string, learnerId: string): ProctoringSession | undefined {
+    return Array.from(this.proctoringSessions.values()).find(
+      s => s.assignmentId === assignmentId && s.learnerId === learnerId
+    );
+  }
+
+  getProctoringSessionById(sessionId: string): ProctoringSession | undefined {
+    return this.proctoringSessions.get(sessionId);
+  }
+
+  recordProctoringEvent(
+    assignmentId: string,
+    learnerId: string,
+    eventData: {
+      eventType: ProctoringEvent['eventType'];
+      severity: ProctoringEvent['severity'];
+      evidenceImageUrl?: string;
+      notes?: string;
+    }
+  ): { session: ProctoringSession; event: ProctoringEvent } {
+    let session = this.getProctoringSession(assignmentId, learnerId);
+    if (!session) {
+      session = this.getOrCreateProctoringSession(assignmentId, learnerId);
+    }
+
+    const event: ProctoringEvent = {
+      id: `pevt_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      sessionId: session.id,
+      assignmentId,
+      learnerId,
+      eventType: eventData.eventType,
+      severity: eventData.severity,
+      timestamp: new Date().toISOString(),
+      evidenceImageUrl: eventData.evidenceImageUrl,
+      notes: eventData.notes,
+      reviewStatus: 'PENDING'
+    };
+
+    if (eventData.eventType !== 'PERIODIC_SNAPSHOT') {
+      session.totalViolations += 1;
+    }
+
+    session.events.push(event);
+    this.proctoringSessions.set(session.id, session);
+    this.persist();
+
+    return { session, event };
+  }
+
+  updateProctoringSessionStatus(sessionId: string, status: ProctoringSession['status']): void {
+    const session = this.proctoringSessions.get(sessionId);
+    if (session) {
+      session.status = status;
+      if (status === 'COMPLETED' || status === 'AUTO_SUBMITTED') {
+        session.endedAt = new Date().toISOString();
+      }
+      this.persist();
+    }
+  }
 }
 
 // Global database instance singleton
@@ -1381,6 +1474,9 @@ function getDatabaseInstance(): PersistentDatabase {
     }
     if (!globalForDb.dbInstance.communityReplies) {
       globalForDb.dbInstance.communityReplies = new Map();
+    }
+    if (!globalForDb.dbInstance.proctoringSessions) {
+      globalForDb.dbInstance.proctoringSessions = new Map();
     }
     if (globalForDb.dbInstance.communityPosts.size === 0) {
       (globalForDb.dbInstance as any).seedInitialCommunity();

@@ -57,7 +57,8 @@ export async function POST(request: NextRequest) {
       startDate,
       dueDate,
       questions,
-      learnerIds
+      learnerIds,
+      proctoringConfig
     } = body;
 
     if (!courseId || !title?.trim() || !instructions?.trim() || !dueDate) {
@@ -98,6 +99,7 @@ export async function POST(request: NextRequest) {
         dueDate: new Date(dueDate).toISOString(),
         createdBy: auth.user.id,
         status: 'PUBLISHED',
+        proctoringConfig: proctoringConfig || undefined,
         questions: questions.map((q: { questionId: string; points: number }, idx: number) => ({
           id: '',
           assignmentId: '',

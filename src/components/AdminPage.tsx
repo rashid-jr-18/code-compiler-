@@ -6,7 +6,7 @@ import { useAdminStore } from '@/store/adminStore';
 import { ThemeConfig } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ShieldCheck, Palette, Settings, RotateCcw, Check } from 'lucide-react';
+import { ShieldCheck, Palette, Settings, RotateCcw, Check, Camera, Monitor, AlertTriangle, Lock, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const AdminPage: React.FC = () => {
@@ -16,8 +16,17 @@ const AdminPage: React.FC = () => {
     settings,
     setTheme,
     updateSettings,
+    updateInstitutionPolicy,
     resetSettings
   } = useAdminStore();
+
+  const policy = settings.institutionPolicy || {
+    allowCameraProctoring: true,
+    allowKioskMode: true,
+    allowAutoSubmit: true,
+    minViolationLimit: 3,
+    allowCopyPaste: false,
+  };
 
   const handleReset = () => {
     resetSettings();
@@ -184,6 +193,133 @@ const AdminPage: React.FC = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Institution Policy Maker & Faculty Permissions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl space-y-6 shadow-sm"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                <Shield size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                  Institution Policy Maker & Faculty Permissions
+                  <span className="text-[11px] font-semibold uppercase tracking-wider bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 px-2.5 py-0.5 rounded-full border border-purple-300 dark:border-purple-700">
+                    Governance Tier
+                  </span>
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Configure mandatory exam security standards and feature permissions granted to Faculty members across courses.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Status:</span>
+              <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                Enforcing Policies
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Policy Toggle 1: Camera Proctoring */}
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Camera size={16} className="text-blue-600 dark:text-blue-400" />
+                  <span className="font-semibold text-sm text-slate-900 dark:text-white">Allow Camera Proctoring for Faculty</span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  When enabled, instructors can mandate live webcam monitoring and face detection during assessments.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={policy.allowCameraProctoring}
+                onChange={(e) => {
+                  updateInstitutionPolicy({ allowCameraProctoring: e.target.checked });
+                  toast.success(`Camera proctoring permission ${e.target.checked ? 'granted' : 'revoked'}`);
+                }}
+                className="w-5 h-5 rounded accent-blue-600 cursor-pointer mt-1"
+              />
+            </div>
+
+            {/* Policy Toggle 2: Kiosk Lockdown */}
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Monitor size={16} className="text-indigo-600 dark:text-indigo-400" />
+                  <span className="font-semibold text-sm text-slate-900 dark:text-white">Allow Kiosk Browser Lockdown</span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  When enabled, instructors can enforce fullscreen lockdown, tab-switch logging, and right-click blocking.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={policy.allowKioskMode}
+                onChange={(e) => {
+                  updateInstitutionPolicy({ allowKioskMode: e.target.checked });
+                  toast.success(`Kiosk lockdown permission ${e.target.checked ? 'granted' : 'revoked'}`);
+                }}
+                className="w-5 h-5 rounded accent-blue-600 cursor-pointer mt-1"
+              />
+            </div>
+
+            {/* Policy Toggle 3: Auto-Submit on Violations */}
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400" />
+                  <span className="font-semibold text-sm text-slate-900 dark:text-white">Allow Auto-Submit on Violations</span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Institutional approval for tests to terminate and auto-submit immediately when a student exceeds violation warnings.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={policy.allowAutoSubmit}
+                onChange={(e) => {
+                  updateInstitutionPolicy({ allowAutoSubmit: e.target.checked });
+                  toast.success(`Auto-submit policy ${e.target.checked ? 'permitted' : 'restricted'}`);
+                }}
+                className="w-5 h-5 rounded accent-blue-600 cursor-pointer mt-1"
+              />
+            </div>
+
+            {/* Policy Setting 4: Min Violation Warnings */}
+            <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Lock size={16} className="text-rose-600 dark:text-rose-400" />
+                  <span className="font-semibold text-sm text-slate-900 dark:text-white">Minimum Warning Threshold</span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Instructors cannot configure fewer violation warnings than this university standard.
+                </p>
+              </div>
+              <div className="w-24">
+                <Input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={policy.minViolationLimit}
+                  onChange={(e) => {
+                    const val = Math.max(1, parseInt(e.target.value) || 1);
+                    updateInstitutionPolicy({ minViolationLimit: val });
+                  }}
+                  className="text-center font-bold"
+                />
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

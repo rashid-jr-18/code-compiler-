@@ -237,6 +237,58 @@ export interface AdminSettings {
     password?: string;
     from?: string;
   };
+  institutionPolicy?: InstitutionPolicy;
+}
+
+export interface InstitutionPolicy {
+  allowCameraProctoring: boolean;
+  allowKioskMode: boolean;
+  allowAutoSubmit: boolean;
+  minViolationLimit: number;
+  allowCopyPaste: boolean;
+}
+
+export interface ProctoringConfig {
+  enableCamera: boolean;
+  enableKiosk: boolean;
+  violationLimit: number;
+  actionOnLimit: 'AUTO_SUBMIT' | 'FLAG_REVIEW' | 'WARN_ONLY';
+  snapshotIntervalSeconds?: number;
+}
+
+export type ProctoringEventType =
+  | 'TAB_SWITCH'
+  | 'FULLSCREEN_EXIT'
+  | 'COPY_PASTE_ATTEMPT'
+  | 'WINDOW_BLUR'
+  | 'PERIODIC_SNAPSHOT'
+  | 'CAMERA_OFFLINE'
+  | 'MULTIPLE_FACES'
+  | 'NO_FACE_DETECTED';
+
+export interface ProctoringEvent {
+  id: string;
+  sessionId: string;
+  assignmentId: string;
+  learnerId: string;
+  eventType: ProctoringEventType;
+  severity: 'INFO' | 'WARNING' | 'CRITICAL';
+  timestamp: string;
+  evidenceImageUrl?: string;
+  notes?: string;
+  reviewStatus?: 'PENDING' | 'CONFIRMED' | 'DISMISSED';
+}
+
+export interface ProctoringSession {
+  id: string;
+  assignmentId: string;
+  learnerId: string;
+  startedAt: string;
+  endedAt?: string;
+  consentAcceptedAt: string;
+  totalViolations: number;
+  status: 'IN_PROGRESS' | 'COMPLETED' | 'FLAGGED_FOR_REVIEW' | 'AUTO_SUBMITTED';
+  events: ProctoringEvent[];
 }
 
 export interface UserRole {
@@ -356,6 +408,7 @@ export interface Assignment {
   status: AssignmentStatus;
   resourceLinkId?: string;
   lineItemUrl?: string;
+  proctoringConfig?: ProctoringConfig;
   questions: AssignmentQuestion[];
   learners?: AssignmentLearner[];
   createdAt?: Date | string;

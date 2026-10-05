@@ -72,3 +72,10 @@ export function useEditorPreferences() {
   };
 }
 
+export function getEffectiveEditorTheme(colorTheme: string, resolvedTheme?: string): string {
+  if (!colorTheme || colorTheme === 'system') {
+    return resolvedTheme === 'dark' ? 'vs-dark' : 'light';
+  }
+  return colorTheme;
+}
+

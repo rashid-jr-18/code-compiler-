@@ -1181,6 +1181,35 @@
       ],
       "createdAt": "2026-09-11T06:50:45.876Z",
       "updatedAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "containerId": "cnt_cs101_default",
+      "courseId": "crs_cs202",
+      "title": "py camera test",
+      "instructions": "Please review each problem carefully and submit your solution before the due date.",
+      "maxPoints": 100,
+      "dueDate": "2026-10-12T00:00:00.000Z",
+      "createdBy": "usr_faculty",
+      "status": "PUBLISHED",
+      "proctoringConfig": {
+        "enableCamera": true,
+        "enableKiosk": true,
+        "violationLimit": 3,
+        "actionOnLimit": "FLAG_REVIEW",
+        "snapshotIntervalSeconds": 60
+      },
+      "questions": [
+        {
+          "id": "aq_1791195360292_0",
+          "assignmentId": "asg_1791195360292_lm7qhy",
+          "questionId": "13",
+          "points": 100,
+          "order": 1
+        }
+      ],
+      "id": "asg_1791195360292_lm7qhy",
+      "createdAt": "2026-10-05T10:16:00.292Z",
+      "updatedAt": "2026-10-05T10:16:00.292Z"
     }
   ],
   "assignmentLearners": [
@@ -1475,6 +1504,139 @@
         "updatedAt": "2026-09-11T06:50:45.876Z"
       },
       "createdAt": "2026-09-11T06:50:45.876Z"
+    },
+    {
+      "id": "al_1791195360292_8v3p38",
+      "assignmentId": "asg_1791195360292_lm7qhy",
+      "learnerId": "usr_student_alice",
+      "status": "ASSIGNED",
+      "score": 0,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_alice",
+        "name": "Alice Johnson",
+        "email": "alice@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_alice_01",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-10-05T10:16:00.292Z"
+    },
+    {
+      "id": "al_1791195360292_o7lmg9",
+      "assignmentId": "asg_1791195360292_lm7qhy",
+      "learnerId": "usr_student_bob",
+      "status": "ASSIGNED",
+      "score": 0,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_bob",
+        "name": "Bob Williams",
+        "email": "bob@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_bob_02",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-10-05T10:16:00.292Z"
+    },
+    {
+      "id": "al_1791195360292_97yu7l",
+      "assignmentId": "asg_1791195360292_lm7qhy",
+      "learnerId": "usr_student_charlie",
+      "status": "ASSIGNED",
+      "score": 0,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_charlie",
+        "name": "Charlie Brown",
+        "email": "charlie@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_charlie_03",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-10-05T10:16:00.292Z"
+    },
+    {
+      "id": "al_1791195360292_8ujl6u",
+      "assignmentId": "asg_1791195360292_lm7qhy",
+      "learnerId": "usr_student_david",
+      "status": "ASSIGNED",
+      "score": 0,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_david",
+        "name": "David Miller",
+        "email": "david@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_david_04",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-10-05T10:16:00.292Z"
+    },
+    {
+      "id": "al_1791195360292_66iw4x",
+      "assignmentId": "asg_1791195360292_lm7qhy",
+      "learnerId": "usr_student_emma",
+      "status": "ASSIGNED",
+      "score": 0,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_emma",
+        "name": "Emma Watson",
+        "email": "emma@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_emma_05",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-10-05T10:16:00.292Z"
+    },
+    {
+      "id": "al_1791195360292_uw0nmo",
+      "assignmentId": "asg_1791195360292_lm7qhy",
+      "learnerId": "usr_student_frank",
+      "status": "ASSIGNED",
+      "score": 0,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_frank",
+        "name": "Frank Castle",
+        "email": "frank@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_frank_06",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-10-05T10:16:00.292Z"
+    },
+    {
+      "id": "al_1791195360292_n0ivqr",
+      "assignmentId": "asg_1791195360292_lm7qhy",
+      "learnerId": "usr_student_grace",
+      "status": "ASSIGNED",
+      "score": 0,
+      "reviewed": false,
+      "exported": false,
+      "learner": {
+        "id": "usr_student_grace",
+        "name": "Grace Hopper",
+        "email": "grace@student.edutech.edu",
+        "role": "LEARNER",
+        "ltiSubject": "d2l_learner_grace_07",
+        "createdAt": "2026-09-11T06:50:45.876Z",
+        "updatedAt": "2026-09-11T06:50:45.876Z"
+      },
+      "createdAt": "2026-10-05T10:16:00.292Z"
     }
   ],
   "submissions": [],
@@ -1585,6 +1747,18 @@
       "activityDates": {
         "2026-09-24": 6,
         "2026-09-23": 3
+      }
+    },
+    {
+      "userId": "usr_admin",
+      "currentStreak": 1,
+      "maxStreak": 3,
+      "lastActiveDate": "2026-10-05",
+      "totalSolved": 2,
+      "totalSubmissions": 5,
+      "activityDates": {
+        "2026-10-05": 2,
+        "2026-10-04": 3
       }
     }
   ],

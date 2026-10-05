@@ -5,9 +5,10 @@ import { motion } from 'framer-motion';
 import { Question, Course, CourseMember } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input, TextArea } from '@/components/ui/input';
-import { PlusCircle, Calendar, CheckSquare, Square, Users, BookOpen, Save, Award, Search, Filter, X } from 'lucide-react';
+import { PlusCircle, Calendar, CheckSquare, Square, Users, BookOpen, Save, Award, Search, Filter, X, Shield, ShieldAlert, Camera, Monitor, AlertTriangle, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useQuestionStore } from '@/store/questionStore';
+import { useAdminStore } from '@/store/adminStore';
 
 interface SetAssignmentProps {
   course: Course;
@@ -41,6 +42,23 @@ export default function SetAssignment({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [selectedDifficulty, setSelectedDifficulty] = useState('ALL');
+
+  // Institution Policy from Admin Control Panel
+  const { settings } = useAdminStore();
+  const policy = settings?.institutionPolicy || {
+    allowCameraProctoring: true,
+    allowKioskMode: true,
+    allowAutoSubmit: true,
+    minViolationLimit: 3,
+    allowCopyPaste: false,
+  };
+
+  // Proctoring & Exam Security State
+  const [enableCamera, setEnableCamera] = useState(false);
+  const [enableKiosk, setEnableKiosk] = useState(false);
+  const [violationLimit, setViolationLimit] = useState(policy.minViolationLimit || 3);
+  const [actionOnLimit, setActionOnLimit] = useState<'AUTO_SUBMIT' | 'FLAG_REVIEW' | 'WARN_ONLY'>('FLAG_REVIEW');
+  const [snapshotInterval, setSnapshotInterval] = useState(30);
 
   useEffect(() => {
     // Initial sync from store
@@ -140,7 +158,14 @@ export default function SetAssignment({
           maxPoints: totalPoints,
           dueDate: new Date(dueDate).toISOString(),
           questions: selectedQuestions,
-          learnerIds: enrolledLearners.map(l => l.userId)
+          learnerIds: enrolledLearners.map(l => l.userId),
+          proctoringConfig: {
+            enableCamera: policy.allowCameraProctoring ? enableCamera : false,
+            enableKiosk: policy.allowKioskMode ? enableKiosk : false,
+            violationLimit: Math.max(policy.minViolationLimit || 1, violationLimit),
+            actionOnLimit: (actionOnLimit === 'AUTO_SUBMIT' && !policy.allowAutoSubmit) ? 'FLAG_REVIEW' : actionOnLimit,
+            snapshotIntervalSeconds: snapshotInterval,
+          }
         })
       });
 
@@ -285,12 +310,149 @@ export default function SetAssignment({
             </div>
           </div>
 
+          {/* Exam Security & Proctoring Card */}
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3.5">
+            <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <ShieldAlert size={14} className="text-purple-600 dark:text-purple-400" />
+                <span>2. Exam Security & Proctoring</span>
+              </h3>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                Institutional Policy Active
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {/* Option 1: Camera Proctoring */}
+              <div className={`p-3 rounded-xl border transition-all ${
+                !policy.allowCameraProctoring
+                  ? 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 opacity-60'
+                  : enableCamera
+                  ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
+                  : 'bg-white dark:bg-slate-800/40 border-slate-200 dark:border-slate-700'
+              }`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <Camera size={14} className="text-blue-600 dark:text-blue-400" />
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">AI Camera Proctoring</span>
+                      {!policy.allowCameraProctoring && (
+                        <span className="text-[10px] text-rose-500 font-semibold px-1.5 py-0.5 bg-rose-50 dark:bg-rose-950/30 rounded">
+                          Disabled by Admin
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Live face detection to flag when student looks away or multiple faces appear.
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    disabled={!policy.allowCameraProctoring}
+                    checked={enableCamera && policy.allowCameraProctoring}
+                    onChange={e => setEnableCamera(e.target.checked)}
+                    className="w-4 h-4 rounded accent-blue-600 cursor-pointer mt-0.5"
+                  />
+                </div>
+
+                {enableCamera && policy.allowCameraProctoring && (
+                  <div className="mt-2.5 pt-2 border-t border-blue-100 dark:border-blue-900/50 flex items-center justify-between">
+                    <span className="text-[11px] text-slate-600 dark:text-slate-400">Snapshot Frequency:</span>
+                    <select
+                      value={snapshotInterval}
+                      onChange={e => setSnapshotInterval(Number(e.target.value))}
+                      className="px-2 py-1 text-[11px] font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none"
+                    >
+                      <option value={15}>Every 15s (Strict)</option>
+                      <option value={30}>Every 30s (Balanced)</option>
+                      <option value={60}>Every 60s (Light)</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              {/* Option 2: Kiosk Lockdown */}
+              <div className={`p-3 rounded-xl border transition-all ${
+                !policy.allowKioskMode
+                  ? 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 opacity-60'
+                  : enableKiosk
+                  ? 'bg-indigo-50/50 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-800'
+                  : 'bg-white dark:bg-slate-800/40 border-slate-200 dark:border-slate-700'
+              }`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <Monitor size={14} className="text-indigo-600 dark:text-indigo-400" />
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">Browser Kiosk Mode</span>
+                      {!policy.allowKioskMode && (
+                        <span className="text-[10px] text-rose-500 font-semibold px-1.5 py-0.5 bg-rose-50 dark:bg-rose-950/30 rounded">
+                          Disabled by Admin
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Force fullscreen, detect tab switches, and block copy-paste from external sources.
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    disabled={!policy.allowKioskMode}
+                    checked={enableKiosk && policy.allowKioskMode}
+                    onChange={e => setEnableKiosk(e.target.checked)}
+                    className="w-4 h-4 rounded accent-indigo-600 cursor-pointer mt-0.5"
+                  />
+                </div>
+              </div>
+
+              {/* Settings for Violations when Camera or Kiosk is active */}
+              {(enableCamera || enableKiosk) && (
+                <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Violation Warning Limit:
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="number"
+                        min={policy.minViolationLimit || 1}
+                        max={10}
+                        value={violationLimit}
+                        onChange={e => setViolationLimit(Math.max(policy.minViolationLimit || 1, parseInt(e.target.value) || 1))}
+                        className="w-16 px-2 py-1 text-xs font-bold text-center bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
+                      />
+                      <span className="text-[11px] text-slate-400">warnings</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                      Action When Limit Exceeded:
+                    </label>
+                    <select
+                      value={actionOnLimit}
+                      onChange={e => setActionOnLimit(e.target.value as any)}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white font-medium focus:outline-none"
+                    >
+                      <option value="FLAG_REVIEW">🚩 Flag for Review & Allow to Continue (Recommended)</option>
+                      {policy.allowAutoSubmit ? (
+                        <option value="AUTO_SUBMIT">🛑 Auto-Submit Assessment Immediately (Strict Exam)</option>
+                      ) : (
+                        <option value="AUTO_SUBMIT" disabled>🛑 Auto-Submit (Disabled by Admin Policy)</option>
+                      )}
+                      <option value="WARN_ONLY">⚠️ Warn Student Only (Silent logging)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Selected Questions Live Cart Card */}
           <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                 <Award size={14} className="text-emerald-500" />
-                <span>2. Selected Problems ({selectedQuestions.length})</span>
+                <span>3. Selected Problems ({selectedQuestions.length})</span>
               </h3>
               <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
                 {totalPoints} Total Pts
