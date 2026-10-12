@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  basePath:'/compiler',
   // Enable standalone output for Docker container deployment
   output: 'standalone',
   
