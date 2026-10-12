@@ -1,85 +1,111 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
 import { db } from '@/lib/db';
-import { AppRole } from '@/types';
 
+/**
+ * LTI 1.3 Launch Handler
+ * Handles the HTTP POST form submission from Brightspace containing id_token and state.
+ * Extracts user profile, roles, and course context, then safely redirects to /compiler (GET)
+ * to prevent Next.js "Invalid Server Actions request" error.
+ */
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const id_token = formData.get('id_token') as string;
-    const state = formData.get('state') as string;
+    const contentType = request.headers.get('content-type') || '';
+    let idToken = '';
+    let state = '';
 
-    if (!id_token) {
-      return new NextResponse('Missing id_token in launch request', { status: 400 });
+    if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      idToken = (formData.get('id_token') as string) || '';
+      state = (formData.get('state') as string) || '';
+    } else if (contentType.includes('application/json')) {
+      const json = await request.json().catch(() => ({}));
+      idToken = json.id_token || '';
+      state = json.state || '';
     }
 
-    // 1. Decode token to inspect claims
-    const decodedToken = jwt.decode(id_token, { complete: true });
-    if (!decodedToken || typeof decodedToken.payload === 'string') {
-      return new NextResponse('Invalid id_token payload', { status: 400 });
+    // Decode JWT payload (Header.Payload.Signature)
+    let payload: Record<string, any> = {};
+    if (idToken) {
+      try {
+        const parts = idToken.split('.');
+        if (parts.length >= 2) {
+          const decoded = Buffer.from(parts[1], 'base64url').toString('utf-8');
+          payload = JSON.parse(decoded);
+        }
+      } catch (e) {
+        console.warn('[LTI Launch] JWT parse error:', e);
+      }
     }
 
-    const payload = decodedToken.payload as Record<string, unknown>;
-    console.log('[LTI 1.3 Launch] Parsed claims for subject:', payload.sub);
+    // Extract standard LTI 1.3 Claims
+    const context = payload['https://purl.imsglobal.org/spec/lti/claim/context'] || {};
+    const resourceLink = payload['https://purl.imsglobal.org/spec/lti/claim/resource_link'] || {};
+    const rawRoles: string[] = payload['https://purl.imsglobal.org/spec/lti/claim/roles'] || [];
 
-    // 2. Extract LTI 1.3 Advantage claims
-    const ltiSubject = (payload.sub as string) || `sub_${Date.now()}`;
-    const name = (payload.name as string) || (payload.given_name as string) || 'Brightspace User';
-    const email = (payload.email as string) || `${ltiSubject}@brightspace.edu`;
-
-    // Map Roles
-    const rolesClaim = (payload['https://purl.imsglobal.org/spec/lti/claim/roles'] as string[]) || [];
-    const isInstructor = rolesClaim.some(r =>
-      r.includes('Instructor') || r.includes('Faculty') || r.includes('teaching-assistant') || r.includes('Administrator')
+    const isInstructor = rawRoles.some((r: string) =>
+      r.toLowerCase().includes('instructor') ||
+      r.toLowerCase().includes('faculty') ||
+      r.toLowerCase().includes('administrator')
     );
-    const role: AppRole = isInstructor ? 'FACULTY' : 'LEARNER';
 
-    // Extract Course Context
-    const contextClaim = (payload['https://purl.imsglobal.org/spec/lti/claim/context'] as Record<string, unknown>) || {};
-    const ltiContextId = (contextClaim.id as string) || 'd2l_default_course';
-    const courseTitle = (contextClaim.title as string) || 'Brightspace Enrolled Course';
+    const userRole = isInstructor ? 'faculty' : 'learner';
+    const userId = payload.sub || `usr_lti_${Date.now()}`;
+    const userName = payload.name || payload.given_name || (isInstructor ? 'Course Faculty' : 'Course Learner');
+    const userEmail = payload.email || `${userId}@brightspace.edu`;
+    const courseId = context.id ? `crs_${String(context.id).replace(/[^a-zA-Z0-9_-]/g, '_')}` : 'crs_cs101';
+    const courseTitle = context.title || 'Brightspace Course';
+    const resourceLinkId = resourceLink.id || `rl_${Date.now()}`;
+    const resourceLinkTitle = resourceLink.title || 'Programming';
 
-    // Extract AGS endpoint
-    const agsClaim = (payload['https://purl.imsglobal.org/spec/lti-ags/claim/endpoint'] as Record<string, unknown>) || {};
-    const lineItemUrl = (agsClaim.lineitem as string) || (agsClaim.lineitems as string) || undefined;
-
-    // 3. Auto-provision or update Course in database
-    let course = db.getCourseByLtiContext(ltiContextId);
-    if (!course) {
-      course = db.createCourse(courseTitle, ltiContextId);
-    }
-
-    // 4. Auto-provision or update User in database
-    const user = db.upsertUser({
-      name,
-      email,
-      role,
-      ltiSubject
+    // Auto-provision user & course dynamically in persistent local database
+    db.upsertUser({
+      id: userId,
+      name: userName,
+      email: userEmail,
+      role: isInstructor ? 'FACULTY' : 'LEARNER',
+      ltiSubject: payload.sub
     });
 
-    // 5. Ensure Course Membership
-    db.addCourseMember(course.id, user.id, role === 'FACULTY' ? 'FACULTY' : 'LEARNER');
+    let course = db.getCourseByLtiContext(context.id || courseId) || db.getCourseById(courseId);
+    if (!course) {
+      course = db.createCourse(courseTitle, context.id || courseId);
+    }
+    db.addCourseMember(course.id, userId, isInstructor ? 'FACULTY' : 'LEARNER');
 
-    // 6. Redirect to the course workspace with user and course parameters
-    const appBaseUrl = process.env.APP_BASE_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`;
-    const redirectUrl = new URL(appBaseUrl);
+    // Build clean GET redirect URL to the compiler page with populated params
+    const redirectUrl = new URL('/compiler', request.url);
+    redirectUrl.searchParams.set('user_id', userId);
+    redirectUrl.searchParams.set('role', userRole);
     redirectUrl.searchParams.set('course_id', course.id);
-    redirectUrl.searchParams.set('course_title', course.title);
-    redirectUrl.searchParams.set('user_id', user.id);
-    redirectUrl.searchParams.set('role', role.toLowerCase());
+    redirectUrl.searchParams.set('course_title', courseTitle);
+    redirectUrl.searchParams.set('resource_link_id', resourceLinkId);
+    redirectUrl.searchParams.set('resource_link_title', resourceLinkTitle);
 
-    const response = NextResponse.redirect(redirectUrl.toString(), 303);
-    
-    // Set authentication cookies for seamless session retention
-    response.cookies.set('user_id', user.id, { path: '/', httpOnly: false, sameSite: 'none', secure: true });
-    response.cookies.set('course_id', course.id, { path: '/', httpOnly: false, sameSite: 'none', secure: true });
-    response.cookies.set('course_title', encodeURIComponent(course.title), { path: '/', httpOnly: false, sameSite: 'none', secure: true });
-    response.cookies.set('user_role', role, { path: '/', httpOnly: false, sameSite: 'none', secure: true });
+    // 303 See Other forces the browser to transition from HTTP POST to HTTP GET
+    const response = NextResponse.redirect(redirectUrl, 303);
+
+    // Set cookie headers with SameSite=None and Secure for iframe embedding
+    const cookieOptions = {
+      path: '/',
+      httpOnly: false,
+      sameSite: 'none' as const,
+      secure: true,
+      maxAge: 86400
+    };
+
+    response.cookies.set('user_id', userId, cookieOptions);
+    response.cookies.set('user_role', userRole, cookieOptions);
+    response.cookies.set('course_id', course.id, cookieOptions);
+    response.cookies.set('course_title', courseTitle, cookieOptions);
 
     return response;
-
-  } catch (error) {
-    console.error('[LTI Launch Error]:', error);
-    return new NextResponse('LTI Launch processing failed', { status: 500 });
+  } catch (err) {
+    console.error('[LTI Launch Handler] Error:', err);
+    return NextResponse.redirect(new URL('/compiler', request.url), 303);
   }
+}
+
+export async function GET(request: NextRequest) {
+  // If accessed directly via GET, redirect straight to /compiler
+  return NextResponse.redirect(new URL('/compiler', request.url), 302);
 }
