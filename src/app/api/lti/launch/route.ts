@@ -88,9 +88,15 @@ export async function POST(request: NextRequest) {
     }
     db.addCourseMember(course.id, userId, isInstructor ? 'FACULTY' : 'LEARNER');
 
-    // 3. Resolve Public Domain for safe 303 browser redirect (Never redirect to 127.0.0.1!)
-    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'learning.edutechcloud.com';
-    const proto = request.headers.get('x-forwarded-proto') || 'https';
+    // 3. Resolve Public Domain for safe 303 browser redirect (Never redirect to localhost or 127.0.0.1!)
+    let host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'learning.edutechcloud.com';
+    let proto = request.headers.get('x-forwarded-proto') || 'https';
+
+    // If host contains localhost, 127.0.0.1 or internal port 4000, force canonical domain
+    if (!host || host.includes('localhost') || host.includes('127.0.0.1') || host.includes(':4000')) {
+      host = process.env.APP_DOMAIN || 'learning.edutechcloud.com';
+      proto = 'https';
+    }
     
     const redirectUrl = new URL(`${proto}://${host}/compiler`);
     redirectUrl.searchParams.set('user_id', userId);
@@ -116,18 +122,27 @@ export async function POST(request: NextRequest) {
     response.cookies.set('user_role', userRole, cookieOptions);
     response.cookies.set('course_id', course.id, cookieOptions);
     response.cookies.set('course_title', courseTitle, cookieOptions);
+    response.cookies.set('lti_session', 'active', cookieOptions);
 
     return response;
   } catch (err) {
     console.error('[LTI Launch Handler] Critical error:', err);
-    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'learning.edutechcloud.com';
-    const proto = request.headers.get('x-forwarded-proto') || 'https';
+    let host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'learning.edutechcloud.com';
+    let proto = request.headers.get('x-forwarded-proto') || 'https';
+    if (!host || host.includes('localhost') || host.includes('127.0.0.1') || host.includes(':4000')) {
+      host = process.env.APP_DOMAIN || 'learning.edutechcloud.com';
+      proto = 'https';
+    }
     return NextResponse.redirect(`${proto}://${host}/compiler`, 303);
   }
 }
 
 export async function GET(request: NextRequest) {
-  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'learning.edutechcloud.com';
-  const proto = request.headers.get('x-forwarded-proto') || 'https';
+  let host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'learning.edutechcloud.com';
+  let proto = request.headers.get('x-forwarded-proto') || 'https';
+  if (!host || host.includes('localhost') || host.includes('127.0.0.1') || host.includes(':4000')) {
+    host = process.env.APP_DOMAIN || 'learning.edutechcloud.com';
+    proto = 'https';
+  }
   return NextResponse.redirect(`${proto}://${host}/compiler`, 302);
 }

@@ -42,8 +42,10 @@ export const useLTIContext = (): LTIContext => {
         const hasLiveLtiLaunch = Boolean(
           urlParams.has('lti_message_type') ||
           urlParams.has('id_token') ||
+          urlParams.has('user_id') ||
           sessionData ||
-          getCookie('lti_session')
+          getCookie('lti_session') ||
+          getCookie('user_id')
         );
 
         // If in development mode AND no live LMS launch occurred, use Dev Testing Hub
