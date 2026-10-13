@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
     let idToken = '';
     let rawForm: Record<string, string> = {};
 
+    const clonedRequest = request.clone();
     try {
       const formData = await request.formData();
       formData.forEach((value, key) => {
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
       idToken = rawForm['id_token'] || '';
     } catch {
       try {
-        const text = await request.text();
+        const text = await clonedRequest.text();
         const params = new URLSearchParams(text);
         params.forEach((value, key) => {
           rawForm[key] = value;
@@ -33,6 +34,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    console.log('[LTI Launch] Received rawForm keys:', Object.keys(rawForm));
+
     // 1. Decode JWT payload if id_token is provided (LTI 1.3 Advantage)
     let payload: Record<string, any> = {};
     if (idToken) {
@@ -41,6 +44,7 @@ export async function POST(request: NextRequest) {
         if (parts.length >= 2) {
           const decoded = Buffer.from(parts[1], 'base64url').toString('utf-8');
           payload = JSON.parse(decoded);
+          console.log('[LTI Launch] Decoded LTI 1.3 payload keys:', Object.keys(payload));
         }
       } catch (e) {
         console.warn('[LTI Launch] JWT decode warning:', e);
@@ -50,20 +54,53 @@ export async function POST(request: NextRequest) {
     // Extract LTI 1.3 Claims or fallback to direct Form POST parameters
     const context = payload['https://purl.imsglobal.org/spec/lti/claim/context'] || {};
     const resourceLink = payload['https://purl.imsglobal.org/spec/lti/claim/resource_link'] || {};
-    const rawRoles: string[] = payload['https://purl.imsglobal.org/spec/lti/claim/roles'] || 
-      (rawForm['roles'] ? [rawForm['roles']] : []);
+    const lis = payload['https://purl.imsglobal.org/spec/lti/claim/lis'] || {};
+    const custom = payload['https://purl.imsglobal.org/spec/lti/claim/custom'] || {};
 
-    const isInstructor = rawRoles.some((r: string) =>
-      r.toLowerCase().includes('instructor') ||
-      r.toLowerCase().includes('faculty') ||
-      r.toLowerCase().includes('administrator') ||
-      r.toLowerCase().includes('admin')
-    );
+    const rawRoles: string[] = payload['https://purl.imsglobal.org/spec/lti/claim/roles'] || 
+      payload['roles'] ||
+      (rawForm['roles'] ? rawForm['roles'].split(',') : []) ||
+      (rawForm['role'] ? [rawForm['role']] : []) ||
+      (rawForm['ext_d2l_role'] ? [rawForm['ext_d2l_role']] : []) ||
+      (custom['roles'] ? [custom['roles']] : []);
+
+    console.log('[LTI Launch] Raw roles detected:', rawRoles);
+
+    const isInstructor = rawRoles.some((r: string) => {
+      const lower = String(r).toLowerCase();
+      return lower.includes('instructor') ||
+        lower.includes('faculty') ||
+        lower.includes('administrator') ||
+        lower.includes('admin') ||
+        lower.includes('staff') ||
+        lower.includes('teacher') ||
+        lower.includes('teachingassistant');
+    });
 
     const userRole = isInstructor ? 'faculty' : 'learner';
-    const userId = payload.sub || rawForm['user_id'] || `usr_lti_${Date.now()}`;
-    const userName = payload.name || payload.given_name || rawForm['lis_person_name_full'] || rawForm['name'] || (isInstructor ? 'Mohammed Razeeth' : 'Course Learner');
-    const userEmail = payload.email || rawForm['lis_person_contact_email_primary'] || rawForm['email'] || `${userId}@brightspace.edu`;
+
+    const userId = payload.sub || 
+      lis.person_sourcedid || 
+      rawForm['user_id'] || 
+      `usr_lti_${Date.now()}`;
+
+    // Extract full name from all possible Brightspace LTI claims
+    const userName = payload.name ||
+      (payload.given_name ? `${payload.given_name} ${payload.family_name || ''}`.trim() : '') ||
+      lis.person_name_full ||
+      (lis.person_name_given ? `${lis.person_name_given} ${lis.person_name_family || ''}`.trim() : '') ||
+      rawForm['lis_person_name_full'] ||
+      (rawForm['lis_person_name_given'] ? `${rawForm['lis_person_name_given']} ${rawForm['lis_person_name_family'] || ''}`.trim() : '') ||
+      rawForm['name'] ||
+      custom.user_name ||
+      custom.name ||
+      (isInstructor ? 'Mohammed Razeeth' : 'Course Learner');
+
+    const userEmail = payload.email || 
+      lis.person_contact_email_primary || 
+      rawForm['lis_person_contact_email_primary'] || 
+      rawForm['email'] || 
+      `${userId}@brightspace.edu`;
     
     // Resolve course context (e.g. "Advanced C++")
     const courseTitle = context.title || rawForm['context_title'] || 'Advanced C++';
