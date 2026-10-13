@@ -94,6 +94,13 @@ export const useLTIContext = (): LTIContext => {
           ? 'admin'
           : 'learner';
 
+        console.log('%c🎓 [BRIGHTSPACE LTI ROLE IN BROWSER]', 'background: #2563eb; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
+        console.log('👉 URL Query Role:', urlParams.get('role'));
+        console.log('👉 Cookie Role:', getCookie('user_role'));
+        console.log('👉 Raw Roles from Brightspace:', urlParams.get('raw_roles') || 'none');
+        console.log('👉 Final UI Role:', userRole);
+        console.log('👉 User ID:', userId);
+
         setLTIContext({
           isLTISession: true,
           userId,

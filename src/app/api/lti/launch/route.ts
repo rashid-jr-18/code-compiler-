@@ -145,7 +145,14 @@ export async function POST(request: NextRequest) {
     const resourceLinkId = resourceLink.id || rawForm['resource_link_id'] || `rl_${Date.now()}`;
     const resourceLinkTitle = resourceLink.title || rawForm['resource_link_title'] || 'Code Assessment & Compiler';
 
-    console.log('[LTI Launch] User resolved:', { userId, userName, userRole, courseTitle });
+    console.log('========================================================');
+    console.log('🔍 [BRIGHTSPACE LTI LAUNCH ROLES DEBUG]');
+    console.log('👉 Raw Roles Received:', JSON.stringify(rawRoles));
+    console.log('👉 Is Instructor?:', isInstructor);
+    console.log('👉 Assigned Role:', userRole);
+    console.log('👉 User Name:', userName);
+    console.log('👉 User ID:', userId);
+    console.log('========================================================');
 
     // 2. Auto-provision user & course dynamically in persistent database
     db.upsertUser({
@@ -175,6 +182,7 @@ export async function POST(request: NextRequest) {
     const redirectUrl = new URL(`${proto}://${host}/compiler`);
     redirectUrl.searchParams.set('user_id', userId);
     redirectUrl.searchParams.set('role', userRole);
+    redirectUrl.searchParams.set('raw_roles', encodeURIComponent(JSON.stringify(rawRoles)));
     redirectUrl.searchParams.set('course_id', course.id);
     redirectUrl.searchParams.set('course_title', courseTitle);
     redirectUrl.searchParams.set('resource_link_id', resourceLinkId);
