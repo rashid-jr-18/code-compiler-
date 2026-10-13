@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
  * LTI 1.3 / LTI Launch Handler
  * Handles the HTTP POST form submission from Brightspace containing id_token and state.
  * Extracts user profile, roles, and course context, then safely redirects to /compiler (GET)
- * using the public domain (via X-Forwarded-Host or Host) so redirects never point to 127.0.0.1.
+ * using the public domain so redirects never point to localhost:4000.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       rawForm['name'] ||
       custom.user_name ||
       custom.name ||
-      (isInstructor ? 'Mohammed Razeeth' : 'Course Learner');
+      (isInstructor ? 'TATA Tpsdi Instructor' : 'Amivarshaa Blankenship');
 
     const userEmail = payload.email || 
       lis.person_contact_email_primary || 
@@ -109,6 +109,8 @@ export async function POST(request: NextRequest) {
 
     const resourceLinkId = resourceLink.id || rawForm['resource_link_id'] || `rl_${Date.now()}`;
     const resourceLinkTitle = resourceLink.title || rawForm['resource_link_title'] || 'Code Assessment & Compiler';
+
+    console.log('[LTI Launch] User resolved:', { userId, userName, userRole, courseTitle });
 
     // 2. Auto-provision user & course dynamically in persistent database
     db.upsertUser({
