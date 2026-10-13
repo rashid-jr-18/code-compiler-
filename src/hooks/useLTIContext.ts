@@ -48,8 +48,8 @@ export const useLTIContext = (): LTIContext => {
           getCookie('user_id')
         );
 
-        // If in development mode AND no live LMS launch occurred, use Dev Testing Hub
-        if (isDevelopment || !hasLiveLtiLaunch) {
+        // If no live LMS launch occurred AND in development, fallback to Dev Testing Hub
+        if (!hasLiveLtiLaunch && isDevelopment) {
           const devRole = (urlParams.get('role') || (typeof window !== 'undefined' ? localStorage.getItem('dev_user_role') : null) || 'faculty') as 'faculty' | 'learner' | 'admin';
           const devUserId = urlParams.get('user_id') || (typeof window !== 'undefined' ? localStorage.getItem('dev_user_id') : null) || 'usr_faculty';
           const devCourseId = urlParams.get('course_id') || (typeof window !== 'undefined' ? localStorage.getItem('dev_course_id') : null) || getCookie('course_id') || 'crs_cs101';
