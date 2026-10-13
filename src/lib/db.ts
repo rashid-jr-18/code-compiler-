@@ -999,15 +999,12 @@ class PersistentDatabase {
       const today = new Date().toISOString().split('T')[0];
       streak = {
         userId,
-        currentStreak: 1,
-        maxStreak: 3,
+        currentStreak: 0,
+        maxStreak: 0,
         lastActiveDate: today,
-        totalSolved: 2,
-        totalSubmissions: 5,
-        activityDates: {
-          [today]: 2,
-          [new Date(Date.now() - 86400000).toISOString().split('T')[0]]: 3
-        }
+        totalSolved: 0,
+        totalSubmissions: 0,
+        activityDates: {}
       };
       this.streaks.set(userId, streak);
       this.persist();
@@ -1198,36 +1195,21 @@ class PersistentDatabase {
       }
     });
 
-    // Harmonize with streak.totalSolved so learner immediately sees their achievements
-    const totalSolvedTarget = Math.max(streak.totalSolved, solvedIds.size, 1);
-    if (totalSolvedTarget > (easySolved + mediumSolved + hardSolved)) {
-      const remaining = totalSolvedTarget - (easySolved + mediumSolved + hardSolved);
-      const addEasy = Math.ceil(remaining * 0.6);
-      const addMed = Math.floor(remaining * 0.3);
-      const addHard = Math.max(0, remaining - addEasy - addMed);
-      easySolved += addEasy;
-      mediumSolved += addMed;
-      hardSolved += addHard;
-      if (databaseSolved === 0 && totalSolvedTarget >= 2) {
-        databaseSolved = 1;
-      }
-    }
-
     const totalSolved = easySolved + mediumSolved + hardSolved;
     const attemptingCount = Math.max(0, attemptedIds.size - solvedIds.size);
 
     // Compute Course Class Rank among learners
     const allMembers = this.getCourseMembers(courseId || 'crs_cs101').filter(m => m.role === 'LEARNER');
-    const totalCourseLearners = Math.max(allMembers.length, 30);
+    const totalCourseLearners = Math.max(allMembers.length, 1);
     const sortedLearners = allMembers.map(m => {
       const s = this.getUserStreak(m.userId);
       return { userId: m.userId, score: s.totalSolved * 50 + s.currentStreak * 10 };
     }).sort((a, b) => b.score - a.score);
     const userRankIndex = sortedLearners.findIndex(l => l.userId === userId);
-    const classRank = userRankIndex >= 0 ? userRankIndex + 1 : (userId === 'usr_student_alice' ? 1 : 4);
+    const classRank = totalSolved > 0 && userRankIndex >= 0 ? userRankIndex + 1 : 0;
 
-    // Recent submissions log
-    let recentSubmissions = userSubs.slice(-10).reverse().map(s => {
+    // Recent submissions log: Only return real submissions
+    const recentSubmissions = userSubs.slice(-10).reverse().map(s => {
       const q = this.questions.get(s.questionId);
       return {
         id: s.id,
@@ -1242,35 +1224,6 @@ class PersistentDatabase {
         submittedAt: s.submittedAt
       };
     });
-
-    if (recentSubmissions.length === 0) {
-      recentSubmissions = [
-        {
-          id: 'sub_demo_1',
-          questionId: 'q_1',
-          questionTitle: 'Two Sum',
-          difficulty: 'Easy',
-          category: 'Arrays & Hash Tables',
-          language: 'Python',
-          status: 'Accepted',
-          score: 10,
-          maxScore: 10,
-          submittedAt: new Date(Date.now() - 2 * 3600000).toISOString()
-        },
-        {
-          id: 'sub_demo_2',
-          questionId: 'q_2',
-          questionTitle: 'Valid Palindrome',
-          difficulty: 'Easy',
-          category: 'Two Pointers',
-          language: 'Python',
-          status: 'Accepted',
-          score: 10,
-          maxScore: 10,
-          submittedAt: new Date(Date.now() - 25 * 3600000).toISOString()
-        }
-      ];
-    }
 
     // Community engagement stats
     const posts = Array.from(this.communityPosts.values()).filter(p => p.authorId === userId);

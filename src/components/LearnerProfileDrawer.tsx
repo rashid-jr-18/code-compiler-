@@ -71,72 +71,14 @@ export default function LearnerProfileDrawer({
   const todayStr = new Date().toISOString().split('T')[0];
   const todayRuns = stats?.streak.activityDates[todayStr] || 0;
 
-  // Rich question drilldown items including solved & attempting Database & SQL questions
-  const baseDrillDownItems = [
-    {
-      id: 'sub_sql_185',
-      questionId: 'q_sql_185',
-      questionTitle: '185. Department Top Three Salaries',
-      difficulty: 'Hard' as const,
-      category: 'Database & SQL',
-      language: 'SQL',
-      status: 'Attempting' as const,
-      score: 75,
-      maxScore: 100,
-      submittedAt: new Date(Date.now() - 76 * 3600000).toISOString(),
-      details: 'Window function DENSE_RANK() OVER (PARTITION BY DepartmentId ORDER BY Salary DESC)'
-    },
-    {
-      id: 'sub_sql_175',
-      questionId: 'q_sql_175',
-      questionTitle: '175. Combine Two Tables',
-      difficulty: 'Easy' as const,
-      category: 'Database & SQL',
-      language: 'SQL',
-      status: 'Accepted' as const,
-      score: 100,
-      maxScore: 100,
-      submittedAt: new Date(Date.now() - 4 * 3600000).toISOString(),
-      details: 'LEFT JOIN Person and Address on Person.personId = Address.personId'
-    },
-    {
-      id: 'sub_sql_176',
-      questionId: 'q_sql_176',
-      questionTitle: '176. Second Highest Salary',
-      difficulty: 'Medium' as const,
-      category: 'Database & SQL',
-      language: 'SQL',
-      status: 'Accepted' as const,
-      score: 100,
-      maxScore: 100,
-      submittedAt: new Date(Date.now() - 28 * 3600000).toISOString(),
-      details: 'SELECT MAX(salary) FROM Employee WHERE salary < (SELECT MAX(salary) FROM Employee)'
-    },
-    {
-      id: 'sub_sql_181',
-      questionId: 'q_sql_181',
-      questionTitle: '181. Employees Earning More Than Their Managers',
-      difficulty: 'Easy' as const,
-      category: 'Database & SQL',
-      language: 'SQL',
-      status: 'Accepted' as const,
-      score: 100,
-      maxScore: 100,
-      submittedAt: new Date(Date.now() - 52 * 3600000).toISOString(),
-      details: 'Self JOIN Employee e1 JOIN Employee e2 ON e1.managerId = e2.id WHERE e1.salary > e2.salary'
-    }
-  ];
+  // Pure real submissions from database (No fake seed questions)
+  const allSubmissions = (stats?.recentSubmissions || []).map(s => ({
+    ...s,
+    details: `${s.status} submission with score ${s.score ?? 0}/${s.maxScore ?? 100}`
+  }));
 
-  const mergedQuestions = [
-    ...baseDrillDownItems,
-    ...(stats?.recentSubmissions?.map(s => ({
-      ...s,
-      details: `${s.status} submission with score ${s.score}/${s.maxScore}`
-    })) || [])
-  ];
-
-  const uniqueQuestionsMap = new Map<string, typeof mergedQuestions[0]>();
-  mergedQuestions.forEach(q => {
+  const uniqueQuestionsMap = new Map<string, typeof allSubmissions[0]>();
+  allSubmissions.forEach(q => {
     if (!uniqueQuestionsMap.has(q.questionTitle)) {
       uniqueQuestionsMap.set(q.questionTitle, q);
     }
@@ -284,11 +226,15 @@ export default function LearnerProfileDrawer({
                         <div className="flex items-center gap-3 mt-2 text-xs">
                           <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
                             <Trophy size={13} className="text-amber-500" />
-                            Course Rank #{stats.classRank || 1} <span className="text-slate-400 font-normal">/ {stats.totalCourseLearners || 30}</span>
+                            {stats.classRank > 0 ? (
+                              <>Course Rank #{stats.classRank} <span className="text-slate-400 font-normal">/ {stats.totalCourseLearners || 1}</span></>
+                            ) : (
+                              <span className="text-slate-500 font-normal">Not ranked yet</span>
+                            )}
                           </span>
                           <span className="text-slate-400">•</span>
                           <span className="text-slate-500 dark:text-slate-400">
-                            Aspiring Software Developer
+                            {stats.role === 'FACULTY' ? 'Course Instructor' : 'Course Learner'}
                           </span>
                         </div>
                       </div>

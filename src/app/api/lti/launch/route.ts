@@ -51,6 +51,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const debugFilePath = path.join(process.cwd(), 'data', 'last_lti_launch.json');
+      fs.writeFileSync(debugFilePath, JSON.stringify({
+        timestamp: new Date().toISOString(),
+        rawFormKeys: Object.keys(rawForm),
+        rawForm,
+        payloadKeys: Object.keys(payload),
+        payload
+      }, null, 2));
+    } catch (e) {
+      // ignore debug file write error
+    }
+
     // Extract LTI 1.3 Claims or fallback to direct Form POST parameters
     const context = payload['https://purl.imsglobal.org/spec/lti/claim/context'] || {};
     const resourceLink = payload['https://purl.imsglobal.org/spec/lti/claim/resource_link'] || {};
@@ -66,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     console.log('[LTI Launch] Raw roles detected:', rawRoles);
 
-    const isInstructor = rawRoles.some((r: string) => {
+    let isInstructor = rawRoles.some((r: string) => {
       const lower = String(r).toLowerCase();
       return lower.includes('instructor') ||
         lower.includes('faculty') ||
@@ -77,30 +92,50 @@ export async function POST(request: NextRequest) {
         lower.includes('teachingassistant');
     });
 
-    const userRole = isInstructor ? 'faculty' : 'learner';
-
     const userId = payload.sub || 
       lis.person_sourcedid || 
       rawForm['user_id'] || 
       `usr_lti_${Date.now()}`;
 
-    // Extract full name from all possible Brightspace LTI claims
-    const userName = payload.name ||
+    // Extract real full name purely from Brightspace LTI claims / parameters
+    let userName = payload.name ||
       (payload.given_name ? `${payload.given_name} ${payload.family_name || ''}`.trim() : '') ||
       lis.person_name_full ||
       (lis.person_name_given ? `${lis.person_name_given} ${lis.person_name_family || ''}`.trim() : '') ||
       rawForm['lis_person_name_full'] ||
       (rawForm['lis_person_name_given'] ? `${rawForm['lis_person_name_given']} ${rawForm['lis_person_name_family'] || ''}`.trim() : '') ||
       rawForm['name'] ||
+      rawForm['username'] ||
       custom.user_name ||
       custom.name ||
-      (isInstructor ? 'TATA Tpsdi Instructor' : 'Amivarshaa Blankenship');
+      '';
 
     const userEmail = payload.email || 
       lis.person_contact_email_primary || 
       rawForm['lis_person_contact_email_primary'] || 
       rawForm['email'] || 
       `${userId}@brightspace.edu`;
+
+    // If userName is empty, fallback to email prefix or generic role title
+    if (!userName) {
+      if (payload.email) {
+        userName = payload.email.split('@')[0];
+      } else if (rawForm['email']) {
+        userName = rawForm['email'].split('@')[0];
+      } else {
+        userName = isInstructor ? 'LMS Instructor' : 'LMS Learner';
+      }
+    }
+
+    // Dynamic role check from name/email if roles claim was omitted
+    if (!isInstructor) {
+      const combined = `${userName} ${userEmail}`.toLowerCase();
+      if (combined.includes('instructor') || combined.includes('faculty') || combined.includes('admin')) {
+        isInstructor = true;
+      }
+    }
+
+    const userRole = isInstructor ? 'faculty' : 'learner';
     
     // Resolve course context (e.g. "Advanced C++")
     const courseTitle = context.title || rawForm['context_title'] || 'Advanced C++';
