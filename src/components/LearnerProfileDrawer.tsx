@@ -47,7 +47,8 @@ export default function LearnerProfileDrawer({
     if (!isOpen || !userId) return;
 
     setIsLoading(true);
-    fetch(`/api/users/${userId}/profile?courseId=${courseId || 'crs_cs101'}`)
+    const basePath = typeof window !== 'undefined' && window.location.pathname.startsWith('/compiler') ? '/compiler' : '';
+    fetch(`${basePath}/api/users/${userId}/profile?courseId=${courseId || 'crs_cs101'}`)
       .then(async res => {
         if (!res.ok) throw new Error('Failed to load profile');
         return res.json();
