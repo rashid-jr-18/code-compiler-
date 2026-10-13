@@ -2,28 +2,38 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
 /**
- * LTI 1.3 Launch Handler
+ * LTI 1.3 / LTI Launch Handler
  * Handles the HTTP POST form submission from Brightspace containing id_token and state.
  * Extracts user profile, roles, and course context, then safely redirects to /compiler (GET)
- * to prevent Next.js "Invalid Server Actions request" error.
+ * using the public domain (via X-Forwarded-Host or Host) so redirects never point to 127.0.0.1.
  */
 export async function POST(request: NextRequest) {
   try {
-    const contentType = request.headers.get('content-type') || '';
     let idToken = '';
-    let state = '';
+    let rawForm: Record<string, string> = {};
 
-    if (contentType.includes('application/x-www-form-urlencoded') || contentType.includes('multipart/form-data')) {
+    try {
       const formData = await request.formData();
-      idToken = (formData.get('id_token') as string) || '';
-      state = (formData.get('state') as string) || '';
-    } else if (contentType.includes('application/json')) {
-      const json = await request.json().catch(() => ({}));
-      idToken = json.id_token || '';
-      state = json.state || '';
+      formData.forEach((value, key) => {
+        if (typeof value === 'string') {
+          rawForm[key] = value;
+        }
+      });
+      idToken = rawForm['id_token'] || '';
+    } catch {
+      try {
+        const text = await request.text();
+        const params = new URLSearchParams(text);
+        params.forEach((value, key) => {
+          rawForm[key] = value;
+        });
+        idToken = rawForm['id_token'] || '';
+      } catch (e) {
+        console.warn('[LTI Launch] Body parse warning:', e);
+      }
     }
 
-    // Decode JWT payload (Header.Payload.Signature)
+    // 1. Decode JWT payload if id_token is provided (LTI 1.3 Advantage)
     let payload: Record<string, any> = {};
     if (idToken) {
       try {
@@ -33,47 +43,56 @@ export async function POST(request: NextRequest) {
           payload = JSON.parse(decoded);
         }
       } catch (e) {
-        console.warn('[LTI Launch] JWT parse error:', e);
+        console.warn('[LTI Launch] JWT decode warning:', e);
       }
     }
 
-    // Extract standard LTI 1.3 Claims
+    // Extract LTI 1.3 Claims or fallback to direct Form POST parameters
     const context = payload['https://purl.imsglobal.org/spec/lti/claim/context'] || {};
     const resourceLink = payload['https://purl.imsglobal.org/spec/lti/claim/resource_link'] || {};
-    const rawRoles: string[] = payload['https://purl.imsglobal.org/spec/lti/claim/roles'] || [];
+    const rawRoles: string[] = payload['https://purl.imsglobal.org/spec/lti/claim/roles'] || 
+      (rawForm['roles'] ? [rawForm['roles']] : []);
 
     const isInstructor = rawRoles.some((r: string) =>
       r.toLowerCase().includes('instructor') ||
       r.toLowerCase().includes('faculty') ||
-      r.toLowerCase().includes('administrator')
+      r.toLowerCase().includes('administrator') ||
+      r.toLowerCase().includes('admin')
     );
 
     const userRole = isInstructor ? 'faculty' : 'learner';
-    const userId = payload.sub || `usr_lti_${Date.now()}`;
-    const userName = payload.name || payload.given_name || (isInstructor ? 'Course Faculty' : 'Course Learner');
-    const userEmail = payload.email || `${userId}@brightspace.edu`;
-    const courseId = context.id ? `crs_${String(context.id).replace(/[^a-zA-Z0-9_-]/g, '_')}` : 'crs_cs101';
-    const courseTitle = context.title || 'Brightspace Course';
-    const resourceLinkId = resourceLink.id || `rl_${Date.now()}`;
-    const resourceLinkTitle = resourceLink.title || 'Programming';
+    const userId = payload.sub || rawForm['user_id'] || `usr_lti_${Date.now()}`;
+    const userName = payload.name || payload.given_name || rawForm['lis_person_name_full'] || rawForm['name'] || (isInstructor ? 'Mohammed Razeeth' : 'Course Learner');
+    const userEmail = payload.email || rawForm['lis_person_contact_email_primary'] || rawForm['email'] || `${userId}@brightspace.edu`;
+    
+    // Resolve course context (e.g. "Advanced C++")
+    const courseTitle = context.title || rawForm['context_title'] || 'Advanced C++';
+    const rawContextId = context.id || rawForm['context_id'] || 'crs_advanced_cpp';
+    const courseId = `crs_${String(rawContextId).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
 
-    // Auto-provision user & course dynamically in persistent local database
+    const resourceLinkId = resourceLink.id || rawForm['resource_link_id'] || `rl_${Date.now()}`;
+    const resourceLinkTitle = resourceLink.title || rawForm['resource_link_title'] || 'Code Assessment & Compiler';
+
+    // 2. Auto-provision user & course dynamically in persistent database
     db.upsertUser({
       id: userId,
       name: userName,
       email: userEmail,
       role: isInstructor ? 'FACULTY' : 'LEARNER',
-      ltiSubject: payload.sub
+      ltiSubject: payload.sub || rawForm['user_id']
     });
 
-    let course = db.getCourseByLtiContext(context.id || courseId) || db.getCourseById(courseId);
+    let course = db.getCourseByLtiContext(rawContextId) || db.getCourseById(courseId);
     if (!course) {
-      course = db.createCourse(courseTitle, context.id || courseId);
+      course = db.createCourse(courseTitle, rawContextId);
     }
     db.addCourseMember(course.id, userId, isInstructor ? 'FACULTY' : 'LEARNER');
 
-    // Build clean GET redirect URL to the compiler page with populated params
-    const redirectUrl = new URL('/compiler', request.url);
+    // 3. Resolve Public Domain for safe 303 browser redirect (Never redirect to 127.0.0.1!)
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'learning.edutechcloud.com';
+    const proto = request.headers.get('x-forwarded-proto') || 'https';
+    
+    const redirectUrl = new URL(`${proto}://${host}/compiler`);
     redirectUrl.searchParams.set('user_id', userId);
     redirectUrl.searchParams.set('role', userRole);
     redirectUrl.searchParams.set('course_id', course.id);
@@ -82,7 +101,7 @@ export async function POST(request: NextRequest) {
     redirectUrl.searchParams.set('resource_link_title', resourceLinkTitle);
 
     // 303 See Other forces the browser to transition from HTTP POST to HTTP GET
-    const response = NextResponse.redirect(redirectUrl, 303);
+    const response = NextResponse.redirect(redirectUrl.toString(), 303);
 
     // Set cookie headers with SameSite=None and Secure for iframe embedding
     const cookieOptions = {
@@ -100,12 +119,15 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (err) {
-    console.error('[LTI Launch Handler] Error:', err);
-    return NextResponse.redirect(new URL('/compiler', request.url), 303);
+    console.error('[LTI Launch Handler] Critical error:', err);
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'learning.edutechcloud.com';
+    const proto = request.headers.get('x-forwarded-proto') || 'https';
+    return NextResponse.redirect(`${proto}://${host}/compiler`, 303);
   }
 }
 
 export async function GET(request: NextRequest) {
-  // If accessed directly via GET, redirect straight to /compiler
-  return NextResponse.redirect(new URL('/compiler', request.url), 302);
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'learning.edutechcloud.com';
+  const proto = request.headers.get('x-forwarded-proto') || 'https';
+  return NextResponse.redirect(`${proto}://${host}/compiler`, 302);
 }
