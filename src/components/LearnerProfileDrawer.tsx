@@ -479,7 +479,7 @@ export default function LearnerProfileDrawer({
                       </div>
                       <div className="text-right">
                         <span className="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">
-                          {Math.max(stats.solvedBreakdown.databaseSolved, databaseSolvedCount, 3)} <span className="text-slate-400 font-normal">/{stats.solvedBreakdown.totalDatabase} Solved</span>
+                          {Math.max(stats.solvedBreakdown.databaseSolved || 0, databaseSolvedCount || 0)} <span className="text-slate-400 font-normal">/{stats.solvedBreakdown.totalDatabase} Solved</span>
                         </span>
                         <ChevronRight size={13} className={`inline-block ml-1 transition-transform ${selectedDrillDown === 'database' ? 'rotate-90 text-blue-600' : 'text-slate-400'}`} />
                       </div>
