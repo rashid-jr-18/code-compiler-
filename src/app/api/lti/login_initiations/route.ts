@@ -45,13 +45,26 @@ async function handleOidcInitiation(request: NextRequest) {
     return NextResponse.json({ error: 'Missing iss or login_hint parameter' }, { status: 400 });
   }
 
-  const appBaseUrl = process.env.APP_BASE_URL || `${request.nextUrl.protocol}//${request.nextUrl.host}`;
-  const redirectUri = `${appBaseUrl}/api/lti/launch`;
+  let host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'learning.edutechcloud.com';
+  let proto = request.headers.get('x-forwarded-proto') || 'https';
+  if (!host || host.includes('localhost') || host.includes('127.0.0.1') || host.includes(':4000') || host.includes('yourdomain.com')) {
+    host = 'learning.edutechcloud.com';
+    proto = 'https';
+  }
+
+  let redirectUri = `${proto}://${host}/compiler/api/lti/launch`;
+  if (process.env.APP_BASE_URL && !process.env.APP_BASE_URL.includes('yourdomain.com')) {
+    const base = process.env.APP_BASE_URL.replace(/\/$/, '');
+    redirectUri = base.endsWith('/compiler') ? `${base}/api/lti/launch` : `${base}/compiler/api/lti/launch`;
+  }
   const state = crypto.randomBytes(16).toString('hex');
   const nonce = crypto.randomBytes(16).toString('hex');
 
-  // Brightspace OIDC Auth Endpoint
-  const authUrl = new URL('https://auth.brightspace.com/core/connect/auth');
+  // Brightspace OIDC Auth Endpoint: https://<institution>.brightspace.com/d2l/lti/authenticate
+  const authBaseUrl = (process.env.LTI_LOGIN_URL && !process.env.LTI_LOGIN_URL.includes('your-institution'))
+    ? process.env.LTI_LOGIN_URL
+    : (iss ? `${iss.replace(/\/$/, '')}/d2l/lti/authenticate` : 'https://corplms.d2l-partners.brightspace.com/d2l/lti/authenticate');
+  const authUrl = new URL(authBaseUrl);
   authUrl.searchParams.set('response_type', 'id_token');
   authUrl.searchParams.set('response_mode', 'form_post');
   authUrl.searchParams.set('scope', 'openid');
