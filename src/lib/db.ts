@@ -869,6 +869,26 @@ class PersistentDatabase {
     return al ? { ...al, learner: this.users.get(al.learnerId) } : undefined;
   }
 
+  ensureAssignmentLearner(assignmentId: string, learnerId: string): AssignmentLearner {
+    const existing = this.getAssignmentLearner(assignmentId, learnerId);
+    if (existing) return existing;
+
+    const al: AssignmentLearner = {
+      id: `al_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      assignmentId,
+      learnerId,
+      status: 'ASSIGNED',
+      score: 0,
+      reviewed: false,
+      exported: false,
+      learner: this.users.get(learnerId),
+      createdAt: new Date().toISOString()
+    };
+    this.assignmentLearners.set(al.id, al);
+    this.persist();
+    return { ...al, learner: this.users.get(learnerId) };
+  }
+
   updateAssignmentLearner(id: string, updates: Partial<AssignmentLearner>): AssignmentLearner | undefined {
     const existing = this.assignmentLearners.get(id);
     if (!existing) return undefined;

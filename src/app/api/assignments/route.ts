@@ -23,20 +23,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(assignments);
   }
 
-  // If user is a Learner, return only assignments assigned to them, with their personal score status
-  const learnerAssignments = assignments
-    .filter(a => a.learners?.some(al => al.learnerId === user.id))
-    .map(a => {
-      const myRecord = a.learners?.find(al => al.learnerId === user.id);
-      return {
-        ...a,
-        myStatus: myRecord?.status || 'ASSIGNED',
-        myScore: myRecord?.score || 0,
-        myReviewed: myRecord?.reviewed || false,
-        // Strip other learners from payload
-        learners: myRecord ? [myRecord] : []
-      };
-    });
+  // If user is a Learner, all published assessments in this container/course are available
+  const learnerAssignments = assignments.map(a => {
+    let myRecord = a.learners?.find(al => al.learnerId === user.id);
+    if (!myRecord) {
+      myRecord = db.ensureAssignmentLearner(a.id, user.id);
+    }
+    return {
+      ...a,
+      myStatus: myRecord?.status || 'ASSIGNED',
+      myScore: myRecord?.score || 0,
+      myReviewed: myRecord?.reviewed || false,
+      // Strip other learners from payload for learner privacy
+      learners: [myRecord]
+    };
+  });
 
   return NextResponse.json(learnerAssignments);
 }

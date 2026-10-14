@@ -95,7 +95,7 @@ export async function gradeSubmission(
 
       db.createSubmission(submission);
 
-      const al = db.getAssignmentLearner(assignmentId, learnerId);
+      const al = db.ensureAssignmentLearner(assignmentId, learnerId);
       if (al) {
         db.updateAssignmentLearner(al.id, {
           status: 'SUBMITTED',
@@ -177,7 +177,7 @@ export async function gradeSubmission(
 
   // 4. Update AssignmentLearner state locally
   // NOTICE: Does NOT call Brightspace grade passback!
-  const al = db.getAssignmentLearner(assignmentId, learnerId);
+  const al = db.ensureAssignmentLearner(assignmentId, learnerId);
   if (al) {
     db.updateAssignmentLearner(al.id, {
       status: 'SUBMITTED',
