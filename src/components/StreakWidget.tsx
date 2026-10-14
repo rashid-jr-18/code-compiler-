@@ -187,7 +187,7 @@ export default function StreakWidget({ userId = 'usr_faculty', userRole = 'FACUL
               </span>
             </div>
 
-            {/* View Full LeetCode Profile Button */}
+            {/* View Profile Button */}
             {onOpenProfile && (
               <button
                 type="button"
@@ -197,7 +197,7 @@ export default function StreakWidget({ userId = 'usr_faculty', userRole = 'FACUL
                 }}
                 className="w-full mt-3 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-white dark:text-slate-900 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
               >
-                <span>View Full LeetCode Profile</span>
+                <span>View Profile</span>
                 <span className="text-amber-400">→</span>
               </button>
             )}
