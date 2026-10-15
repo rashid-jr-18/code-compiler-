@@ -145,6 +145,13 @@ export async function POST(request: NextRequest) {
     const resourceLinkId = resourceLink.id || rawForm['resource_link_id'] || `rl_${Date.now()}`;
     const resourceLinkTitle = resourceLink.title || rawForm['resource_link_title'] || 'Code Assessment & Compiler';
 
+    // Extract assignment_id if launch originated from a specific Brightspace assessment topic
+    const assignmentId = request.nextUrl.searchParams.get('assignment_id') ||
+      rawForm['assignment_id'] ||
+      rawForm['custom_assignment_id'] ||
+      (custom && custom.assignment_id) ||
+      (payload && payload['https://purl.imsglobal.org/spec/lti/claim/custom']?.assignment_id);
+
     console.log('========================================================');
     console.log('🔍 [BRIGHTSPACE LTI LAUNCH ROLES DEBUG]');
     console.log('👉 Raw Roles Received:', JSON.stringify(rawRoles));
@@ -152,6 +159,7 @@ export async function POST(request: NextRequest) {
     console.log('👉 Assigned Role:', userRole);
     console.log('👉 User Name:', userName);
     console.log('👉 User ID:', userId);
+    console.log('👉 Targeted Assignment ID:', assignmentId || 'None (General Launcher)');
     console.log('========================================================');
 
     // 2. Auto-provision user & course dynamically in persistent database
@@ -187,6 +195,9 @@ export async function POST(request: NextRequest) {
     redirectUrl.searchParams.set('course_title', courseTitle);
     redirectUrl.searchParams.set('resource_link_id', resourceLinkId);
     redirectUrl.searchParams.set('resource_link_title', resourceLinkTitle);
+    if (assignmentId) {
+      redirectUrl.searchParams.set('assignment_id', assignmentId);
+    }
 
     // 303 See Other forces the browser to transition from HTTP POST to HTTP GET
     const response = NextResponse.redirect(redirectUrl.toString(), 303);
@@ -205,6 +216,11 @@ export async function POST(request: NextRequest) {
     response.cookies.set('course_id', course.id, cookieOptions);
     response.cookies.set('course_title', courseTitle, cookieOptions);
     response.cookies.set('lti_session', 'active', cookieOptions);
+    if (assignmentId) {
+      response.cookies.set('assignment_id', assignmentId, cookieOptions);
+    } else {
+      response.cookies.delete('assignment_id');
+    }
 
     return response;
   } catch (err) {

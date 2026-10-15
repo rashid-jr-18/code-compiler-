@@ -24,7 +24,8 @@ import {
   MessageSquare,
   Lock,
   Camera,
-  AlertTriangle
+  AlertTriangle,
+  CheckCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useEditorPreferences, getEffectiveEditorTheme } from '@/hooks/useEditorPreferences';
@@ -73,6 +74,7 @@ export default function LearnerAssignmentSolver({
     overallStatus: string;
     testResults: Array<{ passed: boolean; points: number; maxPoints: number; isHidden: boolean }>;
   } | null>(null);
+  const [showReviewMode, setShowReviewMode] = useState(false);
 
   const currentAssignmentQuestion = assignment.questions?.[activeQuestionIndex];
 
@@ -804,6 +806,65 @@ SELECT * FROM table_name;
       )}
     </div>
   );
+
+  const myRecord = assignment.learners?.find(l => l.learnerId === learnerId) || assignment.learners?.[0];
+  const isAlreadySubmitted = (myRecord?.status === 'SUBMITTED' || myRecord?.status === 'REVIEWED' || myRecord?.status === 'EXPORTED') && !submissionFeedback;
+
+  if (isAlreadySubmitted && !showReviewMode) {
+    return (
+      <div className="max-w-2xl mx-auto my-12 p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-800 shadow-xl text-center space-y-6">
+        <div className="w-16 h-16 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+          <CheckCircle size={36} />
+        </div>
+        <div className="space-y-2">
+          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+            Assessment Completed
+          </span>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+            Your assessment &quot;{assignment.title}&quot; is submitted!
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+            You have already successfully completed and submitted this assessment. Your score and code have been submitted to your instructor.
+          </p>
+        </div>
+
+        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 flex items-center justify-around">
+          <div>
+            <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Your Score</p>
+            <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
+              {myRecord?.score ?? 0} <span className="text-sm font-normal text-slate-400">/ {assignment.maxPoints} pts</span>
+            </p>
+          </div>
+          <div className="h-10 w-px bg-slate-200 dark:bg-slate-800" />
+          <div>
+            <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Status</p>
+            <p className="text-base font-bold text-slate-900 dark:text-white mt-1">
+              {myRecord?.status || 'SUBMITTED'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => setShowReviewMode(true)}
+            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-white dark:text-slate-900 transition-colors shadow-sm cursor-pointer"
+          >
+            Review Your Code
+          </button>
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+            >
+              Back to Course
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto">

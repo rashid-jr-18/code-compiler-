@@ -226,7 +226,7 @@ export default function LearnerProfileDrawer({
                         <div className="flex items-center gap-3 mt-2 text-xs">
                           <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
                             <Trophy size={13} className="text-amber-500" />
-                            {stats.classRank > 0 ? (
+                            {stats.classRank && stats.classRank > 0 ? (
                               <>Course Rank #{stats.classRank} <span className="text-slate-400 font-normal">/ {stats.totalCourseLearners || 1}</span></>
                             ) : (
                               <span className="text-slate-500 font-normal">Not ranked yet</span>

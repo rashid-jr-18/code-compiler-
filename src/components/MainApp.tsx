@@ -63,11 +63,37 @@ export default function MainApp() {
   const [activeContainer, setActiveContainer] = useState<AssessmentContainer | null>(null);
   const [courseContainers, setCourseContainers] = useState<AssessmentContainer[]>([]);
   const { questions } = useQuestionStore();
-  const { isLTISession, isLoading, error, userRole, userId, courseId, courseTitle, resourceLinkId, resourceLinkTitle } = useLTIContext();
+  const { isLTISession, isLoading, error, userRole, userId, courseId, courseTitle, resourceLinkId, resourceLinkTitle, assignmentId } = useLTIContext();
 
   const currentRole = (userRole?.toLowerCase() || 'faculty') as 'admin' | 'faculty' | 'instructor' | 'student' | 'learner';
   const isFacultyOrAdmin = currentRole === 'faculty' || currentRole === 'instructor' || currentRole === 'admin';
   const isLearner = !isFacultyOrAdmin;
+
+  // Direct Topic Launch: When launched from a specific Brightspace assessment topic, automatically route directly to that assessment
+  useEffect(() => {
+    if (!assignmentId) return;
+
+    fetch(`/api/assignments/${assignmentId}`, {
+      headers: {
+        'x-user-id': userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'),
+        'x-user-role': isFacultyOrAdmin ? 'FACULTY' : 'LEARNER'
+      }
+    })
+      .then(async res => {
+        if (!res.ok) return null;
+        return res.json().catch(() => null);
+      })
+      .then((asg: Assignment | null) => {
+        if (asg && asg.id) {
+          if (isFacultyOrAdmin) {
+            setSelectedAssignmentForResults(asg);
+          } else {
+            setSelectedAssignmentForSolver(asg);
+          }
+        }
+      })
+      .catch(err => console.warn('[MainApp] Direct assessment load error:', err));
+  }, [assignmentId, isFacultyOrAdmin, userId]);
 
   // Clear faculty-only states whenever the role is learner
   useEffect(() => {

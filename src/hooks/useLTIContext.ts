@@ -101,6 +101,8 @@ export const useLTIContext = (): LTIContext => {
         console.log('👉 Final UI Role:', userRole);
         console.log('👉 User ID:', userId);
 
+        const assignmentId = urlParams.get('assignment_id') || getCookie('assignment_id') || ltiData.assignment_id || assignmentContext?.id;
+
         setLTIContext({
           isLTISession: true,
           userId,
@@ -108,7 +110,7 @@ export const useLTIContext = (): LTIContext => {
           courseTitle,
           resourceLinkId,
           resourceLinkTitle,
-          assignmentId: assignmentContext?.id,
+          assignmentId,
           quizId: quizContext?.id,
           userRole,
           isLoading: false,

@@ -21,7 +21,8 @@ import {
   Search,
   X,
   FileCode,
-  Users
+  Users,
+  Link as LinkIcon
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -206,6 +207,24 @@ export default function ContainerManager({
     link.click();
     document.body.removeChild(link);
     toast.success(`Exporting results for "${asg.title}"...`);
+  };
+
+  const handleCopyLink = (asg: Assignment) => {
+    const base = typeof window !== 'undefined' ? window.location.origin : 'https://learning.edutechcloud.com';
+    const cleanBase = base.replace(/\/$/, '');
+    const url = cleanBase.includes('/compiler')
+      ? `${cleanBase}/api/lti/launch?assignment_id=${encodeURIComponent(asg.id)}`
+      : `${cleanBase}/compiler/api/lti/launch?assignment_id=${encodeURIComponent(asg.id)}`;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        toast.success(`Copied direct Brightspace launch link for "${asg.title}"!`);
+      }).catch(() => {
+        prompt('Copy direct launch link:', url);
+      });
+    } else {
+      prompt('Copy direct launch link:', url);
+    }
   };
 
   const toggleQuestionSelection = (questionId: string) => {
@@ -409,6 +428,18 @@ export default function ContainerManager({
                     >
                       <Code2 size={13} />
                       <span>Open</span>
+                    </Button>
+
+                    {/* Copy Direct LMS Topic Link */}
+                    <Button
+                      onClick={() => handleCopyLink(asg)}
+                      variant="outline"
+                      size="sm"
+                      className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs gap-1"
+                      title="Copy Direct Brightspace Launch Link"
+                    >
+                      <LinkIcon size={13} />
+                      <span className="hidden sm:inline">LMS Link</span>
                     </Button>
 
                     {/* Edit */}

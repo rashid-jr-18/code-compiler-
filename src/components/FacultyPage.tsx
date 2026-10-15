@@ -31,10 +31,11 @@ import {
 } from 'lucide-react';
 
 interface FacultyPageProps {
+  initialMode?: 'create' | 'import';
   onBack?: () => void;
 }
 
-export default function FacultyPage({ onBack }: FacultyPageProps = {}) {
+export default function FacultyPage({ initialMode = 'create', onBack }: FacultyPageProps = {}) {
   const { addQuestion } = useQuestionStore();
   
   // Form state

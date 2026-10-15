@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireAuth, requireRole } from '@/lib/auth';
+import { createBrightspaceTopic } from '@/lib/brightspaceContent';
 
 export async function GET(request: NextRequest) {
   const auth = requireAuth(request);
@@ -113,7 +114,21 @@ export async function POST(request: NextRequest) {
       validLearners
     );
 
-    return NextResponse.json(assignment, { status: 201 });
+    // Automatically create a topic/quicklink in Brightspace Course Content
+    const topicResult = await createBrightspaceTopic({
+      courseId,
+      assignmentId: assignment.id,
+      assignmentTitle: assignment.title
+    }).catch(err => {
+      console.warn('[Create Assignment] Brightspace topic error:', err);
+      return null;
+    });
+
+    return NextResponse.json({
+      ...assignment,
+      quicklinkUrl: topicResult?.quicklinkUrl,
+      brightspaceTopicCreated: topicResult?.success || false
+    }, { status: 201 });
   } catch (error) {
     console.error('Create assignment error:', error);
     return NextResponse.json({ error: 'Failed to create assignment' }, { status: 500 });
