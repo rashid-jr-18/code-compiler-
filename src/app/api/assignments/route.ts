@@ -127,7 +127,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ...assignment,
       quicklinkUrl: topicResult?.quicklinkUrl,
-      brightspaceTopicCreated: topicResult?.success || false
+      brightspaceTopicCreated: topicResult?.success || false,
+      brightspaceTopicId: topicResult?.topicId || null,
+      brightspaceError: topicResult?.error || null
     }, { status: 201 });
   } catch (error) {
     console.error('Create assignment error:', error);

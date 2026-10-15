@@ -136,7 +136,13 @@ export default function ContainerManager({
         throw new Error(created.error || 'Failed to create assessment');
       }
 
-      toast.success(`Child assessment "${created.title}" created successfully!`, { id: toastId });
+      if (created.brightspaceTopicCreated) {
+        toast.success(`Child assessment "${created.title}" created & added to Brightspace sidebar!`, { id: toastId });
+      } else if (created.brightspaceError) {
+        toast.success(`Assessment created! (Brightspace sidebar note: ${created.brightspaceError})`, { id: toastId, duration: 6000 });
+      } else {
+        toast.success(`Child assessment "${created.title}" created successfully!`, { id: toastId });
+      }
       setIsCreateOpen(false);
       resetForm();
       fetchChildAssessments();
