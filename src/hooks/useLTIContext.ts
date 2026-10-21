@@ -99,9 +99,8 @@ export const useLTIContext = (): LTIContext => {
         console.log('👉 Cookie Role:', getCookie('user_role'));
         console.log('👉 Raw Roles from Brightspace:', urlParams.get('raw_roles') || 'none');
         console.log('👉 Final UI Role:', userRole);
-        console.log('👉 User ID:', userId);
-
-        const assignmentId = urlParams.get('assignment_id') || getCookie('assignment_id') || ltiData.assignment_id || assignmentContext?.id;
+        // Only treat as direct assignment launch if the current URL actually contains assignment_id
+        const assignmentId = urlParams.get('assignment_id') || undefined;
 
         setLTIContext({
           isLTISession: true,

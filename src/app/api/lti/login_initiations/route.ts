@@ -104,6 +104,8 @@ async function handleOidcInitiation(request: NextRequest) {
       sameSite: 'none',
       maxAge: 3600
     });
+  } else {
+    response.cookies.delete('assignment_id');
   }
 
   return response;
