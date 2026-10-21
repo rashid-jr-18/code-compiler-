@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
     const assignmentId = request.nextUrl.searchParams.get('assignment_id') ||
       rawForm['assignment_id'] ||
       rawForm['custom_assignment_id'] ||
+      request.cookies.get('assignment_id')?.value ||
       (custom && custom.assignment_id) ||
       (payload && payload['https://purl.imsglobal.org/spec/lti/claim/custom']?.assignment_id);
 
@@ -242,5 +243,56 @@ export async function GET(request: NextRequest) {
     host = process.env.APP_DOMAIN || 'learning.edutechcloud.com';
     proto = 'https';
   }
-  return NextResponse.redirect(`${proto}://${host}/compiler`, 302);
+
+  const assignmentId = request.nextUrl.searchParams.get('assignment_id') ||
+    request.cookies.get('assignment_id')?.value;
+
+  const redirectUrl = new URL(`${proto}://${host}/compiler`);
+
+  if (assignmentId) {
+    redirectUrl.searchParams.set('assignment_id', assignmentId);
+  }
+
+  // Forward all other search parameters if provided
+  request.nextUrl.searchParams.forEach((val, key) => {
+    if (key !== 'assignment_id') {
+      redirectUrl.searchParams.set(key, val);
+    }
+  });
+
+  // Preserve user context if set in cookies
+  const cookieUserId = request.cookies.get('user_id')?.value;
+  const cookieRole = request.cookies.get('user_role')?.value;
+  const cookieCourseId = request.cookies.get('course_id')?.value;
+  const cookieCourseTitle = request.cookies.get('course_title')?.value;
+
+  if (cookieUserId && !redirectUrl.searchParams.has('user_id')) {
+    redirectUrl.searchParams.set('user_id', cookieUserId);
+  }
+  if (cookieRole && !redirectUrl.searchParams.has('role')) {
+    redirectUrl.searchParams.set('role', cookieRole);
+  }
+  if (cookieCourseId && !redirectUrl.searchParams.has('course_id')) {
+    redirectUrl.searchParams.set('course_id', cookieCourseId);
+  }
+  if (cookieCourseTitle && !redirectUrl.searchParams.has('course_title')) {
+    redirectUrl.searchParams.set('course_title', cookieCourseTitle);
+  }
+
+  const response = NextResponse.redirect(redirectUrl.toString(), 302);
+
+  const cookieOptions = {
+    path: '/',
+    httpOnly: false,
+    sameSite: 'none' as const,
+    secure: true,
+    maxAge: 86400
+  };
+
+  response.cookies.set('lti_session', 'active', cookieOptions);
+  if (assignmentId) {
+    response.cookies.set('assignment_id', assignmentId, cookieOptions);
+  }
+
+  return response;
 }

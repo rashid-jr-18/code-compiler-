@@ -21,6 +21,7 @@ async function handleOidcInitiation(request: NextRequest) {
   let target_link_uri = searchParams.get('target_link_uri');
   let client_id = searchParams.get('client_id');
   let lti_message_hint = searchParams.get('lti_message_hint');
+  let assignment_id = searchParams.get('assignment_id') || '';
 
   // If POST, parameters might be in the request body
   if (request.method === 'POST') {
@@ -75,10 +76,26 @@ async function handleOidcInitiation(request: NextRequest) {
   authUrl.searchParams.set('nonce', nonce);
   authUrl.searchParams.set('prompt', 'none');
 
-  if (lti_message_hint) {
-    authUrl.searchParams.set('lti_message_hint', lti_message_hint);
+  if (!assignment_id && target_link_uri) {
+    try {
+      const targetUrl = new URL(target_link_uri);
+      assignment_id = targetUrl.searchParams.get('assignment_id') || '';
+    } catch {
+      // ignore parse error
+    }
   }
 
-  return NextResponse.redirect(authUrl.toString(), 302);
+  const response = NextResponse.redirect(authUrl.toString(), 302);
+  if (assignment_id) {
+    response.cookies.set('assignment_id', assignment_id, {
+      path: '/',
+      httpOnly: false,
+      secure: true,
+      sameSite: 'none',
+      maxAge: 3600
+    });
+  }
+
+  return response;
 }
 

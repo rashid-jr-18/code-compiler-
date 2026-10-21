@@ -114,11 +114,15 @@ export async function POST(request: NextRequest) {
       validLearners
     );
 
-    // Automatically create a topic/quicklink in Brightspace Course Content
+    // Automatically create a topic/quicklink and Dropbox folder in Brightspace
     const topicResult = await createBrightspaceTopic({
       courseId,
       assignmentId: assignment.id,
-      assignmentTitle: assignment.title
+      assignmentTitle: assignment.title,
+      instructions: assignment.instructions,
+      maxPoints: assignment.maxPoints,
+      startDate: assignment.startDate,
+      dueDate: assignment.dueDate
     }).catch(err => {
       console.warn('[Create Assignment] Brightspace topic error:', err);
       return null;
