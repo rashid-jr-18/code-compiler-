@@ -495,17 +495,19 @@ export default function MainApp() {
         <FacultyResults
           assignment={selectedAssignmentForResults}
           onBack={() => setSelectedAssignmentForResults(null)}
+          isDirectLaunch={Boolean(assignmentId)}
         />
       );
     }
 
-    // If an assessment is opened for solver preview by faculty
+    // If an assessment is opened for solver preview by faculty or student
     if (selectedAssignmentForSolver) {
       return (
         <LearnerAssignmentSolver
           assignment={selectedAssignmentForSolver}
-          learnerId={userId || 'usr_faculty'}
+          learnerId={userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice')}
           onBack={() => setSelectedAssignmentForSolver(null)}
+          isDirectLaunch={Boolean(assignmentId)}
         />
       );
     }
@@ -650,12 +652,30 @@ export default function MainApp() {
     }
 
     const isSolvingAssessment = Boolean(selectedAssignmentForSolver);
-    const isWideView = currentView === 'community' || currentView === 'set-assignment' || currentView === 'compiler' || isSolvingAssessment;
+    const isDirectLaunch = Boolean(assignmentId);
+    const isWideView = currentView === 'community' || currentView === 'set-assignment' || currentView === 'compiler' || isSolvingAssessment || Boolean(selectedAssignmentForResults);
 
     return (
       <div className={pageBgClass}>
         <div className={`relative z-10 mx-auto p-4 sm:p-6 ${isSolvingAssessment ? 'w-full max-w-[1720px]' : isWideView ? 'w-full max-w-[1680px]' : 'container max-w-7xl'}`}>
-          {!isSolvingAssessment && renderNavigation()}
+          {isDirectLaunch ? (
+            <div className="flex items-center justify-between py-2 px-4 mb-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs">
+              <div className="flex items-center gap-2">
+                <Code2 className="text-blue-600 dark:text-blue-400" size={20} />
+                <span className="font-bold text-sm text-slate-900 dark:text-white">EduTech Compiler</span>
+                <span className="text-slate-400 text-xs">•</span>
+                <span className="text-xs text-slate-500 font-medium">{activeCourse.title}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${isFacultyOrAdmin ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800' : 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800'}`}>
+                  {isFacultyOrAdmin ? 'FACULTY' : 'LEARNER'}
+                </span>
+              </div>
+            </div>
+          ) : (
+            !isSolvingAssessment && renderNavigation()
+          )}
           {mainView}
         </div>
       </div>
@@ -665,7 +685,7 @@ export default function MainApp() {
   return (
     <>
       {renderContent()}
-      {!selectedAssignmentForSolver && <DevRoleSwitcher />}
+      {!selectedAssignmentForSolver && !Boolean(assignmentId) && <DevRoleSwitcher />}
       <LearnerProfileDrawer
         userId={selectedProfileUserId}
         courseId={activeCourse.id}

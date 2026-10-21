@@ -23,13 +23,14 @@ import toast from 'react-hot-toast';
 interface FacultyResultsProps {
   assignment: Assignment;
   onBack: () => void;
+  isDirectLaunch?: boolean;
 }
 
 interface ResultItem extends AssignmentLearner {
   latestSubmission?: AuthoritativeSubmission | null;
 }
 
-export default function FacultyResults({ assignment, onBack }: FacultyResultsProps) {
+export default function FacultyResults({ assignment, onBack, isDirectLaunch = false }: FacultyResultsProps) {
   const [results, setResults] = useState<ResultItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [inspectItem, setInspectItem] = useState<ResultItem | null>(null);
@@ -167,12 +168,14 @@ export default function FacultyResults({ assignment, onBack }: FacultyResultsPro
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <button
-            onClick={onBack}
-            className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline mb-1"
-          >
-            ← Back to Assessments
-          </button>
+          {!isDirectLaunch && (
+            <button
+              onClick={onBack}
+              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline mb-1"
+            >
+              ← Back to Assessments
+            </button>
+          )}
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             {assignment.title}
           </h2>

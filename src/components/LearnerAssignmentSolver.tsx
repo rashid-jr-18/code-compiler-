@@ -46,13 +46,15 @@ interface LearnerAssignmentSolverProps {
   learnerId: string;
   onBack: () => void;
   onOpenCommunity?: (questionId: string, questionTitle: string) => void;
+  isDirectLaunch?: boolean;
 }
 
 export default function LearnerAssignmentSolver({
   assignment,
   learnerId,
   onBack,
-  onOpenCommunity
+  onOpenCommunity,
+  isDirectLaunch = false
 }: LearnerAssignmentSolverProps) {
   const { setTheme, resolvedTheme } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -852,7 +854,7 @@ SELECT * FROM table_name;
           >
             Review Your Code
           </button>
-          {onBack && (
+          {onBack && !isDirectLaunch && (
             <button
               type="button"
               onClick={onBack}
