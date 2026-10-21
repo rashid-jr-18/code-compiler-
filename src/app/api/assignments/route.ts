@@ -15,9 +15,25 @@ export async function GET(request: NextRequest) {
   }
 
   const { user } = auth;
-  const assignments = containerId
+  let assignments = containerId
     ? db.getAssignmentsByContainer(containerId)
     : db.getAssignmentsByCourse(courseId!);
+
+  // If container has 0 assessments, fallback to course-level assessments
+  if (assignments.length === 0 && courseId) {
+    const courseAssignments = db.getAssignmentsByCourse(courseId);
+    if (courseAssignments.length > 0) {
+      assignments = courseAssignments;
+    }
+  }
+
+  // If still 0, fallback to default container so existing created assessments are never lost
+  if (assignments.length === 0) {
+    const defaultAssignments = db.getAssignmentsByContainer('cnt_cs101_default');
+    if (defaultAssignments.length > 0) {
+      assignments = defaultAssignments;
+    }
+  }
 
   // If user is Admin or Faculty for this course, return all assignments with learner counts
   if (user.role === 'ADMIN' || user.role === 'FACULTY') {

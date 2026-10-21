@@ -85,7 +85,11 @@ export default function MainApp() {
       })
       .then((asg: Assignment | null) => {
         if (asg && asg.id) {
-          setSelectedAssignmentForSolver(asg);
+          if (isFacultyOrAdmin) {
+            setSelectedAssignmentForResults(asg);
+          } else {
+            setSelectedAssignmentForSolver(asg);
+          }
         }
       })
       .catch(err => console.warn('[MainApp] Direct assessment load error:', err));
