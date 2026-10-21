@@ -40,7 +40,7 @@ async function handleOidcInitiation(request: NextRequest) {
     }
   }
 
-  console.log('[LTI OIDC Initiation] Received:', { iss, client_id, login_hint });
+  console.log('[LTI OIDC Initiation] Received:', { iss, client_id, login_hint, lti_message_hint, target_link_uri });
 
   if (!iss || !login_hint) {
     return NextResponse.json({ error: 'Missing iss or login_hint parameter' }, { status: 400 });
@@ -62,9 +62,14 @@ async function handleOidcInitiation(request: NextRequest) {
   const nonce = crypto.randomBytes(16).toString('hex');
 
   // Brightspace OIDC Auth Endpoint: https://<institution>.brightspace.com/d2l/lti/authenticate
-  const authBaseUrl = (process.env.LTI_LOGIN_URL && !process.env.LTI_LOGIN_URL.includes('your-institution'))
+  let authBaseUrl = (process.env.LTI_LOGIN_URL && !process.env.LTI_LOGIN_URL.includes('your-institution'))
     ? process.env.LTI_LOGIN_URL
     : (iss ? `${iss.replace(/\/$/, '')}/d2l/lti/authenticate` : 'https://corplms.d2l-partners.brightspace.com/d2l/lti/authenticate');
+
+  if (authBaseUrl.includes('brightspace.com') && authBaseUrl.endsWith('/d2l/lti/login')) {
+    authBaseUrl = authBaseUrl.replace('/d2l/lti/login', '/d2l/lti/authenticate');
+  }
+
   const authUrl = new URL(authBaseUrl);
   authUrl.searchParams.set('response_type', 'id_token');
   authUrl.searchParams.set('response_mode', 'form_post');
@@ -75,6 +80,11 @@ async function handleOidcInitiation(request: NextRequest) {
   authUrl.searchParams.set('state', state);
   authUrl.searchParams.set('nonce', nonce);
   authUrl.searchParams.set('prompt', 'none');
+  if (lti_message_hint) {
+    authUrl.searchParams.set('lti_message_hint', lti_message_hint);
+  }
+
+  console.log('[LTI OIDC Initiation] Redirecting to:', authUrl.toString());
 
   if (!assignment_id && target_link_uri) {
     try {
