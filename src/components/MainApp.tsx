@@ -441,6 +441,7 @@ export default function MainApp() {
               setCommunityQuestionTitle(title);
               setCurrentView('community');
             }}
+            isDirectLaunch={Boolean(assignmentId)}
           />
         );
       }
@@ -657,9 +658,9 @@ export default function MainApp() {
 
     return (
       <div className={pageBgClass}>
-        <div className={`relative z-10 mx-auto p-4 sm:p-6 ${isSolvingAssessment ? 'w-full max-w-[1720px]' : isWideView ? 'w-full max-w-[1680px]' : 'container max-w-7xl'}`}>
+        <div className={`relative z-10 mx-auto ${isDirectLaunch ? 'w-full px-2 sm:px-4 py-2 sm:py-3' : isSolvingAssessment ? 'w-full max-w-[1720px] p-4 sm:p-6' : isWideView ? 'w-full max-w-[1680px] p-4 sm:p-6' : 'container max-w-7xl p-4 sm:p-6'}`}>
           {isDirectLaunch ? (
-            <div className="flex items-center justify-between py-2 px-4 mb-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs">
+            <div className="flex items-center justify-between py-2 px-3 sm:px-4 mb-2 sm:mb-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs">
               <div className="flex items-center gap-2">
                 <Code2 className="text-blue-600 dark:text-blue-400" size={20} />
                 <span className="font-bold text-sm text-slate-900 dark:text-white">EduTech Compiler</span>
