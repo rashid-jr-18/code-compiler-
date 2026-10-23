@@ -35,6 +35,7 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
   const [isLoading, setIsLoading] = useState(true);
   const [inspectItem, setInspectItem] = useState<ResultItem | null>(null);
   const [exportingId, setExportingId] = useState<string | null>(null);
+  const [lineItemUrl, setLineItemUrl] = useState<string | undefined>(assignment.lineItemUrl);
 
   const fetchResults = async () => {
     try {
@@ -45,6 +46,9 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
       if (!res.ok) throw new Error('Failed to load assessment results');
       const data = await res.json();
       setResults(data.results || []);
+      if (data.assignment?.lineItemUrl) {
+        setLineItemUrl(data.assignment.lineItemUrl);
+      }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error fetching results');
     } finally {
@@ -179,9 +183,20 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             {assignment.title}
           </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            Assessment Results & Gradebook Approval (Max: {assignment.maxPoints} pts)
-          </p>
+          <div className="flex flex-wrap items-center gap-2 mt-1">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Assessment Results & Gradebook Approval (Max: {assignment.maxPoints} pts)
+            </p>
+            {lineItemUrl ? (
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full" title={lineItemUrl}>
+                <CheckCircle2 size={11} /> Brightspace Gradebook Linked
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 dark:bg-amber-950/50 dark:text-amber-400 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded-full" title="Launch this assessment topic from Brightspace once to synchronize the Grade Item URL">
+                <AlertCircle size={11} /> Gradebook Link Pending
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

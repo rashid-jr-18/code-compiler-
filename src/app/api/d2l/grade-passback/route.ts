@@ -99,11 +99,13 @@ export async function POST(request: NextRequest) {
     }
 
     const allSuccessful = results.every(r => r.success);
+    const failureReason = results.find(r => !r.success)?.error;
     return NextResponse.json({
       success: allSuccessful,
+      error: allSuccessful ? undefined : failureReason,
       processed: results.length,
       results
-    });
+    }, { status: allSuccessful ? 200 : 400 });
 
   } catch (error) {
     console.error('Grade passback endpoint error:', error);

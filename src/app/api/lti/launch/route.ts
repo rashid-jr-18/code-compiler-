@@ -71,6 +71,12 @@ export async function POST(request: NextRequest) {
     const resourceLink = payload['https://purl.imsglobal.org/spec/lti/claim/resource_link'] || {};
     const lis = payload['https://purl.imsglobal.org/spec/lti/claim/lis'] || {};
     const custom = payload['https://purl.imsglobal.org/spec/lti/claim/custom'] || {};
+    const agsEndpoint = payload['https://purl.imsglobal.org/spec/lti-ags/claim/endpoint'] || {};
+
+    const agsLineItemUrl = agsEndpoint.lineitem || 
+      (agsEndpoint.lineitems ? `${agsEndpoint.lineitems}` : undefined) ||
+      rawForm['lineitem'] ||
+      rawForm['custom_lineitem'];
 
     const rawRoles: string[] = payload['https://purl.imsglobal.org/spec/lti/claim/roles'] || 
       payload['roles'] ||
@@ -177,6 +183,40 @@ export async function POST(request: NextRequest) {
       course = db.createCourse(courseTitle, rawContextId);
     }
     db.addCourseMember(course.id, userId, isInstructor ? 'FACULTY' : 'LEARNER');
+
+    // 2.1 Bind AGS LineItem URL and enroll student if targeted launch
+    if (assignmentId) {
+      const existingAssignment = db.getAssignmentById(assignmentId);
+      if (existingAssignment) {
+        if (agsLineItemUrl && existingAssignment.lineItemUrl !== agsLineItemUrl) {
+          db.updateAssignment(assignmentId, {
+            lineItemUrl: agsLineItemUrl,
+            resourceLinkId: resourceLinkId || existingAssignment.resourceLinkId
+          });
+          console.log(`[LTI Launch] Successfully bound Brightspace AGS lineItemUrl to assignment "${assignmentId}":`, agsLineItemUrl);
+        }
+
+        // If a real Brightspace student is launching this assignment, ensure they are enrolled in the assignment record
+        if (!isInstructor) {
+          const existingLearnerRecord = Array.from(db.assignmentLearners.values()).find(
+            al => al.assignmentId === assignmentId && al.learnerId === userId
+          );
+          if (!existingLearnerRecord) {
+            db.assignmentLearners.set(`al_${assignmentId}_${userId}`, {
+              id: `al_${assignmentId}_${userId}`,
+              assignmentId,
+              learnerId: userId,
+              status: 'ASSIGNED',
+              score: 0,
+              reviewed: false,
+              exported: false,
+              createdAt: new Date().toISOString()
+            });
+            console.log(`[LTI Launch] Auto-enrolled real Brightspace learner "${userId}" (${userName}) in assignment "${assignmentId}"`);
+          }
+        }
+      }
+    }
 
     // 3. Resolve Public Domain for safe 303 browser redirect (Never redirect to localhost or 127.0.0.1!)
     let host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'learning.edutechcloud.com';
