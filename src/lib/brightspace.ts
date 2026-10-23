@@ -47,16 +47,30 @@ export async function postGradeToBrightspace(params: BrightspaceGradeExportParam
     };
   }
 
-  // 2. Resolve Brightspace OAuth2 credentials
-  const rawTokenUrl = process.env.LTI_TOKEN_URL;
+  // 2. Resolve Brightspace OAuth2 credentials (support multiple env naming conventions)
+  const rawTokenUrl = process.env.LTI_TOKEN_URL || process.env.BRIGHTSPACE_TOKEN_URL;
   const tokenUrl = (rawTokenUrl && !rawTokenUrl.includes('your-institution'))
     ? rawTokenUrl
     : 'https://auth.brightspace.com/core/connect/token';
-  const privateKey = process.env.LTI_TOOL_PRIVATE_KEY;
-  const clientId = process.env.LTI_CLIENT_ID;
 
-  if (!privateKey || !clientId) {
-    const errorMsg = 'Cannot export to Brightspace: LTI_CLIENT_ID or LTI_TOOL_PRIVATE_KEY is missing in server environment.';
+  const rawPrivateKey = process.env.LTI_TOOL_PRIVATE_KEY ||
+    process.env.LTI_PRIVATE_KEY ||
+    process.env.BRIGHTSPACE_TOOL_PRIVATE_KEY ||
+    process.env.BRIGHTSPACE_PRIVATE_KEY ||
+    process.env.RSA_PRIVATE_KEY ||
+    process.env.PRIVATE_KEY;
+
+  const clientId = process.env.LTI_CLIENT_ID ||
+    process.env.BRIGHTSPACE_CLIENT_ID ||
+    process.env.CLIENT_ID ||
+    process.env.D2L_CLIENT_ID;
+
+  if (!rawPrivateKey || !clientId) {
+    const missingKeys = [
+      !clientId ? 'LTI_CLIENT_ID' : null,
+      !rawPrivateKey ? 'LTI_TOOL_PRIVATE_KEY' : null
+    ].filter(Boolean).join(' and ');
+    const errorMsg = `Cannot export to Brightspace: ${missingKeys} is missing in server environment.`;
     console.error(`[Brightspace AGS Error] ${errorMsg}`);
     return {
       success: false,
@@ -64,6 +78,11 @@ export async function postGradeToBrightspace(params: BrightspaceGradeExportParam
       error: errorMsg
     };
   }
+
+  // Ensure RSA private key newlines are properly formatted
+  const privateKey = rawPrivateKey.includes('\\n')
+    ? rawPrivateKey.replace(/\\n/g, '\n')
+    : rawPrivateKey;
 
   try {
     // 3. Create client assertion JWT (LTI 1.3 Advantage standard)
