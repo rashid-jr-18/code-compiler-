@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Public Keyset (JWKS) endpoint for Brightspace LTI 1.3
@@ -18,7 +20,21 @@ const DEFAULT_RSA_JWK = {
 export async function GET() {
   try {
     const keyId = 'edutech-key-1';
-    const privateKeyPem = process.env.LTI_TOOL_PRIVATE_KEY;
+    let privateKeyPem = process.env.LTI_TOOL_PRIVATE_KEY ||
+      process.env.LTI_PRIVATE_KEY ||
+      process.env.BRIGHTSPACE_TOOL_PRIVATE_KEY ||
+      process.env.BRIGHTSPACE_PRIVATE_KEY ||
+      process.env.RSA_PRIVATE_KEY ||
+      process.env.PRIVATE_KEY;
+
+    if (!privateKeyPem) {
+      const keyFile = path.join(process.cwd(), 'private.key');
+      if (fs.existsSync(keyFile)) {
+        try {
+          privateKeyPem = fs.readFileSync(keyFile, 'utf-8');
+        } catch (_) {}
+      }
+    }
 
     if (privateKeyPem) {
       try {

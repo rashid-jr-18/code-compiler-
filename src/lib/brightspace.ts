@@ -1,6 +1,8 @@
 // D2L Brightspace LTI 1.3 Advantage & Assignment and Grade Services (AGS) Integration
 
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import path from 'path';
 
 export interface BrightspaceGradeExportParams {
   lineItemUrl?: string;
@@ -53,12 +55,24 @@ export async function postGradeToBrightspace(params: BrightspaceGradeExportParam
     ? rawTokenUrl
     : 'https://auth.brightspace.com/core/connect/token';
 
-  const rawPrivateKey = process.env.LTI_TOOL_PRIVATE_KEY ||
+  let rawPrivateKey = process.env.LTI_TOOL_PRIVATE_KEY ||
     process.env.LTI_PRIVATE_KEY ||
     process.env.BRIGHTSPACE_TOOL_PRIVATE_KEY ||
     process.env.BRIGHTSPACE_PRIVATE_KEY ||
     process.env.RSA_PRIVATE_KEY ||
     process.env.PRIVATE_KEY;
+
+  if (!rawPrivateKey) {
+    const keyFile = path.join(process.cwd(), 'private.key');
+    if (fs.existsSync(keyFile)) {
+      try {
+        rawPrivateKey = fs.readFileSync(keyFile, 'utf-8');
+        console.log('[Brightspace AGS] Successfully auto-loaded RSA key from private.key file on disk');
+      } catch (e) {
+        console.warn('[Brightspace AGS] Warning reading private.key file:', e);
+      }
+    }
+  }
 
   const clientId = process.env.LTI_CLIENT_ID ||
     process.env.BRIGHTSPACE_CLIENT_ID ||
