@@ -65,7 +65,16 @@ export async function createBrightspaceTopic(params: CreateBrightspaceTopicParam
       jti: `jti_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`
     };
 
-    const clientAssertion = jwt.sign(assertionPayload, privateKey, { algorithm: 'RS256' });
+    const keyId = process.env.LTI_KEY_ID || 'edutech-key-1';
+    const clientAssertion = jwt.sign(assertionPayload, privateKey, {
+      algorithm: 'RS256',
+      keyid: keyId,
+      header: {
+        kid: keyId,
+        alg: 'RS256',
+        typ: 'JWT'
+      }
+    });
 
     console.log(`[Brightspace Sync] Requesting OAuth token from ${tokenUrl}...`);
     const tokenRes = await fetch(tokenUrl, {

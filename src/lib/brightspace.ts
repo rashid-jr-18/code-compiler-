@@ -110,7 +110,16 @@ export async function postGradeToBrightspace(params: BrightspaceGradeExportParam
       jti: `jti_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`
     };
 
-    const clientAssertion = jwt.sign(assertionPayload, privateKey, { algorithm: 'RS256' });
+    const keyId = process.env.LTI_KEY_ID || 'edutech-key-1';
+    const clientAssertion = jwt.sign(assertionPayload, privateKey, {
+      algorithm: 'RS256',
+      keyid: keyId,
+      header: {
+        kid: keyId,
+        alg: 'RS256',
+        typ: 'JWT'
+      }
+    });
 
     // 4. Request Bearer token from Brightspace OAuth2 endpoint
     console.log(`[Brightspace AGS] Requesting OAuth token from ${tokenUrl}...`);
