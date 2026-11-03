@@ -68,13 +68,15 @@ export default function LearnerAssignmentSolver({
   const [runOutput, setRunOutput] = useState<{ stdout?: string | null; stderr?: string | null; status?: string } | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [latestScore, setLatestScore] = useState<number | null>(null);
   const [submissionFeedback, setSubmissionFeedback] = useState<{
     score: number;
+    totalScore?: number;
     maxScore: number;
     passedTests: number;
     totalTests: number;
     overallStatus: string;
-    testResults: Array<{ passed: boolean; points: number; maxPoints: number; isHidden: boolean }>;
+    testResults?: Array<{ passed: boolean; points: number; maxPoints: number; isHidden: boolean }>;
   } | null>(null);
   const [showReviewMode, setShowReviewMode] = useState(false);
 
@@ -385,7 +387,14 @@ SELECT * FROM table_name;
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Submission failed');
 
-      setSubmissionFeedback(data.result);
+      const resultScore = data.result?.score ?? data.result?.totalScore ?? 0;
+      const resultMax = data.result?.maxScore ?? assignment.maxPoints ?? 100;
+      setLatestScore(resultScore);
+      setSubmissionFeedback({
+        ...data.result,
+        score: resultScore,
+        maxScore: resultMax
+      });
       toast.success('Submitted successfully! Score stored locally.', { id: toastId });
 
       // Clean up proctoring & exit fullscreen once submitted
@@ -395,7 +404,7 @@ SELECT * FROM table_name;
       }
 
       // Record Streak for this learner
-      const isFullScore = data.result?.score != null && data.result?.maxScore != null && data.result.score >= data.result.maxScore;
+      const isFullScore = resultScore >= resultMax && resultMax > 0;
       fetch('/api/users/streak', {
         method: 'POST',
         headers: { 
@@ -654,7 +663,7 @@ SELECT * FROM table_name;
               <h3 className="font-bold text-slate-900 dark:text-white">Submission Score</h3>
             </div>
             <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">
-              {submissionFeedback.score} / {submissionFeedback.maxScore} pts
+              {submissionFeedback.score ?? submissionFeedback.totalScore ?? 0} / {submissionFeedback.maxScore} pts
             </span>
           </div>
 
@@ -834,7 +843,7 @@ SELECT * FROM table_name;
           <div>
             <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Your Score</p>
             <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
-              {myRecord?.score ?? 0} <span className="text-sm font-normal text-slate-400">/ {assignment.maxPoints} pts</span>
+              {(latestScore ?? myRecord?.score) ?? 0} <span className="text-sm font-normal text-slate-400">/ {assignment.maxPoints} pts</span>
             </p>
           </div>
           <div className="h-10 w-px bg-slate-200 dark:bg-slate-800" />

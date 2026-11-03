@@ -17,6 +17,7 @@ import { normalizeOutput } from '@/lib/utils';
 export interface GradingResult {
   submissionId: string;
   totalScore: number;
+  score: number;
   maxScore: number;
   passedTests: number;
   totalTests: number;
@@ -46,6 +47,14 @@ export async function gradeSubmission(
     throw new Error(`Question with ID ${questionId} not found`);
   }
 
+  const assignment = db.getAssignmentById(assignmentId);
+  const targetAssignmentQ = assignment?.questions?.find(q =>
+    q.questionId === questionId ||
+    q.questionId === question.id ||
+    q.questionId.replace(/^q_/, '') === question.id.replace(/^q_/, '')
+  );
+  const questionMaxPoints = Number(targetAssignmentQ?.points) || Number(assignment?.maxPoints) || 100;
+
   const language = getExecutionConfig(languageId);
   const submissionToken = `sub_${Date.now()}_${uuidv4().substring(0, 8)}`;
   const workDir = path.join('/tmp', `grading_${submissionToken}`);
@@ -54,17 +63,22 @@ export async function gradeSubmission(
   const sourceFile = path.join(workDir, `Main.${language.extension}`);
   await writeFile(sourceFile, sourceCode);
 
+  const totalCases = question.testCases.length;
+  const rawSumPoints = question.testCases.reduce((sum, c) => sum + (Number(c.points) || 0), 0);
+  const defaultPerCasePoints = totalCases > 0 ? (questionMaxPoints / totalCases) : 0;
+
   // 1. First test execution to check compilation and runtime
   const testResults: TestResult[] = [];
   let totalScore = 0;
-  let maxScore = 0;
   let passedCount = 0;
   let hasRuntimeError = false;
   let hasTimeLimit = false;
 
   for (let i = 0; i < question.testCases.length; i++) {
     const tc = question.testCases[i];
-    maxScore += tc.points;
+    const caseMaxPoints = rawSumPoints > 0
+      ? Math.round(((Number(tc.points) || 0) / rawSumPoints) * questionMaxPoints)
+      : Math.round(defaultPerCasePoints);
 
     const execRes = await executeCode(sourceCode, languageId, tc.input);
 
@@ -76,7 +90,7 @@ export async function gradeSubmission(
         actualOutput: '',
         expectedOutput: c.expectedOutput,
         points: 0,
-        maxPoints: c.points,
+        maxPoints: rawSumPoints > 0 ? Math.round(((Number(c.points) || 0) / rawSumPoints) * questionMaxPoints) : Math.round(defaultPerCasePoints),
         error: compileError
       }));
 
@@ -108,7 +122,8 @@ export async function gradeSubmission(
       return {
         submissionId: submissionToken,
         totalScore: 0,
-        maxScore: question.testCases.reduce((sum, c) => sum + c.points, 0),
+        score: 0,
+        maxScore: questionMaxPoints,
         passedTests: 0,
         totalTests: question.testCases.length,
         overallStatus: 'Compilation Error',
@@ -116,7 +131,7 @@ export async function gradeSubmission(
           testCaseId: c.id,
           passed: false,
           points: 0,
-          maxPoints: c.points,
+          maxPoints: rawSumPoints > 0 ? Math.round(((Number(c.points) || 0) / rawSumPoints) * questionMaxPoints) : Math.round(defaultPerCasePoints),
           error: 'Compilation Error',
           isHidden: !!c.isHidden
         }))
@@ -128,7 +143,7 @@ export async function gradeSubmission(
     const passed = (execRes.status.id === 3) && (actual === expected);
 
     if (passed) {
-      totalScore += tc.points;
+      totalScore += caseMaxPoints;
       passedCount++;
     } else if (execRes.status.id === 5) {
       hasTimeLimit = true;
@@ -142,10 +157,17 @@ export async function gradeSubmission(
       actualOutput: actual,
       expectedOutput: expected,
       executionTime: parseFloat(execRes.time || '0'),
-      points: passed ? tc.points : 0,
-      maxPoints: tc.points,
+      points: passed ? caseMaxPoints : 0,
+      maxPoints: caseMaxPoints,
       error: execRes.status.id !== 3 ? (execRes.stderr || 'Execution failed') : undefined
     });
+  }
+
+  // Ensure full score if 100% tests pass
+  if (passedCount === totalCases) {
+    totalScore = questionMaxPoints;
+  } else {
+    totalScore = Math.min(questionMaxPoints, Math.round(totalScore));
   }
 
   // Determine overall status
@@ -191,7 +213,8 @@ export async function gradeSubmission(
   return {
     submissionId: submissionToken,
     totalScore,
-    maxScore,
+    score: totalScore,
+    maxScore: questionMaxPoints,
     passedTests: passedCount,
     totalTests: question.testCases.length,
     overallStatus,

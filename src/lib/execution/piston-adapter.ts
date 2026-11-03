@@ -4,7 +4,7 @@
  * Normalizes Piston engine responses into an authoritative execution result schema.
  */
 
-import { executeWithPiston, resolveLanguage } from '@/lib/piston';
+import { executeWithPiston, resolveLanguage, UnifiedExecutionResult } from '@/lib/piston';
 import { ExecutionResult } from '@/types';
 
 export interface NormalizedExecutionResult {
@@ -30,7 +30,7 @@ export async function executeCode(
   stdin: string = '',
   timeoutMs: number = 10000
 ): Promise<NormalizedExecutionResult> {
-  const rawResult: ExecutionResult = await executeWithPiston(sourceCode, languageId, stdin);
+  const rawResult: UnifiedExecutionResult = await executeWithPiston(sourceCode, languageId, stdin);
 
   const stdout = rawResult.stdout || '';
   const stderr = rawResult.stderr || '';
@@ -50,10 +50,10 @@ export async function executeCode(
     statusId = 5;
     statusDescription = 'Time Limit Exceeded';
     exitCode = 124;
-  } else if (rawResult.status.id !== 3 || stderr.length > 0) {
+  } else if (rawResult.status.id !== 3 || (rawResult.pistonResponse?.run && rawResult.pistonResponse.run.code !== 0)) {
     statusId = 11;
     statusDescription = 'Runtime Error (NZEC)';
-    exitCode = 1;
+    exitCode = rawResult.pistonResponse?.run?.code || 1;
   }
 
   return {

@@ -28,23 +28,8 @@ export async function POST(
       return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
     }
 
-    // Verify learner is assigned to this assignment (or auto-assign so submission is seamless)
-    if (user.role === 'LEARNER') {
-      const isAssigned = assignment.learners?.some(al => al.learnerId === user.id);
-      if (!isAssigned) {
-        db.assignmentLearners.set(`al_${Date.now()}_${user.id}`, {
-          id: `al_${Date.now()}_${user.id}`,
-          assignmentId,
-          learnerId: user.id,
-          status: 'IN_PROGRESS',
-          score: 0,
-          reviewed: false,
-          exported: false,
-          learner: user,
-          createdAt: new Date().toISOString()
-        });
-      }
-    }
+    // Ensure learner is tracked on this assignment
+    db.ensureAssignmentLearner(assignmentId, user.id);
 
     // Check assignment due date
     const now = new Date();

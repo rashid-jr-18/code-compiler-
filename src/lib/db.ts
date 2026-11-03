@@ -757,7 +757,13 @@ class PersistentDatabase {
   }
 
   getQuestionById(id: string): Question | undefined {
-    return this.questions.get(id);
+    if (!id) return undefined;
+    if (this.questions.has(id)) return this.questions.get(id);
+    const withPrefix = id.startsWith('q_') ? id : `q_${id}`;
+    if (this.questions.has(withPrefix)) return this.questions.get(withPrefix);
+    const stripped = id.replace(/^q_/, '');
+    if (this.questions.has(stripped)) return this.questions.get(stripped);
+    return undefined;
   }
 
   createQuestion(questionData: Omit<Question, 'id' | 'createdAt' | 'updatedAt'>): Question {
