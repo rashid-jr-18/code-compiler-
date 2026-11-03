@@ -255,171 +255,156 @@ export default function MainApp() {
 
   const renderNavigation = () => (
     <motion.nav
-      initial={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 mb-3 sm:mb-4 rounded-xl shadow-xs"
+      className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 mb-3 sm:mb-4 rounded-xl shadow-xs overflow-hidden"
     >
-      <div className="px-3 sm:px-4 py-2 sm:py-2.5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
-          {/* Logo & Course Title / Switcher */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <div className="cursor-pointer" onClick={() => setCurrentView('course')}>
-              <Code2 className="text-blue-600 dark:text-blue-400" size={20} />
-            </div>
-            <div className="min-w-0">
-              <h1 
-                onClick={() => setCurrentView('course')}
-                className="text-sm sm:text-base font-bold text-slate-900 dark:text-white cursor-pointer tracking-tight truncate"
-              >
-                EduTech Compiler
-              </h1>
-              {availableCourses.length > 1 ? (
-                <div className="flex items-center gap-1 mt-0.5">
-                  <select
-                    value={activeCourse.id}
-                    onChange={e => {
-                      const c = availableCourses.find(item => item.id === e.target.value);
-                      if (c) {
-                        setActiveCourse(c);
-                        localStorage.setItem('dev_course_id', c.id);
-                      }
-                    }}
-                    className="text-[10px] sm:text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded px-1.5 py-0.5 focus:ring-1 focus:ring-blue-500 cursor-pointer max-w-[180px] truncate"
-                  >
-                    {availableCourses.map(c => (
-                      <option key={c.id} value={c.id} className="text-slate-900 dark:text-white bg-white dark:bg-slate-800">
-                        {c.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ) : (
-                <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate max-w-[180px]">
-                  {activeCourse.title}
-                </p>
-              )}
-            </div>
+      {/* Tier 1: Brand Header & User Badges */}
+      <div className="px-3 sm:px-4 py-2 flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="cursor-pointer shrink-0" onClick={() => setCurrentView('course')}>
+            <Code2 className="text-blue-600 dark:text-blue-400" size={18} />
           </div>
-          
-          {/* Nav Items */}
-          <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
-            <Button
+          <div className="flex items-center gap-2 min-w-0">
+            <span 
               onClick={() => setCurrentView('course')}
-              variant={currentView === 'course' ? 'default' : 'outline'}
-              size="sm"
-              className={`flex items-center gap-1 font-medium text-[11px] sm:text-xs px-2 sm:px-2.5 h-7.5 rounded-lg ${
-                currentView === 'course'
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                  : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
+              className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white cursor-pointer tracking-tight whitespace-nowrap"
             >
-              <Layers size={13} />
-              <span>Workspace</span>
-            </Button>
-
-            {isFacultyOrAdmin && (
-              <Button
-                onClick={() => {
-                  setCurrentView('set-assignment');
-                  setSelectedAssignmentForSolver(null);
-                  setSelectedAssignmentForResults(null);
-                  setSelectedQuestion(null);
+              EduTech Compiler
+            </span>
+            <span className="text-slate-300 dark:text-slate-700 shrink-0">•</span>
+            {availableCourses.length > 1 ? (
+              <select
+                value={activeCourse.id}
+                onChange={e => {
+                  const c = availableCourses.find(item => item.id === e.target.value);
+                  if (c) {
+                    setActiveCourse(c);
+                    localStorage.setItem('dev_course_id', c.id);
+                  }
                 }}
-                variant={currentView === 'set-assignment' ? 'default' : 'outline'}
-                size="sm"
-                className={`flex items-center gap-1 font-medium text-[11px] sm:text-xs px-2 sm:px-2.5 h-7.5 rounded-lg ${
-                  currentView === 'set-assignment'
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                    : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
+                className="text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded px-1.5 py-0.5 focus:ring-1 focus:ring-blue-500 cursor-pointer max-w-[200px] truncate"
               >
-                <PlusCircle size={13} />
-                <span>Set Assessment</span>
-              </Button>
+                {availableCourses.map(c => (
+                  <option key={c.id} value={c.id} className="text-slate-900 dark:text-white bg-white dark:bg-slate-800">
+                    {c.title}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate max-w-[220px]">
+                {activeCourse.title}
+              </span>
             )}
-
-            <Button
-              onClick={() => { setCurrentView('problems'); setSelectedQuestion(null); }}
-              variant={currentView === 'problems' ? 'default' : 'outline'}
-              size="sm"
-              className={`flex items-center gap-1 font-medium text-[11px] sm:text-xs px-2 sm:px-2.5 h-7.5 rounded-lg ${
-                currentView === 'problems'
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                  : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <BookOpen size={13} />
-              <span>Library</span>
-            </Button>
-
-            <Button
-              onClick={() => setCurrentView('compiler')}
-              variant={currentView === 'compiler' ? 'default' : 'outline'}
-              size="sm"
-              className={`flex items-center gap-1 font-medium text-[11px] sm:text-xs px-2 sm:px-2.5 h-7.5 rounded-lg ${
-                currentView === 'compiler'
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                  : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <Code2 size={13} />
-              <span>Free Code</span>
-            </Button>
-            
-            <Button
-              onClick={() => { setCurrentView('community'); setSelectedQuestion(null); }}
-              variant={currentView === 'community' ? 'default' : 'outline'}
-              size="sm"
-              className={`flex items-center gap-1 font-medium text-[11px] sm:text-xs px-2 sm:px-2.5 h-7.5 rounded-lg ${
-                currentView === 'community'
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                  : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <MessageSquare size={13} />
-              <span>Community</span>
-            </Button>
-
-            {currentRole === 'admin' && (
-              <Button
-                onClick={() => setCurrentView('admin')}
-                variant={currentView === 'admin' ? 'default' : 'outline'}
-                size="sm"
-                className={`flex items-center gap-1 font-medium text-[11px] sm:text-xs px-2 sm:px-2.5 h-7.5 rounded-lg ${
-                  currentView === 'admin'
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                    : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-              >
-                <Settings size={13} />
-                <span>Admin</span>
-              </Button>
-            )}
-
-            <div className="flex items-center gap-1 ml-auto sm:ml-1 shrink-0">
-              <StreakWidget 
-                userId={userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice')}
-                userRole={isFacultyOrAdmin ? (currentRole === 'admin' ? 'ADMIN' : 'FACULTY') : 'LEARNER'}
-                onOpenProfile={() => setSelectedProfileUserId(userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'))}
-              />
-
-              <ThemeToggle />
-              
-              {/* Clickable Profile & Role Indicator */}
-              <button
-                type="button"
-                onClick={() => setSelectedProfileUserId(userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'))}
-                className="px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1 cursor-pointer shadow-2xs tracking-wider"
-                title="Click to view Learner Profile & Coding Analytics"
-              >
-                <div className="w-3.5 h-3.5 rounded-full bg-emerald-600 text-white font-black text-[8px] flex items-center justify-center">
-                  {isFacultyOrAdmin ? 'T' : 'A'}
-                </div>
-                <span>{currentRole.toUpperCase()}</span>
-              </button>
-            </div>
           </div>
         </div>
+
+        {/* User Badges */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <StreakWidget 
+            userId={userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice')}
+            userRole={isFacultyOrAdmin ? (currentRole === 'admin' ? 'ADMIN' : 'FACULTY') : 'LEARNER'}
+            onOpenProfile={() => setSelectedProfileUserId(userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'))}
+          />
+
+          <ThemeToggle />
+          
+          <button
+            type="button"
+            onClick={() => setSelectedProfileUserId(userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'))}
+            className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1 cursor-pointer shadow-2xs tracking-wider"
+            title="Click to view Learner Profile & Coding Analytics"
+          >
+            <div className="w-3.5 h-3.5 rounded-full bg-emerald-600 text-white font-black text-[8px] flex items-center justify-center">
+              {isFacultyOrAdmin ? 'T' : 'A'}
+            </div>
+            <span>{currentRole.toUpperCase()}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Tier 2: Clean Navigation Tabs Bar */}
+      <div className="px-2 sm:px-3 py-1.5 bg-slate-50/70 dark:bg-slate-950/40 flex items-center gap-1 overflow-x-auto no-scrollbar">
+        <button
+          onClick={() => setCurrentView('course')}
+          className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+            currentView === 'course'
+              ? 'bg-blue-600 text-white shadow-xs font-semibold'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Layers size={13} />
+          <span>Workspace</span>
+        </button>
+
+        {isFacultyOrAdmin && (
+          <button
+            onClick={() => {
+              setCurrentView('set-assignment');
+              setSelectedAssignmentForSolver(null);
+              setSelectedAssignmentForResults(null);
+              setSelectedQuestion(null);
+            }}
+            className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+              currentView === 'set-assignment'
+                ? 'bg-blue-600 text-white shadow-xs font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
+            }`}
+          >
+            <PlusCircle size={13} />
+            <span>Set Assessment</span>
+          </button>
+        )}
+
+        <button
+          onClick={() => { setCurrentView('problems'); setSelectedQuestion(null); }}
+          className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+            currentView === 'problems'
+              ? 'bg-blue-600 text-white shadow-xs font-semibold'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
+          }`}
+        >
+          <BookOpen size={13} />
+          <span>Library</span>
+        </button>
+
+        <button
+          onClick={() => setCurrentView('compiler')}
+          className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+            currentView === 'compiler'
+              ? 'bg-blue-600 text-white shadow-xs font-semibold'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Code2 size={13} />
+          <span>Free Code</span>
+        </button>
+        
+        <button
+          onClick={() => { setCurrentView('community'); setSelectedQuestion(null); }}
+          className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+            currentView === 'community'
+              ? 'bg-blue-600 text-white shadow-xs font-semibold'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
+          }`}
+        >
+          <MessageSquare size={13} />
+          <span>Community</span>
+        </button>
+
+        {currentRole === 'admin' && (
+          <button
+            onClick={() => setCurrentView('admin')}
+            className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+              currentView === 'admin'
+                ? 'bg-blue-600 text-white shadow-xs font-semibold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Settings size={13} />
+            <span>Admin</span>
+          </button>
+        )}
       </div>
     </motion.nav>
   );
