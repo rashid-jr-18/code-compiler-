@@ -61,6 +61,8 @@ export default function ContainerManager({
     return d.toISOString().split('T')[0];
   });
   const [maxMarks, setMaxMarks] = useState('100');
+  const [isTimed, setIsTimed] = useState(false);
+  const [durationMinutes, setDurationMinutes] = useState('60');
   const [availableQuestions, setAvailableQuestions] = useState<Question[]>([]);
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<Array<{ questionId: string; points: number }>>([]);
   const [questionSearch, setQuestionSearch] = useState('');
@@ -127,6 +129,7 @@ export default function ContainerManager({
           maxPoints: Number(maxMarks) || 100,
           startDate,
           dueDate,
+          durationMinutes: isTimed && Number(durationMinutes) > 0 ? Number(durationMinutes) : undefined,
           questions: selectedQuestionIds
         })
       });
@@ -386,6 +389,15 @@ export default function ContainerManager({
                           <span className="font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap">
                             Max: {asg.maxPoints} pts
                           </span>
+                          {asg.durationMinutes && (
+                            <>
+                              <span className="text-slate-300 dark:text-slate-600">•</span>
+                              <span className="inline-flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400 whitespace-nowrap">
+                                <Clock size={11} />
+                                {asg.durationMinutes} Mins
+                              </span>
+                            </>
+                          )}
                           <span className="text-slate-300 dark:text-slate-600">•</span>
                           <span className="whitespace-nowrap">{(asg.questions || []).length} Problem{(asg.questions || []).length !== 1 ? 's' : ''}</span>
                         </div>
@@ -576,6 +588,40 @@ export default function ContainerManager({
                       onChange={e => setMaxMarks(e.target.value)}
                     />
                   </div>
+                </div>
+
+                {/* Timed Assessment */}
+                <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 cursor-pointer">
+                      <Clock size={13} className="text-amber-500" />
+                      <span>Timed Assessment (Live Countdown Timer)</span>
+                    </label>
+                    <input
+                      type="checkbox"
+                      checked={isTimed}
+                      onChange={e => setIsTimed(e.target.checked)}
+                      className="w-4 h-4 rounded accent-blue-600 cursor-pointer"
+                    />
+                  </div>
+                  {isTimed && (
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200 dark:border-slate-700">
+                      <span className="text-slate-600 dark:text-slate-400">Duration:</span>
+                      <select
+                        value={durationMinutes}
+                        onChange={e => setDurationMinutes(e.target.value)}
+                        className="px-2 py-1 text-xs font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md text-slate-900 dark:text-white"
+                      >
+                        <option value="15">15 Minutes</option>
+                        <option value="30">30 Minutes</option>
+                        <option value="45">45 Minutes</option>
+                        <option value="60">60 Minutes (1 Hour)</option>
+                        <option value="90">90 Minutes (1.5 Hours)</option>
+                        <option value="120">120 Minutes (2 Hours)</option>
+                        <option value="180">180 Minutes (3 Hours)</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 {/* Problem Selection */}

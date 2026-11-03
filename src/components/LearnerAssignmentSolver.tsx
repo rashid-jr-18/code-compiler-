@@ -415,6 +415,11 @@ SELECT * FROM table_name;
         body: JSON.stringify({ isSolved: isFullScore })
       }).catch(() => {});
 
+      // Clear timed exam state on successful submission
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(`exam_start_${assignment.id}_${learnerId}`);
+      }
+
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Submission failed', { id: toastId });
     } finally {
@@ -428,6 +433,44 @@ SELECT * FROM table_name;
     proctoringConfig && (proctoringConfig.enableCamera || proctoringConfig.enableKiosk)
   );
   const [isPreCheckDone, setIsPreCheckDone] = useState(!isSecurityEnabled);
+
+  // Timed Assessment Logic
+  const isTimed = Boolean(assignment.durationMinutes && assignment.durationMinutes > 0);
+  const durationSeconds = (assignment.durationMinutes || 0) * 60;
+  const timerStorageKey = `exam_start_${assignment.id}_${learnerId}`;
+
+  // Check if exam already started previously
+  const [hasStartedExam, setHasStartedExam] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    if (!isTimed && !isSecurityEnabled) return true;
+    return Boolean(localStorage.getItem(timerStorageKey));
+  });
+
+  const [timeRemaining, setTimeRemaining] = useState<number>(() => {
+    if (!isTimed) return 0;
+    if (typeof window === 'undefined') return durationSeconds;
+    const storedStart = localStorage.getItem(timerStorageKey);
+    if (!storedStart) return durationSeconds;
+    const elapsed = Math.floor((Date.now() - Number(storedStart)) / 1000);
+    return Math.max(0, durationSeconds - elapsed);
+  });
+
+  const formatTime = (secs: number) => {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    if (h > 0) {
+      return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const handleStartTimedExam = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(timerStorageKey, Date.now().toString());
+    }
+    setHasStartedExam(true);
+  };
 
   // Camera Proctoring Hook
   const {
@@ -488,15 +531,21 @@ SELECT * FROM table_name;
     [assignment.id, learnerId, captureFrame]
   );
 
-  // Automatically execute test evaluation and submission when violation limit reached
-  const triggerAutoSubmit = useCallback(async () => {
+  // Automatically execute test evaluation and submission when violation limit reached or time expires
+  const triggerAutoSubmit = useCallback(async (reason: string = 'Security violation limit reached (3/3)') => {
     if (isSubmittingRef.current) return;
     const curQ = questionRef.current;
     if (!curQ) return;
 
     setIsSubmitting(true);
-    setIsLimitReached(true);
-    setIsViolationModalOpen(true);
+    if (reason.toLowerCase().includes('violation')) {
+      setIsLimitReached(true);
+      setIsViolationModalOpen(true);
+    }
+
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(timerStorageKey);
+    }
 
     // Stop camera and release fullscreen immediately
     stopCamera();
@@ -504,7 +553,7 @@ SELECT * FROM table_name;
       document.exitFullscreen().catch(() => {});
     }
 
-    const toastId = toast.loading('Security violation limit reached (3/3). Auto-submitting test...');
+    const toastId = toast.loading(`${reason}. Auto-submitting test...`);
 
     try {
       const res = await fetch(`/api/assignments/${assignment.id}/submit`, {
@@ -527,14 +576,14 @@ SELECT * FROM table_name;
       setSubmissionFeedback(data.result);
       toast.success('Assessment auto-submitted successfully!', { id: toastId });
 
-      // Mark proctoring session as TERMINATED_VIOLATION
+      // Mark proctoring session as TERMINATED_VIOLATION or COMPLETED
       fetch('/api/proctoring/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           assignmentId: assignment.id,
           learnerId,
-          status: 'TERMINATED_VIOLATION'
+          status: reason.toLowerCase().includes('violation') ? 'TERMINATED_VIOLATION' : 'COMPLETED'
         })
       }).catch(() => {});
 
@@ -544,7 +593,7 @@ SELECT * FROM table_name;
     } finally {
       setIsSubmitting(false);
     }
-  }, [assignment.id, learnerId, stopCamera]);
+  }, [assignment.id, learnerId, stopCamera, timerStorageKey]);
 
   const handleLimitExceeded = useCallback(() => {
     setIsLimitReached(true);
@@ -576,6 +625,14 @@ SELECT * FROM table_name;
   });
 
   const handleConsentAndStart = async () => {
+    if (isTimed && typeof window !== 'undefined') {
+      const stored = localStorage.getItem(timerStorageKey);
+      if (!stored) {
+        localStorage.setItem(timerStorageKey, Date.now().toString());
+      }
+      setHasStartedExam(true);
+    }
+
     try {
       await fetch('/api/proctoring/session', {
         method: 'POST',
@@ -595,6 +652,51 @@ SELECT * FROM table_name;
     }
     setIsPreCheckDone(true);
   };
+
+  // Live Countdown Timer Interval
+  const warned5MinRef = useRef(false);
+  const warned1MinRef = useRef(false);
+
+  useEffect(() => {
+    if (!isTimed || !hasStartedExam || submissionFeedback || isSubmitting) return;
+
+    const interval = setInterval(() => {
+      const storedStart = localStorage.getItem(timerStorageKey);
+      if (!storedStart) return;
+
+      const elapsed = Math.floor((Date.now() - Number(storedStart)) / 1000);
+      const remaining = Math.max(0, durationSeconds - elapsed);
+      setTimeRemaining(remaining);
+
+      // 5-minute warning alert
+      if (remaining <= 300 && remaining > 60 && !warned5MinRef.current) {
+        warned5MinRef.current = true;
+        toast('⚠️ 5 minutes remaining! Finish your code and prepare to submit.', {
+          icon: '⏳',
+          duration: 6000
+        });
+      }
+
+      // 1-minute warning alert
+      if (remaining <= 60 && remaining > 0 && !warned1MinRef.current) {
+        warned1MinRef.current = true;
+        toast.error('🚨 1 minute remaining! Final auto-submission will trigger shortly.', {
+          duration: 6000
+        });
+      }
+
+      // Time expired! Auto-submit
+      if (remaining === 0) {
+        clearInterval(interval);
+        toast.error('⏱️ Time has expired! Automatically submitting your solution...', {
+          duration: 8000
+        });
+        triggerAutoSubmit('Exam time limit expired (00:00)');
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isTimed, hasStartedExam, durationSeconds, timerStorageKey, submissionFeedback, isSubmitting, triggerAutoSubmit]);
 
   // Left Panel (Description, Constraints, Sample Inputs, Scores)
   const leftPanel = (
@@ -912,31 +1014,49 @@ SELECT * FROM table_name;
         </div>
 
         {/* Security & Proctoring Status Badges */}
-        {isSecurityEnabled && (
-          <div className="flex flex-wrap items-center gap-2">
-            {proctoringConfig?.enableKiosk && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                <Lock size={12} /> Kiosk Mode
-              </span>
-            )}
-            {proctoringConfig?.enableCamera && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                <Camera size={12} /> Camera Live
-              </span>
-            )}
-            <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border transition-colors ${
-                violationCount === 0
-                  ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-                  : violationCount >= (proctoringConfig?.violationLimit || 3)
-                  ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 border-rose-300 dark:border-rose-800 animate-pulse'
-                  : 'bg-amber-50 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+        <div className="flex flex-wrap items-center gap-2">
+          {isTimed && hasStartedExam && !submissionFeedback && (
+            <div
+              className={`px-3 py-1 rounded-full border transition-all flex items-center gap-1.5 text-xs font-mono font-bold shadow-xs ${
+                timeRemaining <= 60
+                  ? 'bg-rose-50 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-700 animate-pulse'
+                  : timeRemaining <= 300
+                  ? 'bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700'
+                  : 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
               }`}
+              title="Time remaining for this assessment"
             >
-              <AlertTriangle size={12} /> Violations: {violationCount} / {proctoringConfig?.violationLimit || 3}
-            </span>
-          </div>
-        )}
+              <Clock size={12} className={timeRemaining <= 300 ? 'text-amber-500' : 'text-blue-600 dark:text-blue-400'} />
+              <span>Time Left: {formatTime(timeRemaining)}</span>
+            </div>
+          )}
+
+          {isSecurityEnabled && (
+            <>
+              {proctoringConfig?.enableKiosk && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                  <Lock size={12} /> Kiosk Mode
+                </span>
+              )}
+              {proctoringConfig?.enableCamera && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                  <Camera size={12} /> Camera Live
+                </span>
+              )}
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border transition-colors ${
+                  violationCount === 0
+                    ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                    : violationCount >= (proctoringConfig?.violationLimit || 3)
+                    ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300 border-rose-300 dark:border-rose-800 animate-pulse'
+                    : 'bg-amber-50 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300 border-amber-300 dark:border-amber-800'
+                }`}
+              >
+                <AlertTriangle size={12} /> Violations: {violationCount} / {proctoringConfig?.violationLimit || 3}
+              </span>
+            </>
+          )}
+        </div>
 
         {/* Multi-Problem Selector & Top Actions */}
         <div className="flex items-center gap-3">
@@ -1036,7 +1156,63 @@ SELECT * FROM table_name;
           onStartCamera={startCamera}
           onConsentAndStart={handleConsentAndStart}
           onCancel={onBack}
+          durationMinutes={assignment.durationMinutes}
         />
+      )}
+
+      {/* Timed Exam Start Gate Modal (When proctoring is not active, but exam has duration) */}
+      {isTimed && !hasStartedExam && !isSecurityEnabled && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 text-center space-y-4"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 flex items-center justify-center mx-auto">
+              <Clock size={24} />
+            </div>
+            <div>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                Timed Assessment
+              </span>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-2">
+                {assignment.title}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Time Limit: <strong className="text-slate-800 dark:text-slate-200">{assignment.durationMinutes} Minutes</strong> • {assignment.questions?.length || 1} Problem{assignment.questions?.length !== 1 ? 's' : ''} • {assignment.maxPoints} pts
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-left text-xs space-y-2 text-slate-600 dark:text-slate-300">
+              <div className="flex items-start gap-2">
+                <span>⏱️</span>
+                <span>The countdown timer starts as soon as you click <strong>Start Assessment</strong> and cannot be paused.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span>🛑</span>
+                <span>When the timer expires (00:00), your code will be automatically evaluated and submitted.</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onBack}
+                className="flex-1 h-9 text-xs border-slate-300 dark:border-slate-700"
+              >
+                Go Back
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleStartTimedExam}
+                className="flex-1 h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs"
+              >
+                Start Assessment ({assignment.durationMinutes} Mins)
+              </Button>
+            </div>
+          </motion.div>
+        </div>
       )}
 
       {/* Mini Floating Live Webcam Widget */}

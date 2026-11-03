@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Question, Course, CourseMember } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input, TextArea } from '@/components/ui/input';
-import { PlusCircle, Calendar, CheckSquare, Square, Users, BookOpen, Save, Award, Search, Filter, X, Shield, ShieldAlert, Camera, Monitor, AlertTriangle, Lock } from 'lucide-react';
+import { PlusCircle, Calendar, Clock, CheckSquare, Square, Users, BookOpen, Save, Award, Search, Filter, X, Shield, ShieldAlert, Camera, Monitor, AlertTriangle, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useQuestionStore } from '@/store/questionStore';
 import { useAdminStore } from '@/store/adminStore';
@@ -32,6 +32,8 @@ export default function SetAssignment({
     d.setDate(d.getDate() + 7);
     return d.toISOString().split('T')[0];
   });
+  const [isTimed, setIsTimed] = useState(false);
+  const [durationMinutes, setDurationMinutes] = useState('60');
   const { questions: storeQuestions } = useQuestionStore();
   const [availableQuestions, setAvailableQuestions] = useState<Question[]>(() => storeQuestions || []);
   const [selectedQuestions, setSelectedQuestions] = useState<Array<{ questionId: string; points: number; allowedLanguages?: number[] }>>([]);
@@ -176,6 +178,7 @@ export default function SetAssignment({
           instructions: instructions.trim(),
           maxPoints: totalPoints,
           dueDate: new Date(dueDate).toISOString(),
+          durationMinutes: isTimed && Number(durationMinutes) > 0 ? Number(durationMinutes) : undefined,
           questions: selectedQuestions,
           learnerIds: enrolledLearners.map(l => l.userId),
           proctoringConfig: {
@@ -328,6 +331,46 @@ export default function SetAssignment({
                   placeholder="Instructions, allowed languages, complexity bounds..."
                   className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 />
+              </div>
+
+              {/* Timed Assessment (Live Exam Countdown Timer) */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 cursor-pointer">
+                    <Clock size={13} className="text-amber-500" />
+                    <span>Timed Assessment (Exam Timer)</span>
+                  </label>
+                  <input
+                    type="checkbox"
+                    checked={isTimed}
+                    onChange={e => setIsTimed(e.target.checked)}
+                    className="w-4 h-4 rounded accent-blue-600 cursor-pointer"
+                  />
+                </div>
+
+                {isTimed && (
+                  <div className="mt-2.5 p-2.5 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-medium text-slate-700 dark:text-slate-300">Exam Duration:</span>
+                      <select
+                        value={durationMinutes}
+                        onChange={e => setDurationMinutes(e.target.value)}
+                        className="px-2 py-1 text-xs font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md text-slate-900 dark:text-white"
+                      >
+                        <option value="15">15 Minutes</option>
+                        <option value="30">30 Minutes</option>
+                        <option value="45">45 Minutes</option>
+                        <option value="60">60 Minutes (1 Hour)</option>
+                        <option value="90">90 Minutes (1.5 Hours)</option>
+                        <option value="120">120 Minutes (2 Hours)</option>
+                        <option value="180">180 Minutes (3 Hours)</option>
+                      </select>
+                    </div>
+                    <p className="text-[10px] text-amber-700 dark:text-amber-300">
+                      ⏱️ Once the student starts, the timer counts down live and automatically evaluates and submits when time expires.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

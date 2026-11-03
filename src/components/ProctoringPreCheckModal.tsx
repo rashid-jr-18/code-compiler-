@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldAlert, Camera, Lock, CheckCircle2, AlertTriangle, Eye, ArrowRight } from 'lucide-react';
+import { ShieldAlert, Camera, Lock, Clock, CheckCircle2, AlertTriangle, Eye, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProctoringConfig } from '@/types';
 
@@ -16,6 +16,7 @@ interface ProctoringPreCheckModalProps {
   onStartCamera: () => Promise<boolean>;
   onConsentAndStart: () => void;
   onCancel: () => void;
+  durationMinutes?: number;
 }
 
 export default function ProctoringPreCheckModal({
@@ -27,7 +28,8 @@ export default function ProctoringPreCheckModal({
   cameraError,
   onStartCamera,
   onConsentAndStart,
-  onCancel
+  onCancel,
+  durationMinutes
 }: ProctoringPreCheckModalProps) {
   const [consentGiven, setConsentGiven] = useState(false);
   const [isRequestingCamera, setIsRequestingCamera] = useState(false);
@@ -91,6 +93,18 @@ export default function ProctoringPreCheckModal({
                     <h4 className="font-semibold text-slate-900 dark:text-slate-100">Camera Proctoring</h4>
                     <p className="text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">
                       Periodic verification snapshots are captured automatically. Audio is NOT recorded.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {durationMinutes && durationMinutes > 0 && (
+                <div className="p-3.5 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/30 flex items-start gap-2.5">
+                  <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-slate-900 dark:text-slate-100">Timed Exam: {durationMinutes} Minutes</h4>
+                    <p className="text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">
+                      Countdown timer begins as soon as you start. Auto-submits when time expires.
                     </p>
                   </div>
                 </div>

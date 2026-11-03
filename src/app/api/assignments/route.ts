@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
       maxPoints,
       startDate,
       dueDate,
+      durationMinutes,
       questions,
       learnerIds,
       proctoringConfig
@@ -115,6 +116,7 @@ export async function POST(request: NextRequest) {
         maxPoints: Number(maxPoints) || 100,
         startDate: startDate ? new Date(startDate).toISOString() : undefined,
         dueDate: new Date(dueDate).toISOString(),
+        durationMinutes: durationMinutes && Number(durationMinutes) > 0 ? Number(durationMinutes) : undefined,
         createdBy: auth.user.id,
         status: 'PUBLISHED',
         proctoringConfig: proctoringConfig || undefined,

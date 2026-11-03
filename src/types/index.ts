@@ -372,6 +372,7 @@ export interface AssignmentLearner {
   learnerId: string;
   status: AssignmentLearnerStatus;
   score: number;
+  startedAt?: Date | string;
   reviewed: boolean;
   reviewedAt?: Date | string;
   reviewedBy?: string;
@@ -405,6 +406,7 @@ export interface Assignment {
   maxPoints: number;
   startDate?: Date | string;
   dueDate: Date | string;
+  durationMinutes?: number; // Timed assessment duration in minutes (e.g. 30, 45, 60)
   createdBy: string;
   status: AssignmentStatus;
   resourceLinkId?: string;

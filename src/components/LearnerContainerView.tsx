@@ -144,6 +144,15 @@ export default function LearnerContainerView({
                         <span className="font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                           {asg.maxPoints} Points
                         </span>
+                        {asg.durationMinutes && (
+                          <>
+                            <span className="text-slate-300 dark:text-slate-600">•</span>
+                            <span className="inline-flex items-center gap-1 font-semibold text-amber-600 dark:text-amber-400 whitespace-nowrap">
+                              <Clock size={11} />
+                              {asg.durationMinutes} Mins
+                            </span>
+                          </>
+                        )}
                         <span className="text-slate-300 dark:text-slate-600">•</span>
                         <span className="whitespace-nowrap">{asg.questions.length} Problem{asg.questions.length !== 1 ? 's' : ''}</span>
                       </div>
