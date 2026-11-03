@@ -257,19 +257,19 @@ export default function MainApp() {
     <motion.nav
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 mb-4 sm:mb-6 rounded-xl shadow-xs"
+      className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 mb-3 sm:mb-4 rounded-xl shadow-xs"
     >
-      <div className="px-3.5 sm:px-5 py-2.5 sm:py-3">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <div className="px-3 sm:px-4 py-2 sm:py-2.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
           {/* Logo & Course Title / Switcher */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
             <div className="cursor-pointer" onClick={() => setCurrentView('course')}>
-              <Code2 className="text-blue-600 dark:text-blue-400" size={24} />
+              <Code2 className="text-blue-600 dark:text-blue-400" size={20} />
             </div>
-            <div>
+            <div className="min-w-0">
               <h1 
                 onClick={() => setCurrentView('course')}
-                className="text-base sm:text-lg font-bold text-slate-900 dark:text-white cursor-pointer tracking-tight"
+                className="text-sm sm:text-base font-bold text-slate-900 dark:text-white cursor-pointer tracking-tight truncate"
               >
                 EduTech Compiler
               </h1>
@@ -284,7 +284,7 @@ export default function MainApp() {
                         localStorage.setItem('dev_course_id', c.id);
                       }
                     }}
-                    className="text-[11px] sm:text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-md px-1.5 py-0.5 focus:ring-1 focus:ring-blue-500 cursor-pointer max-w-[200px] truncate"
+                    className="text-[10px] sm:text-[11px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded px-1.5 py-0.5 focus:ring-1 focus:ring-blue-500 cursor-pointer max-w-[180px] truncate"
                   >
                     {availableCourses.map(c => (
                       <option key={c.id} value={c.id} className="text-slate-900 dark:text-white bg-white dark:bg-slate-800">
@@ -294,7 +294,7 @@ export default function MainApp() {
                   </select>
                 </div>
               ) : (
-                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium truncate max-w-[220px]">
+                <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate max-w-[180px]">
                   {activeCourse.title}
                 </p>
               )}
@@ -302,18 +302,18 @@ export default function MainApp() {
           </div>
           
           {/* Nav Items */}
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
             <Button
               onClick={() => setCurrentView('course')}
               variant={currentView === 'course' ? 'default' : 'outline'}
               size="sm"
-              className={`flex items-center gap-1 sm:gap-1.5 font-medium text-xs px-2.5 py-1 sm:px-3 sm:py-1.5 h-8 ${
+              className={`flex items-center gap-1 font-medium text-[11px] sm:text-xs px-2 sm:px-2.5 h-7.5 rounded-lg ${
                 currentView === 'course'
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
                   : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              <Layers size={14} />
+              <Layers size={13} />
               <span>Workspace</span>
             </Button>
 
@@ -327,13 +327,13 @@ export default function MainApp() {
                 }}
                 variant={currentView === 'set-assignment' ? 'default' : 'outline'}
                 size="sm"
-                className={`flex items-center gap-1 sm:gap-1.5 font-medium text-xs px-2.5 py-1 sm:px-3 sm:py-1.5 h-8 ${
+                className={`flex items-center gap-1 font-medium text-[11px] sm:text-xs px-2 sm:px-2.5 h-7.5 rounded-lg ${
                   currentView === 'set-assignment'
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
                     : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <PlusCircle size={14} />
+                <PlusCircle size={13} />
                 <span>Set Assessment</span>
               </Button>
             )}
@@ -342,13 +342,13 @@ export default function MainApp() {
               onClick={() => { setCurrentView('problems'); setSelectedQuestion(null); }}
               variant={currentView === 'problems' ? 'default' : 'outline'}
               size="sm"
-              className={`flex items-center gap-1 sm:gap-1.5 font-medium text-xs px-2.5 py-1 sm:px-3 sm:py-1.5 h-8 ${
+              className={`flex items-center gap-1 font-medium text-[11px] sm:text-xs px-2 sm:px-2.5 h-7.5 rounded-lg ${
                 currentView === 'problems'
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
                   : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              <BookOpen size={14} />
+              <BookOpen size={13} />
               <span>Library</span>
             </Button>
 
@@ -356,13 +356,13 @@ export default function MainApp() {
               onClick={() => setCurrentView('compiler')}
               variant={currentView === 'compiler' ? 'default' : 'outline'}
               size="sm"
-              className={`flex items-center gap-1 sm:gap-1.5 font-medium text-xs px-2.5 py-1 sm:px-3 sm:py-1.5 h-8 ${
+              className={`flex items-center gap-1 font-medium text-[11px] sm:text-xs px-2 sm:px-2.5 h-7.5 rounded-lg ${
                 currentView === 'compiler'
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
                   : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              <Code2 size={14} />
+              <Code2 size={13} />
               <span>Free Code</span>
             </Button>
             
@@ -370,13 +370,13 @@ export default function MainApp() {
               onClick={() => { setCurrentView('community'); setSelectedQuestion(null); }}
               variant={currentView === 'community' ? 'default' : 'outline'}
               size="sm"
-              className={`flex items-center gap-1 sm:gap-1.5 font-medium text-xs px-2.5 py-1 sm:px-3 sm:py-1.5 h-8 ${
+              className={`flex items-center gap-1 font-medium text-[11px] sm:text-xs px-2 sm:px-2.5 h-7.5 rounded-lg ${
                 currentView === 'community'
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
                   : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              <MessageSquare size={14} />
+              <MessageSquare size={13} />
               <span>Community</span>
             </Button>
 
@@ -385,39 +385,39 @@ export default function MainApp() {
                 onClick={() => setCurrentView('admin')}
                 variant={currentView === 'admin' ? 'default' : 'outline'}
                 size="sm"
-                className={`flex items-center gap-1 sm:gap-1.5 font-medium text-xs px-2.5 py-1 sm:px-3 sm:py-1.5 h-8 ${
+                className={`flex items-center gap-1 font-medium text-[11px] sm:text-xs px-2 sm:px-2.5 h-7.5 rounded-lg ${
                   currentView === 'admin'
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
                     : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
-                <Settings size={14} />
+                <Settings size={13} />
                 <span>Admin</span>
               </Button>
             )}
 
-            <StreakWidget 
-              userId={userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice')}
-              userRole={isFacultyOrAdmin ? (currentRole === 'admin' ? 'ADMIN' : 'FACULTY') : 'LEARNER'}
-              onOpenProfile={() => setSelectedProfileUserId(userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'))}
-            />
+            <div className="flex items-center gap-1 ml-auto sm:ml-1 shrink-0">
+              <StreakWidget 
+                userId={userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice')}
+                userRole={isFacultyOrAdmin ? (currentRole === 'admin' ? 'ADMIN' : 'FACULTY') : 'LEARNER'}
+                onOpenProfile={() => setSelectedProfileUserId(userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'))}
+              />
 
-            <div className="ml-0.5">
               <ThemeToggle />
+              
+              {/* Clickable Profile & Role Indicator */}
+              <button
+                type="button"
+                onClick={() => setSelectedProfileUserId(userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'))}
+                className="px-2 py-0.5 rounded-md text-[10px] sm:text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1 cursor-pointer shadow-2xs tracking-wider"
+                title="Click to view Learner Profile & Coding Analytics"
+              >
+                <div className="w-3.5 h-3.5 rounded-full bg-emerald-600 text-white font-black text-[8px] flex items-center justify-center">
+                  {isFacultyOrAdmin ? 'T' : 'A'}
+                </div>
+                <span>{currentRole.toUpperCase()}</span>
+              </button>
             </div>
-            
-            {/* Clickable Profile & Role Indicator */}
-            <button
-              type="button"
-              onClick={() => setSelectedProfileUserId(userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'))}
-              className="ml-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs tracking-wider"
-              title="Click to view Learner Profile & Coding Analytics"
-            >
-              <div className="w-4 h-4 rounded-full bg-emerald-600 text-white font-black text-[9px] flex items-center justify-center">
-                {isFacultyOrAdmin ? 'T' : 'A'}
-              </div>
-              <span>{currentRole.toUpperCase()}</span>
-            </button>
           </div>
         </div>
       </div>

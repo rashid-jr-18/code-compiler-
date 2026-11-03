@@ -221,65 +221,68 @@ export default function SetAssignment({
       className="w-full space-y-6"
     >
       {/* Top Header Bar */}
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
               Assessment Setup
             </span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[260px]">
               {course.title}
             </span>
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2 tracking-tight">
-            <PlusCircle className="text-blue-600 dark:text-blue-400" />
-            <span>Set Course Assessment</span>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 tracking-tight">
+            <PlusCircle className="text-blue-600 dark:text-blue-400 shrink-0" size={20} />
+            <span className="truncate">Set Course Assessment</span>
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-3">
+          <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
             <span>Container: <strong className="text-slate-700 dark:text-slate-300">{containerName || 'General Assessment'}</strong></span>
-            <span>•</span>
+            <span className="text-slate-300 dark:text-slate-600">•</span>
             <span className="text-emerald-600 dark:text-emerald-400 font-medium">👥 {enrolledLearners.length || 7} Enrolled Learners will be assigned</span>
-          </p>
+          </div>
         </div>
 
         {/* Top Summary & Quick Actions */}
-        <div className="flex items-center gap-3 self-end md:self-auto">
-          <div className="text-right pr-3 border-r border-slate-200 dark:border-slate-800">
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Total Marks</span>
-            <div className="text-xl font-black text-slate-900 dark:text-white">
-              {totalPoints} <span className="text-xs font-normal text-slate-400">pts ({selectedQuestions.length} Qs)</span>
-            </div>
+        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5 pt-2.5 xl:pt-0 border-t xl:border-t-0 border-slate-100 dark:border-slate-800 shrink-0">
+          <div className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center gap-2 text-xs">
+            <span className="text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Total:</span>
+            <span className="font-extrabold text-slate-900 dark:text-white whitespace-nowrap">{totalPoints} pts</span>
+            <span className="text-[11px] text-slate-400 whitespace-nowrap">({selectedQuestions.length} Qs)</span>
           </div>
 
-          {onCancel && (
+          <div className="flex items-center gap-2">
+            {onCancel && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onCancel}
+                className="text-xs h-8.5 px-3 rounded-lg border-slate-300 dark:border-slate-700"
+              >
+                Cancel
+              </Button>
+            )}
+
             <Button
               type="button"
-              variant="outline"
-              onClick={onCancel}
-              className="text-xs h-10 px-4 rounded-xl border-slate-300 dark:border-slate-700"
+              onClick={handleSubmit}
+              disabled={isSubmitting || selectedQuestions.length === 0 || !title.trim()}
+              size="sm"
+              className="h-8.5 px-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
-              Cancel
+              <Save size={14} />
+              <span>{isSubmitting ? 'Creating...' : 'Create & Publish'}</span>
             </Button>
-          )}
-
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting || selectedQuestions.length === 0 || !title.trim()}
-            className="h-10 px-5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
-          >
-            <Save size={15} />
-            <span>{isSubmitting ? 'Creating...' : 'Create & Publish'}</span>
-          </Button>
+          </div>
         </div>
       </div>
 
       {/* 2-Column Split Workspace */}
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5 items-start w-full">
         {/* Left Column: Assessment Meta + Selected Questions Live Cart (Sticky) */}
-        <div className="lg:col-span-5 space-y-4 lg:sticky lg:top-4">
+        <div className="xl:col-span-5 space-y-4 xl:sticky xl:top-4">
           {/* Assessment Meta Card */}
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3.5">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
               <BookOpen size={14} className="text-blue-500" />
               <span>1. Assessment Information</span>
@@ -580,8 +583,8 @@ export default function SetAssignment({
         </div>
 
         {/* Right Column: Problem Library Browser */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+        <div className="xl:col-span-7 space-y-4">
+          <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3.5">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
