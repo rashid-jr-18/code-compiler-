@@ -257,28 +257,28 @@ export default function ContainerManager({
   );
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div className="space-y-4 sm:space-y-5 w-full max-w-6xl mx-auto">
       {/* Container Header */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
               Parent Container
             </span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[260px]">
               {course.code || course.title.split(':')[0]}
             </span>
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-1 flex items-center gap-2.5 tracking-tight">
-            <Layers className="text-blue-600 dark:text-blue-400" size={24} />
-            {container.name}
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mt-1.5 flex items-center gap-2 tracking-tight">
+            <Layers className="text-blue-600 dark:text-blue-400 shrink-0" size={20} />
+            <span className="truncate">{container.name}</span>
           </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
             Assessment Management • Create and manage child assessments for this module
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             onClick={() => {
               if (onSetAssignment) {
@@ -288,7 +288,8 @@ export default function ContainerManager({
                 setIsCreateOpen(true);
               }
             }}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm gap-2 shadow-sm rounded-lg"
+            size="sm"
+            className="h-8.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs sm:text-sm px-3 gap-1.5 shadow-sm rounded-lg"
           >
             <PlusCircle size={15} />
             <span>Set Assignment</span>
@@ -298,7 +299,7 @@ export default function ContainerManager({
             onClick={fetchChildAssessments}
             variant="outline"
             size="sm"
-            className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="h-8.5 w-8.5 p-0 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
             title="Refresh Assessments"
           >
             <RotateCw size={14} className={isLoading ? 'animate-spin' : ''} />
@@ -307,30 +308,30 @@ export default function ContainerManager({
       </div>
 
       {/* Child Assessments List */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
-            <FileCode size={16} className="text-blue-600 dark:text-blue-400" />
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 px-0.5">
+          <h3 className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <FileCode size={15} className="text-blue-600 dark:text-blue-400" />
             Existing Assessments ({childAssessments.length})
           </h3>
-          <span className="text-xs text-slate-500">
+          <span className="text-[11px] sm:text-xs text-slate-500">
             Each child assessment has its own questions, submissions, and export.
           </span>
         </div>
 
         {isLoading ? (
-          <div className="text-center py-16 text-slate-400 animate-pulse text-sm">
+          <div className="text-center py-12 text-slate-400 animate-pulse text-sm">
             Loading child assessments...
           </div>
         ) : childAssessments.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 p-12 rounded-xl text-center border border-slate-300 dark:border-slate-800 space-y-4 shadow-sm">
-            <BookOpen size={48} className="mx-auto text-slate-400 opacity-60" />
+          <div className="bg-white dark:bg-slate-900 p-8 sm:p-12 rounded-xl text-center border border-slate-300 dark:border-slate-800 space-y-4 shadow-sm">
+            <BookOpen size={42} className="mx-auto text-slate-400 opacity-60" />
             <div>
-              <h4 className="text-lg font-bold text-slate-900 dark:text-white">
+              <h4 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
                 No child assessments in &quot;{container.name}&quot; yet
               </h4>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
-                Click &quot;Create Assessment&quot; above to create your first dynamic child assessment (e.g. Python, Java, C Programming).
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
+                Click &quot;Set Assignment&quot; above to create your first dynamic child assessment (e.g. Python, Java, C Programming).
               </p>
             </div>
             <Button
@@ -342,6 +343,7 @@ export default function ContainerManager({
                   setIsCreateOpen(true);
                 }
               }}
+              size="sm"
               className="bg-blue-600 hover:bg-blue-700 text-white gap-2 font-medium rounded-lg shadow-sm"
             >
               <PlusCircle size={15} />
@@ -349,7 +351,7 @@ export default function ContainerManager({
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-3.5">
             {childAssessments.map(asg => {
               const submittedCount = (asg.learners || []).filter(
                 l => l.status === 'SUBMITTED' || l.status === 'REVIEWED' || l.status === 'EXPORTED'
@@ -361,115 +363,116 @@ export default function ContainerManager({
               return (
                 <motion.div
                   key={asg.id}
-                  whileHover={{ y: -2 }}
-                  className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-300 dark:border-slate-800 hover:border-blue-500/60 dark:hover:border-slate-700 shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  whileHover={{ y: -1 }}
+                  className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-300 dark:border-slate-800 hover:border-blue-500/60 dark:hover:border-slate-700 shadow-xs hover:shadow-md transition-all flex flex-col gap-3.5"
                 >
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center gap-3">
-                      <span className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
+                  {/* Top Tier: Title, Metadata, and Quick Actions */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <span className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5">
                         <Code2 size={18} />
                       </span>
-                      <div>
-                        <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug break-words">
                           {asg.title}
                         </h4>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          <span className="flex items-center gap-1 font-medium">
-                            <Calendar size={12} className="text-slate-400" />
+                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          <span className="inline-flex items-center gap-1 font-medium whitespace-nowrap">
+                            <Calendar size={12} className="text-slate-400 shrink-0" />
                             Due: {dueDateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                             {isPastDue && <span className="text-rose-500 font-bold ml-1">(Past Due)</span>}
                           </span>
-                          <span>•</span>
-                          <span className="font-semibold text-slate-900 dark:text-white">
+                          <span className="text-slate-300 dark:text-slate-600">•</span>
+                          <span className="font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap">
                             Max: {asg.maxPoints} pts
                           </span>
-                          <span>•</span>
-                          <span>{(asg.questions || []).length} Problem{(asg.questions || []).length !== 1 ? 's' : ''}</span>
+                          <span className="text-slate-300 dark:text-slate-600">•</span>
+                          <span className="whitespace-nowrap">{(asg.questions || []).length} Problem{(asg.questions || []).length !== 1 ? 's' : ''}</span>
                         </div>
+                        {asg.instructions && (
+                          <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1 mt-1.5">
+                            {asg.instructions}
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1 pl-10">
-                      {asg.instructions}
-                    </p>
+                    {/* Quick Utility Actions (Edit & Delete) */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        onClick={() => setEditingAssessment(asg)}
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
+                        title="Edit assessment details"
+                      >
+                        <Edit3 size={14} />
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(asg.id, asg.title)}
+                        disabled={deletingId === asg.id}
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-md"
+                        title="Delete assessment"
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
                   </div>
 
-                  {/* Submission Stats & Action Buttons */}
-                  <div className="flex flex-wrap items-center gap-2 border-t md:border-t-0 pt-3 md:pt-0 border-slate-100 dark:border-slate-800">
-                    {/* Submission Count Badge */}
-                    <div className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-xs font-medium flex items-center gap-1.5 mr-1 text-slate-700 dark:text-slate-300">
+                  {/* Bottom Tier: Submissions Status & Action Buttons */}
+                  <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+                    {/* Left: Submission Count Badge */}
+                    <div className="px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/70 text-xs font-medium flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                       <Users size={13} className="text-slate-400" />
                       <span>{submittedCount}/{totalLearners} Submitted</span>
                     </div>
 
-                    {/* View Results */}
-                    <Button
-                      onClick={() => onViewResults(asg)}
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs gap-1.5 font-medium rounded-lg shadow-sm"
-                    >
-                      <BarChart3 size={13} />
-                      <span>View Results</span>
-                    </Button>
+                    {/* Right: Primary Action Buttons */}
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                      <Button
+                        onClick={() => onViewResults(asg)}
+                        size="sm"
+                        className="h-8 bg-blue-600 hover:bg-blue-700 text-white text-xs px-2.5 sm:px-3 gap-1.5 font-medium rounded-lg shadow-xs"
+                      >
+                        <BarChart3 size={13} />
+                        <span>View Results</span>
+                      </Button>
 
-                    {/* Export CSV */}
-                    <Button
-                      onClick={() => handleExportCsv(asg)}
-                      variant="outline"
-                      size="sm"
-                      className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs gap-1.5 font-medium"
-                      title="Download results as CSV"
-                    >
-                      <Download size={13} />
-                      <span>Export CSV</span>
-                    </Button>
+                      <Button
+                        onClick={() => handleExportCsv(asg)}
+                        variant="outline"
+                        size="sm"
+                        className="h-8 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs px-2.5 sm:px-3 gap-1.5 font-medium"
+                        title="Download results as CSV"
+                      >
+                        <Download size={13} />
+                        <span>Export CSV</span>
+                      </Button>
 
-                    {/* Open / Solve Preview */}
-                    <Button
-                      onClick={() => onOpenAssessment(asg)}
-                      variant="outline"
-                      size="sm"
-                      className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs gap-1"
-                      title="Preview solver workspace"
-                    >
-                      <Code2 size={13} />
-                      <span>Open</span>
-                    </Button>
+                      <Button
+                        onClick={() => onOpenAssessment(asg)}
+                        variant="outline"
+                        size="sm"
+                        className="h-8 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs px-2.5 sm:px-3 gap-1 font-medium"
+                        title="Preview solver workspace"
+                      >
+                        <Code2 size={13} />
+                        <span>Open</span>
+                      </Button>
 
-                    {/* Copy Direct LMS Topic Link */}
-                    <Button
-                      onClick={() => handleCopyLink(asg)}
-                      variant="outline"
-                      size="sm"
-                      className="border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs gap-1"
-                      title="Copy Direct Brightspace Launch Link"
-                    >
-                      <LinkIcon size={13} />
-                      <span className="hidden sm:inline">LMS Link</span>
-                    </Button>
-
-                    {/* Edit */}
-                    <Button
-                      onClick={() => setEditingAssessment(asg)}
-                      variant="outline"
-                      size="sm"
-                      className="border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs p-2"
-                      title="Edit assessment details"
-                    >
-                      <Edit3 size={13} />
-                    </Button>
-
-                    {/* Delete */}
-                    <Button
-                      onClick={() => handleDelete(asg.id, asg.title)}
-                      disabled={deletingId === asg.id}
-                      variant="outline"
-                      size="sm"
-                      className="border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs p-2"
-                      title="Delete assessment"
-                    >
-                      <Trash2 size={13} />
-                    </Button>
+                      <Button
+                        onClick={() => handleCopyLink(asg)}
+                        variant="outline"
+                        size="sm"
+                        className="h-8 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs px-2.5 sm:px-3 gap-1 font-medium"
+                        title="Copy Direct Brightspace Launch Link"
+                      >
+                        <LinkIcon size={13} />
+                        <span>LMS Link</span>
+                      </Button>
+                    </div>
                   </div>
                 </motion.div>
               );

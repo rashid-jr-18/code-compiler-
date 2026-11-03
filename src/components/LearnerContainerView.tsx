@@ -59,23 +59,23 @@ export default function LearnerContainerView({
   }, [container.id, course.id, learnerId]);
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-4 sm:space-y-5 w-full max-w-5xl mx-auto">
       {/* Container Header */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-md text-xs font-semibold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
               Module Content
             </span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[260px]">
               {course.title}
             </span>
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-1 flex items-center gap-2.5 tracking-tight">
-            <Layers className="text-blue-600 dark:text-blue-400" size={24} />
-            {container.name}
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mt-1.5 flex items-center gap-2 tracking-tight">
+            <Layers className="text-blue-600 dark:text-blue-400 shrink-0" size={20} />
+            <span className="truncate">{container.name}</span>
           </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
             Available Assessments • Select a challenge below to write, test, and submit your code
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function LearnerContainerView({
           onClick={fetchAssessments}
           variant="outline"
           size="sm"
-          className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+          className="h-8.5 w-8.5 p-0 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
           title="Refresh Assessments"
         >
           <RotateCw size={14} className={isLoading ? 'animate-spin' : ''} />
@@ -93,16 +93,16 @@ export default function LearnerContainerView({
 
       {/* Available Child Assessments */}
       {isLoading ? (
-        <div className="text-center py-16 text-slate-400 animate-pulse text-sm">
+        <div className="text-center py-12 text-slate-400 animate-pulse text-sm">
           Loading your assessments...
         </div>
       ) : childAssessments.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 p-12 rounded-xl text-center border border-slate-300 dark:border-slate-800 shadow-sm">
-          <BookOpen size={48} className="mx-auto mb-3 text-slate-400 opacity-60" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+        <div className="bg-white dark:bg-slate-900 p-8 sm:p-12 rounded-xl text-center border border-slate-300 dark:border-slate-800 shadow-sm">
+          <BookOpen size={42} className="mx-auto mb-3 text-slate-400 opacity-60" />
+          <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">
             No assessments currently assigned in &quot;{container.name}&quot;
           </h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Check back later when your instructor publishes coding assessments for this module.
           </p>
         </div>
@@ -112,7 +112,7 @@ export default function LearnerContainerView({
             Assigned Assessments ({childAssessments.length})
           </h3>
 
-          <div className="grid grid-cols-1 gap-3.5">
+          <div className="grid grid-cols-1 gap-3 sm:gap-3.5">
             {childAssessments.map(asg => {
               const myRecord = asg.learners?.[0];
               const isSubmitted = myRecord?.status === 'SUBMITTED' || myRecord?.status === 'REVIEWED' || myRecord?.status === 'EXPORTED';
@@ -122,61 +122,63 @@ export default function LearnerContainerView({
               return (
                 <motion.div
                   key={asg.id}
-                  whileHover={{ y: -2 }}
+                  whileHover={{ y: -1 }}
                   onClick={() => onSelectAssessment(asg)}
-                  className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-300 dark:border-slate-800 hover:border-blue-500/60 dark:hover:border-slate-700 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-300 dark:border-slate-800 hover:border-blue-500/60 dark:hover:border-slate-700 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col gap-3"
                 >
-                  <div className="space-y-2 flex-1">
-                    <div className="flex items-center gap-3">
-                      <span className="p-2.5 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">
-                        <FileCode size={20} />
-                      </span>
-                      <div>
-                        <h4 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">
-                          {asg.title}
-                        </h4>
-                        <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          <span className="flex items-center gap-1">
-                            <Calendar size={12} className="text-slate-400" />
-                            Due: {dueDateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                          </span>
-                          <span>•</span>
-                          <span className="font-semibold text-slate-900 dark:text-white">
-                            {asg.maxPoints} Points
-                          </span>
-                          <span>•</span>
-                          <span>{asg.questions.length} Problem{asg.questions.length !== 1 ? 's' : ''}</span>
-                        </div>
+                  <div className="flex items-start gap-3 min-w-0">
+                    <span className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5">
+                      <FileCode size={18} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors break-words">
+                        {asg.title}
+                      </h4>
+                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        <span className="inline-flex items-center gap-1 font-medium whitespace-nowrap">
+                          <Calendar size={12} className="text-slate-400 shrink-0" />
+                          Due: {dueDateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                          {isPastDue && <span className="text-rose-500 font-bold ml-1">(Past Due)</span>}
+                        </span>
+                        <span className="text-slate-300 dark:text-slate-600">•</span>
+                        <span className="font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                          {asg.maxPoints} Points
+                        </span>
+                        <span className="text-slate-300 dark:text-slate-600">•</span>
+                        <span className="whitespace-nowrap">{asg.questions.length} Problem{asg.questions.length !== 1 ? 's' : ''}</span>
                       </div>
+                      {asg.instructions && (
+                        <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1 mt-1.5">
+                          {asg.instructions}
+                        </p>
+                      )}
                     </div>
-
-                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1 pl-12">
-                      {asg.instructions}
-                    </p>
                   </div>
 
-                  {/* Status & CTA */}
-                  <div className="flex items-center justify-between sm:justify-end gap-3 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 dark:border-slate-800">
-                    {isSubmitted ? (
-                      <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
-                        <CheckCircle size={13} />
-                        Submitted ({myRecord?.score}/{asg.maxPoints} pts)
-                      </span>
-                    ) : isPastDue ? (
-                      <span className="px-3 py-1 text-xs font-semibold rounded-full bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-800 flex items-center gap-1.5">
-                        <AlertCircle size={13} />
-                        Past Due
-                      </span>
-                    ) : (
-                      <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800 flex items-center gap-1.5">
-                        <Clock size={13} />
-                        Assigned
-                      </span>
-                    )}
+                  {/* Status & CTA Bar */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+                    <div>
+                      {isSubmitted ? (
+                        <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 whitespace-nowrap">
+                          <CheckCircle size={13} />
+                          Submitted ({myRecord?.score}/{asg.maxPoints} pts)
+                        </span>
+                      ) : isPastDue ? (
+                        <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-50 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-800 flex items-center gap-1.5 whitespace-nowrap">
+                          <AlertCircle size={13} />
+                          Past Due
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800 flex items-center gap-1.5 whitespace-nowrap">
+                          <Clock size={13} />
+                          Assigned
+                        </span>
+                      )}
+                    </div>
 
                     <Button
                       size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs gap-1 font-medium rounded-lg shadow-sm"
+                      className="h-8 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 gap-1 font-medium rounded-lg shadow-xs"
                     >
                       <span>{isSubmitted ? 'Review Solution' : 'Start Assessment'}</span>
                       <ArrowRight size={13} />

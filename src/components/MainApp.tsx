@@ -257,9 +257,9 @@ export default function MainApp() {
     <motion.nav
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 mb-8 rounded-xl shadow-xs"
+      className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 mb-4 sm:mb-6 rounded-xl shadow-xs"
     >
-      <div className="px-6 py-3.5">
+      <div className="px-3.5 sm:px-5 py-2.5 sm:py-3">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Logo & Course Title / Switcher */}
           <div className="flex items-center gap-3 shrink-0">
@@ -658,7 +658,7 @@ export default function MainApp() {
 
     return (
       <div className={pageBgClass}>
-        <div className={`relative z-10 mx-auto ${isDirectLaunch ? 'w-full px-2 sm:px-4 py-2 sm:py-3' : isSolvingAssessment ? 'w-full max-w-[1720px] p-4 sm:p-6' : isWideView ? 'w-full max-w-[1680px] p-4 sm:p-6' : 'container max-w-7xl p-4 sm:p-6'}`}>
+        <div className={`relative z-10 mx-auto ${isDirectLaunch ? 'w-full px-2 sm:px-4 py-2 sm:py-3' : isSolvingAssessment ? 'w-full max-w-[1720px] p-3 sm:p-5' : isWideView ? 'w-full max-w-[1680px] p-3 sm:p-5' : 'w-full max-w-7xl px-3 sm:px-6 py-3 sm:py-5'}`}>
           {isDirectLaunch ? (
             <div className="flex items-center justify-between py-2 px-3 sm:px-4 mb-2 sm:mb-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs">
               <div className="flex items-center gap-2">
