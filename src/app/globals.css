@@ -85,3 +85,14 @@ body {
   border-bottom: 1px solid #cbd5e1;
 }
 
+/* Completely hide Next.js dev tools floating indicator (N button) and portal overlays */
+nextjs-portal,
+[data-nextjs-dev-tools-indicator],
+[data-nextjs-toast],
+[data-nextjs-dialog-overlay] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+

@@ -2,6 +2,8 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   basePath:'/compiler',
+  // Disable Next.js dev tools floating indicator button
+  devIndicators: false,
   // Enable standalone output for Docker container deployment
   output: 'standalone',
   
