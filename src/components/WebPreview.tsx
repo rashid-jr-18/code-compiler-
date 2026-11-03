@@ -174,14 +174,14 @@ export default function WebPreview({ htmlCode, cssCode = '', jsCode = '' }: WebP
       </div>
 
       {/* Full Width Live Preview Frame */}
-      <div className="flex-1 min-h-[460px] bg-white dark:bg-slate-950 flex flex-col overflow-hidden relative">
+      <div className="flex-1 min-h-0 bg-white dark:bg-slate-950 flex flex-col overflow-hidden relative">
         <iframe
           key={refreshKey}
           ref={iframeRef}
           srcDoc={generateBundle()}
           title="Web Live Preview"
           sandbox="allow-scripts allow-modals"
-          className="w-full h-full min-h-[460px] border-none bg-white flex-1"
+          className="w-full h-full min-h-0 border-none bg-white flex-1"
         />
       </div>
 

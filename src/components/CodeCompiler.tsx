@@ -9,7 +9,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTheme } from '@/components/ThemeProvider';
-import { Code2, Play, Terminal, Loader2, Settings, Globe, Database, Eye, Bug } from 'lucide-react';
+import { Code2, Play, Terminal, Loader2, Settings, Globe, Database, Bug } from 'lucide-react';
 import { getMonacoLanguage } from '@/config/languages';
 import { useEditorPreferences } from '@/hooks/useEditorPreferences';
 import EditorSettingsModal from '@/components/EditorSettingsModal';
@@ -165,6 +165,8 @@ export default function CodeCompiler() {
 
         {/* Main Resizable Split Pane (Draggable Divider) */}
         <ResizableSplitPane
+          leftTitle="Code Editor"
+          rightTitle={isWebMode ? "Live Preview" : "Execution Output"}
           left={
             <div className="flex flex-col gap-4 h-full pr-0 lg:pr-1">
               <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col">

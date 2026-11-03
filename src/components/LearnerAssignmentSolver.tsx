@@ -25,7 +25,13 @@ import {
   Lock,
   Camera,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  Eye,
+  Columns,
+  Terminal,
+  ChevronDown,
+  ChevronUp,
+  Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useEditorPreferences, getEffectiveEditorTheme } from '@/hooks/useEditorPreferences';
@@ -79,6 +85,9 @@ export default function LearnerAssignmentSolver({
     testResults?: Array<{ passed: boolean; points: number; maxPoints: number; isHidden: boolean }>;
   } | null>(null);
   const [showReviewMode, setShowReviewMode] = useState(false);
+  const [webModeView, setWebModeView] = useState<'code' | 'preview' | 'split'>('code');
+  const [isOutputDrawerOpen, setIsOutputDrawerOpen] = useState(false);
+  const [solverPaneMode, setSolverPaneMode] = useState<'split' | 'left' | 'right'>('split');
 
   const currentAssignmentQuestion = assignment.questions?.[activeQuestionIndex];
 
@@ -341,6 +350,11 @@ SELECT * FROM table_name;
       if (!res.ok) throw new Error(data.error || 'Execution failed');
 
       setRunOutput(data);
+      if (isWebMode) {
+        setWebModeView('preview');
+      } else {
+        setIsOutputDrawerOpen(true);
+      }
       toast.success(isWebMode ? 'Preview updated!' : 'Run complete!', { id: toastId });
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Execution failed', { id: toastId });
@@ -700,170 +714,172 @@ SELECT * FROM table_name;
 
   // Left Panel (Description, Constraints, Sample Inputs, Scores)
   const leftPanel = (
-    <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl shadow-sm h-[calc(100vh-170px)] min-h-[480px] overflow-y-auto p-4 sm:p-6 space-y-4">
-      <div>
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-            {question?.title || 'Problem Description'}
-          </h2>
-          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700">
-            {question?.difficulty || 'Medium'} • {currentAssignmentQuestion?.points || 10} pts
-          </span>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
-          <span className="flex items-center gap-1"><Clock size={13} /> Time: {question?.timeLimit || 5}s</span>
-          <span className="flex items-center gap-1"><MemoryStick size={13} /> Memory: {question?.memoryLimit || 128}MB</span>
-          {allowedLanguages && allowedLanguages.length > 0 && (
-            <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-              Required: {allowedLanguages.map(id => getLanguageById(id)?.name || id).join(', ')}
+    <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl shadow-sm h-full flex flex-col overflow-hidden">
+      <div className="p-4 sm:p-5 overflow-y-auto space-y-4 flex-1">
+        <div>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              {question?.title || 'Problem Description'}
+            </h2>
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 shrink-0">
+              {question?.difficulty || 'Medium'} • {currentAssignmentQuestion?.points || 10} pts
             </span>
-          )}
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1.5">
+            <span className="flex items-center gap-1"><Clock size={13} /> Time: {question?.timeLimit || 5}s</span>
+            <span className="flex items-center gap-1"><MemoryStick size={13} /> Memory: {question?.memoryLimit || 128}MB</span>
+            {allowedLanguages && allowedLanguages.length > 0 && (
+              <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                Required: {allowedLanguages.map(id => getLanguageById(id)?.name || id).join(', ')}
+              </span>
+            )}
+          </div>
         </div>
+
+        <div className="prose dark:prose-invert text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed border-t border-slate-200 dark:border-slate-800 pt-3">
+          {question?.description}
+        </div>
+
+        {/* Display separate Sample Input/Output only if description does not already include example blocks */}
+        {(!question?.description?.toLowerCase().includes('example') && (question?.sampleInput || question?.sampleOutput)) && (
+          <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800">
+            {question?.sampleInput && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Sample Input
+                </label>
+                <pre className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg text-xs font-mono text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-800">
+                  {question.sampleInput}
+                </pre>
+              </div>
+            )}
+
+            {question?.sampleOutput && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Sample Expected Output
+                </label>
+                <pre className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg text-xs font-mono text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-800">
+                  {question.sampleOutput}
+                </pre>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Authoritative Submission Result Card */}
+        {submissionFeedback && (
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="p-4 sm:p-5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700 space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Award className="text-blue-600 dark:text-blue-400" />
+                <h3 className="font-bold text-slate-900 dark:text-white">Submission Score</h3>
+              </div>
+              <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">
+                {submissionFeedback.score ?? submissionFeedback.totalScore ?? 0} / {submissionFeedback.maxScore} pts
+              </span>
+            </div>
+
+            <div className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-2">
+              <span>Tests Passed: <strong>{submissionFeedback.passedTests}/{submissionFeedback.totalTests}</strong></span>
+              <span>•</span>
+              <span>Status: <strong>{submissionFeedback.overallStatus}</strong></span>
+            </div>
+
+            <div className="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-lg border border-blue-200 dark:border-blue-900 text-xs text-blue-800 dark:text-blue-300 flex items-start gap-2">
+              <ShieldCheck size={16} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
+              <span>
+                <strong>Submission Recorded:</strong> Your score is securely saved. Your instructor can review and export the grade to Brightspace Gradebook.
+              </span>
+            </div>
+          </motion.div>
+        )}
       </div>
-
-      <div className="prose dark:prose-invert text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed border-t border-slate-200 dark:border-slate-800 pt-3">
-        {question?.description}
-      </div>
-
-      {/* Display separate Sample Input/Output only if description does not already include example blocks */}
-      {(!question?.description?.toLowerCase().includes('example') && (question?.sampleInput || question?.sampleOutput)) && (
-        <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800">
-          {question?.sampleInput && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                Sample Input
-              </label>
-              <pre className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg text-xs font-mono text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-800">
-                {question.sampleInput}
-              </pre>
-            </div>
-          )}
-
-          {question?.sampleOutput && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                Sample Expected Output
-              </label>
-              <pre className="p-3 bg-slate-50 dark:bg-slate-950 rounded-lg text-xs font-mono text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-800">
-                {question.sampleOutput}
-              </pre>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Authoritative Submission Result Card */}
-      {submissionFeedback && (
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="p-5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700 space-y-3"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Award className="text-blue-600 dark:text-blue-400" />
-              <h3 className="font-bold text-slate-900 dark:text-white">Submission Score</h3>
-            </div>
-            <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">
-              {submissionFeedback.score ?? submissionFeedback.totalScore ?? 0} / {submissionFeedback.maxScore} pts
-            </span>
-          </div>
-
-          <div className="text-xs text-slate-600 dark:text-slate-300 flex items-center gap-2">
-            <span>Tests Passed: <strong>{submissionFeedback.passedTests}/{submissionFeedback.totalTests}</strong></span>
-            <span>•</span>
-            <span>Status: <strong>{submissionFeedback.overallStatus}</strong></span>
-          </div>
-
-          <div className="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-lg border border-blue-200 dark:border-blue-900 text-xs text-blue-800 dark:text-blue-300 flex items-start gap-2">
-            <ShieldCheck size={16} className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-400" />
-            <span>
-              <strong>Submission Recorded:</strong> Your score is securely saved. Your instructor can review and export the grade to Brightspace Gradebook.
-            </span>
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 
   // Right Panel (Solution Editor + Adaptive Output)
   const rightPanel = (
-    <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl shadow-sm h-[calc(100vh-170px)] min-h-[480px] flex flex-col overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl shadow-sm h-full flex flex-col overflow-hidden">
       {/* Editor Header Bar */}
-      <div className="px-4 py-2.5 bg-slate-100/90 dark:bg-slate-900/90 border-b border-slate-300 dark:border-slate-800 flex items-center justify-between gap-3">
-        <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-          <Code2 size={16} className="text-blue-600 dark:text-blue-400" /> Solution Editor
-        </h3>
+      <div className="px-3 sm:px-4 py-2 bg-slate-100/90 dark:bg-slate-900/90 border-b border-slate-300 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2">
-          <Button
-            onClick={handleRunSample}
-            disabled={isRunning || isSubmitting}
-            variant="success"
-            size="sm"
-            className="h-9 px-3.5 text-xs flex items-center gap-1.5 font-semibold cursor-pointer shadow-xs text-white"
-          >
-            {isRunning ? <Zap className="animate-spin" size={13} /> : <Play size={13} fill="currentColor" />}
-            <span>Run</span>
-          </Button>
+          <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+            <Code2 size={15} className="text-blue-600 dark:text-blue-400" />
+            <span>Editor</span>
+          </h3>
 
-          <Button
-            onClick={() => setIsDebugOpen(true)}
-            variant="debug"
-            size="sm"
-            className="h-9 px-3.5 text-xs flex items-center gap-1.5 font-semibold cursor-pointer shadow-xs text-white"
-          >
-            <Bug size={13} />
-            <span>Debug</span>
-          </Button>
+          {/* Web Mode Tabs: Code | Live Preview | Split */}
+          {isWebMode && (
+            <div className="inline-flex items-center p-0.5 bg-slate-200/90 dark:bg-slate-800 rounded-lg text-[11px] font-medium border border-slate-300/80 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => setWebModeView('code')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all ${
+                  webModeView === 'code'
+                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 font-bold shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Code2 size={12} />
+                <span>Code</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setWebModeView('preview')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all ${
+                  webModeView === 'preview'
+                    ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Eye size={12} />
+                <span>Live Preview</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setWebModeView('split')}
+                className={`hidden md:flex items-center gap-1 px-2.5 py-1 rounded-md transition-all ${
+                  webModeView === 'split'
+                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 font-bold shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Columns size={12} />
+                <span>Split</span>
+              </button>
+            </div>
+          )}
+
           <LanguageSwitcher
-            className="w-48"
+            className="w-40 sm:w-44"
             supportedLanguages={allowedLanguages || question?.supportedLanguages}
             selectedLanguage={selectedLanguage}
             onLanguageSelect={setSelectedLanguage}
           />
+
           <button
             onClick={() => setIsSettingsOpen(true)}
             title="Editor Settings"
-            className="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-xs cursor-pointer"
+            className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-xs cursor-pointer"
           >
-            <Settings size={15} />
+            <Settings size={14} />
           </button>
         </div>
-      </div>
 
-      {/* Monaco Editor */}
-      <div className="flex-1 overflow-hidden">
-        <Editor
-          height="100%"
-          language={getMonacoLanguage(selectedLanguage.id)}
-          value={code}
-          onChange={value => setCode(value || '')}
-          beforeMount={registerMonacoThemes}
-          theme={getEffectiveEditorTheme(preferences.colorTheme, resolvedTheme)}
-          options={{
-            minimap: { enabled: false },
-            fontSize: preferences.fontSize,
-            wordWrap: preferences.wordWrap,
-            quickSuggestions: !preferences.disableAutocomplete,
-            suggestOnTriggerCharacters: !preferences.disableAutocomplete,
-            lineNumbers: 'on',
-            automaticLayout: true,
-            fontFamily: 'JetBrains Mono, Menlo, Monaco, Consolas, monospace',
-          }}
-        />
-      </div>
-
-      {/* Action Footer */}
-      <div className="px-4 py-2.5 bg-slate-100/90 dark:bg-slate-900/90 border-t border-slate-300 dark:border-slate-800 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <Button
             onClick={() => setIsDebugOpen(true)}
             variant="debug"
             size="sm"
-            className="flex items-center gap-1.5 font-medium cursor-pointer text-white"
+            className="h-8 px-2.5 sm:px-3 text-xs flex items-center gap-1 font-semibold cursor-pointer shadow-xs text-white"
           >
-            <Bug size={14} />
-            <span>Debug</span>
+            <Bug size={13} />
+            <span className="hidden sm:inline">Debug</span>
           </Button>
 
           <Button
@@ -871,52 +887,141 @@ SELECT * FROM table_name;
             disabled={isRunning || isSubmitting}
             variant="success"
             size="sm"
-            className="flex items-center gap-1.5 font-medium cursor-pointer"
+            className="h-8 px-3 text-xs flex items-center gap-1.5 font-semibold cursor-pointer shadow-xs text-white"
           >
-            {isRunning ? <Zap className="animate-spin" size={14} /> : <Play size={14} fill="currentColor" />}
-            <span>Run</span>
+            {isRunning ? <Zap className="animate-spin" size={13} /> : <Play size={13} fill="currentColor" />}
+            <span>{isWebMode ? 'Preview' : 'Run'}</span>
+          </Button>
+
+          <Button
+            onClick={handleSubmitAuthoritative}
+            disabled={isRunning || isSubmitting}
+            size="sm"
+            className="h-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-1.5 px-3 sm:px-4 text-xs shadow-xs"
+          >
+            {isSubmitting ? <Zap className="animate-spin" size={13} /> : <Send size={13} />}
+            <span>Submit</span>
           </Button>
         </div>
-
-        <Button
-          onClick={handleSubmitAuthoritative}
-          disabled={isRunning || isSubmitting}
-          size="sm"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium flex items-center gap-1.5 px-5 shadow-sm"
-        >
-          {isSubmitting ? <Zap className="animate-spin" size={14} /> : <Send size={14} />}
-          <span>Submit Assessment</span>
-        </Button>
       </div>
 
-      {/* Adaptive Output Modes */}
-      {isWebMode ? (
-        <div className="p-3 border-t border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 flex-1 max-h-60 overflow-hidden">
-          <WebPreview htmlCode={code} />
-        </div>
-      ) : isSqlMode ? (
-        runOutput && (
-          <div className="p-3 border-t border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 flex-1 max-h-60 overflow-hidden">
-            <SqlResultTable output={runOutput.stdout} error={runOutput.stderr} isLoading={isRunning} />
-          </div>
-        )
-      ) : (
-        /* Run Sample Output Drawer */
-        runOutput && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-3.5 border-t border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-mono text-xs space-y-1.5 max-h-48 overflow-y-auto"
-          >
-            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 border-b border-slate-300 dark:border-slate-800 pb-1">
-              <span className="font-semibold">Output: {runOutput.status}</span>
+      {/* Editor & Web Preview Viewport */}
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
+        {isWebMode ? (
+          <div className="flex-1 flex flex-row w-full h-full min-h-0 overflow-hidden">
+            {/* Monaco Editor in Web Mode */}
+            <div className={`h-full flex flex-col min-h-0 ${webModeView === 'code' ? 'w-full' : webModeView === 'split' ? 'w-1/2 border-r border-slate-300 dark:border-slate-800' : 'hidden'}`}>
+              <Editor
+                height="100%"
+                language={getMonacoLanguage(selectedLanguage.id)}
+                value={code}
+                onChange={value => setCode(value || '')}
+                beforeMount={registerMonacoThemes}
+                theme={getEffectiveEditorTheme(preferences.colorTheme, resolvedTheme)}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: preferences.fontSize,
+                  wordWrap: preferences.wordWrap,
+                  quickSuggestions: !preferences.disableAutocomplete,
+                  suggestOnTriggerCharacters: !preferences.disableAutocomplete,
+                  lineNumbers: 'on',
+                  automaticLayout: true,
+                  fontFamily: 'JetBrains Mono, Menlo, Monaco, Consolas, monospace',
+                }}
+              />
             </div>
-            {runOutput.stdout && <pre className="text-emerald-700 dark:text-emerald-400 whitespace-pre-wrap font-mono">{runOutput.stdout}</pre>}
-            {runOutput.stderr && <pre className="text-rose-700 dark:text-rose-400 whitespace-pre-wrap font-mono">{runOutput.stderr}</pre>}
-            {!runOutput.stdout && !runOutput.stderr && <span className="text-slate-400 dark:text-slate-500">Program produced no output.</span>}
-          </motion.div>
-        )
-      )}
+
+            {/* Web Preview in Web Mode */}
+            <div className={`h-full flex flex-col min-h-0 ${webModeView === 'preview' ? 'w-full' : webModeView === 'split' ? 'w-1/2' : 'hidden'}`}>
+              <WebPreview htmlCode={code} />
+            </div>
+          </div>
+        ) : (
+          /* Standard Monaco Editor */
+          <div className="flex-1 min-h-0 overflow-hidden">
+            <Editor
+              height="100%"
+              language={getMonacoLanguage(selectedLanguage.id)}
+              value={code}
+              onChange={value => setCode(value || '')}
+              beforeMount={registerMonacoThemes}
+              theme={getEffectiveEditorTheme(preferences.colorTheme, resolvedTheme)}
+              options={{
+                minimap: { enabled: false },
+                fontSize: preferences.fontSize,
+                wordWrap: preferences.wordWrap,
+                quickSuggestions: !preferences.disableAutocomplete,
+                suggestOnTriggerCharacters: !preferences.disableAutocomplete,
+                lineNumbers: 'on',
+                automaticLayout: true,
+                fontFamily: 'JetBrains Mono, Menlo, Monaco, Consolas, monospace',
+              }}
+            />
+          </div>
+        )}
+
+        {/* Collapsible Output / Test Results Drawer (Non-Web mode) */}
+        {!isWebMode && (runOutput || isRunning) && (
+          <div className={`border-t border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col transition-all duration-200 shrink-0 ${isOutputDrawerOpen ? 'h-48' : 'h-8'}`}>
+            <div 
+              onClick={() => setIsOutputDrawerOpen(prev => !prev)}
+              className="px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none"
+            >
+              <div className="flex items-center gap-2 font-semibold">
+                <Terminal size={12} className="text-blue-500" />
+                <span>Execution Output</span>
+                {runOutput && (
+                  <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
+                    runOutput.status === 'Success' || runOutput.status === 'Accepted'
+                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                      : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                  }`}>
+                    {runOutput.status}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setRunOutput(null);
+                  }}
+                  className="p-0.5 text-slate-400 hover:text-rose-500 transition-colors"
+                  title="Clear output"
+                >
+                  <Trash2 size={12} />
+                </button>
+                {isOutputDrawerOpen ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+              </div>
+            </div>
+
+            {isOutputDrawerOpen && (
+              <div className="flex-1 p-3 font-mono text-xs overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-950">
+                {isSqlMode ? (
+                  <SqlResultTable output={runOutput?.stdout} error={runOutput?.stderr} isLoading={isRunning} />
+                ) : (
+                  <>
+                    {runOutput?.stdout && (
+                      <pre className="text-emerald-700 dark:text-emerald-400 whitespace-pre-wrap font-mono leading-relaxed">
+                        {runOutput.stdout}
+                      </pre>
+                    )}
+                    {runOutput?.stderr && (
+                      <pre className="text-rose-700 dark:text-rose-400 whitespace-pre-wrap font-mono leading-relaxed">
+                        {runOutput.stderr}
+                      </pre>
+                    )}
+                    {!runOutput?.stdout && !runOutput?.stderr && (
+                      <span className="text-slate-400 italic">Program produced no output.</span>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -1079,51 +1184,35 @@ SELECT * FROM table_name;
             </div>
           )}
 
-          {/* Top Run & Debug Buttons */}
           {onOpenCommunity && question && (
             <Button
               onClick={() => onOpenCommunity(question.id, question.title)}
               variant="outline"
               size="sm"
-              className="h-9 flex items-center gap-1.5 px-3 text-xs shadow-xs font-semibold cursor-pointer border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40"
+              className="h-8 flex items-center gap-1.5 px-3 text-xs shadow-xs font-semibold cursor-pointer border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40"
             >
               <MessageSquare size={13} />
               <span>Discuss</span>
             </Button>
           )}
-
-          <Button
-            onClick={() => setIsDebugOpen(true)}
-            variant="debug"
-            size="sm"
-            className="h-9 flex items-center gap-1.5 px-3.5 text-xs shadow-xs font-semibold cursor-pointer text-white"
-          >
-            <Bug size={13} />
-            <span>Debug</span>
-          </Button>
-
-          <Button
-            onClick={handleRunSample}
-            disabled={isRunning || isSubmitting}
-            variant="success"
-            size="sm"
-            className="h-9 flex items-center gap-1.5 px-3.5 text-xs shadow-xs font-semibold cursor-pointer"
-          >
-            {isRunning ? <Zap className="animate-spin" size={13} /> : <Play size={13} fill="currentColor" />}
-            <span>Run</span>
-          </Button>
         </div>
       </div>
 
-      {/* LeetCode-style Resizable Split Pane */}
-      <ResizableSplitPane
-        left={leftPanel}
-        right={rightPanel}
-        initialLeftPercent={45}
-        minLeftPercent={25}
-        maxLeftPercent={75}
-        storageKey="edutech_split_ratio_learner"
-      />
+      {/* Resizable Split Pane with Responsive Tabs */}
+      <div className="h-[calc(100vh-140px)] min-h-[560px] w-full flex flex-col">
+        <ResizableSplitPane
+          left={leftPanel}
+          right={rightPanel}
+          initialLeftPercent={42}
+          minLeftPercent={22}
+          maxLeftPercent={78}
+          storageKey="edutech_split_ratio_learner"
+          leftTitle="Problem"
+          rightTitle="Solution Editor"
+          activeMode={solverPaneMode}
+          onModeChange={setSolverPaneMode}
+        />
+      </div>
 
       <EditorSettingsModal
         isOpen={isSettingsOpen}

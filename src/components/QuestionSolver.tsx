@@ -775,6 +775,8 @@ int main() {
         minLeftPercent={25}
         maxLeftPercent={75}
         storageKey="edutech_split_ratio_questionsolver"
+        leftTitle="Problem"
+        rightTitle="Solution Editor"
       />
 
       {/* Settings Modal */}
