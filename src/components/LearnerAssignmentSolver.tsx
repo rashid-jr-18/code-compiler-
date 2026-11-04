@@ -88,6 +88,7 @@ export default function LearnerAssignmentSolver({
   const [webModeView, setWebModeView] = useState<'code' | 'preview' | 'split'>('code');
   const [isOutputDrawerOpen, setIsOutputDrawerOpen] = useState(false);
   const [solverPaneMode, setSolverPaneMode] = useState<'split' | 'left' | 'right'>('split');
+  const [autoExitCountdown, setAutoExitCountdown] = useState<number | null>(null);
 
   const currentAssignmentQuestion = assignment.questions?.[activeQuestionIndex];
 
@@ -1026,23 +1027,49 @@ SELECT * FROM table_name;
   );
 
   const myRecord = assignment.learners?.find(l => l.learnerId === learnerId) || assignment.learners?.[0];
-  const isAlreadySubmitted = (myRecord?.status === 'SUBMITTED' || myRecord?.status === 'REVIEWED' || myRecord?.status === 'EXPORTED') && !submissionFeedback;
+  const isAlreadySubmitted = (myRecord?.status === 'SUBMITTED' || myRecord?.status === 'REVIEWED' || myRecord?.status === 'EXPORTED');
+  const isFinished = isAlreadySubmitted || Boolean(submissionFeedback);
 
-  if (isAlreadySubmitted && !showReviewMode) {
+  // Auto-exit countdown when assessment is submitted
+  useEffect(() => {
+    if (Boolean(submissionFeedback) && autoExitCountdown === null) {
+      setAutoExitCountdown(5);
+    }
+  }, [submissionFeedback, autoExitCountdown]);
+
+  useEffect(() => {
+    if (autoExitCountdown === null) return;
+    if (autoExitCountdown <= 0) {
+      onBack();
+      return;
+    }
+    const timer = setTimeout(() => {
+      setAutoExitCountdown(prev => (prev !== null ? prev - 1 : null));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [autoExitCountdown, onBack]);
+
+  if (isFinished) {
+    const finalScore = latestScore ?? submissionFeedback?.score ?? myRecord?.score ?? 0;
+    const finalMax = submissionFeedback?.maxScore ?? assignment.maxPoints ?? 100;
+    const passed = submissionFeedback?.passedTests ?? (myRecord?.status === 'SUBMITTED' ? (assignment.questions?.length || 1) : 0);
+    const total = submissionFeedback?.totalTests ?? (assignment.questions?.length || 1);
+
     return (
-      <div className="max-w-2xl mx-auto my-12 p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-800 shadow-xl text-center space-y-6">
+      <div className="max-w-xl mx-auto my-10 p-6 sm:p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-800 shadow-xl text-center space-y-6">
         <div className="w-16 h-16 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
           <CheckCircle size={36} />
         </div>
+
         <div className="space-y-2">
           <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
-            Assessment Completed
+            Exam Finished & Locked
           </span>
           <h2 className="text-2xl font-black text-slate-900 dark:text-white">
             Your assessment &quot;{assignment.title}&quot; is submitted!
           </h2>
           <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-            You have already successfully completed and submitted this assessment. Your score and code have been submitted to your instructor.
+            Your solution and test scores have been securely submitted to your instructor. The examination session is now closed.
           </p>
         </div>
 
@@ -1050,35 +1077,42 @@ SELECT * FROM table_name;
           <div>
             <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Your Score</p>
             <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
-              {(latestScore ?? myRecord?.score) ?? 0} <span className="text-sm font-normal text-slate-400">/ {assignment.maxPoints} pts</span>
+              {finalScore} <span className="text-sm font-normal text-slate-400">/ {finalMax} pts</span>
             </p>
           </div>
           <div className="h-10 w-px bg-slate-200 dark:bg-slate-800" />
           <div>
             <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Status</p>
             <p className="text-base font-bold text-slate-900 dark:text-white mt-1">
-              {myRecord?.status || 'SUBMITTED'}
+              SUBMITTED
             </p>
           </div>
+          {submissionFeedback && (
+            <>
+              <div className="h-10 w-px bg-slate-200 dark:bg-slate-800" />
+              <div>
+                <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Tests Passed</p>
+                <p className="text-base font-bold text-slate-900 dark:text-white mt-1">
+                  {passed} / {total}
+                </p>
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="flex items-center justify-center gap-3 pt-2">
-          <button
-            type="button"
-            onClick={() => setShowReviewMode(true)}
-            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-white dark:text-slate-900 transition-colors shadow-sm cursor-pointer"
+        {autoExitCountdown !== null && autoExitCountdown > 0 && (
+          <p className="text-xs text-slate-400 animate-pulse">
+            Automatically exiting in <span className="font-bold text-slate-700 dark:text-slate-200">{autoExitCountdown}</span> seconds...
+          </p>
+        )}
+
+        <div className="pt-2 flex justify-center">
+          <Button
+            onClick={onBack}
+            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-sm"
           >
-            Review Your Code
-          </button>
-          {onBack && !isDirectLaunch && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
-            >
-              Back to Course
-            </button>
-          )}
+            Exit Assessment Now
+          </Button>
         </div>
       </div>
     );

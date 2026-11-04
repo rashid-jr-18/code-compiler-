@@ -122,9 +122,11 @@ export default function LearnerContainerView({
               return (
                 <motion.div
                   key={asg.id}
-                  whileHover={{ y: -1 }}
-                  onClick={() => onSelectAssessment(asg)}
-                  className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-300 dark:border-slate-800 hover:border-blue-500/60 dark:hover:border-slate-700 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col gap-3"
+                  whileHover={!isSubmitted ? { y: -1 } : {}}
+                  onClick={() => !isSubmitted && onSelectAssessment(asg)}
+                  className={`bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-300 dark:border-slate-800 shadow-xs transition-all flex flex-col gap-3 ${
+                    isSubmitted ? 'opacity-85 cursor-default' : 'hover:border-blue-500/60 dark:hover:border-slate-700 hover:shadow-md cursor-pointer'
+                  }`}
                 >
                   <div className="flex items-start gap-3 min-w-0">
                     <span className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5">
@@ -185,13 +187,24 @@ export default function LearnerContainerView({
                       )}
                     </div>
 
-                    <Button
-                      size="sm"
-                      className="h-8 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 gap-1 font-medium rounded-lg shadow-xs"
-                    >
-                      <span>{isSubmitted ? 'Review Solution' : 'Start Assessment'}</span>
-                      <ArrowRight size={13} />
-                    </Button>
+                    {isSubmitted ? (
+                      <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+                        <CheckCircle size={13} />
+                        Completed & Locked
+                      </span>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectAssessment(asg);
+                        }}
+                        className="h-8 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 gap-1 font-medium rounded-lg shadow-xs"
+                      >
+                        <span>Start Assessment</span>
+                        <ArrowRight size={13} />
+                      </Button>
+                    )}
                   </div>
                 </motion.div>
               );

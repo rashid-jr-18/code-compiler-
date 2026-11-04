@@ -19,28 +19,25 @@ export async function GET(request: NextRequest) {
     ? db.getAssignmentsByContainer(containerId)
     : db.getAssignmentsByCourse(courseId!);
 
-  // If container has 0 assessments, fallback to course-level assessments
-  if (assignments.length === 0 && courseId) {
-    const courseAssignments = db.getAssignmentsByCourse(courseId);
-    if (courseAssignments.length > 0) {
-      assignments = courseAssignments;
-    }
-  }
-
-  // If still 0, fallback to default container so existing created assessments are never lost
-  if (assignments.length === 0) {
-    const defaultAssignments = db.getAssignmentsByContainer('cnt_cs101_default');
-    if (defaultAssignments.length > 0) {
-      assignments = defaultAssignments;
-    }
-  }
-
-  // If user is Admin or Faculty for this course, return all assignments with learner counts
+  // If user is Admin or Faculty for this course, allow fallback in dev mode
   if (user.role === 'ADMIN' || user.role === 'FACULTY') {
+    if (assignments.length === 0 && courseId) {
+      const courseAssignments = db.getAssignmentsByCourse(courseId);
+      if (courseAssignments.length > 0) {
+        assignments = courseAssignments;
+      }
+    }
+    if (assignments.length === 0) {
+      const defaultAssignments = db.getAssignmentsByContainer('cnt_cs101_default');
+      if (defaultAssignments.length > 0) {
+        assignments = defaultAssignments;
+      }
+    }
     return NextResponse.json(assignments);
   }
 
-  // If user is a Learner, all published assessments in this container/course are available
+  // If user is a Learner: STRICT CONTAINER ISOLATION
+  // Return ONLY assessments belonging strictly to this container. Never leak other containers' assessments.
   const learnerAssignments = assignments.map(a => {
     let myRecord = a.learners?.find(al => al.learnerId === user.id);
     if (!myRecord) {
@@ -139,8 +136,8 @@ export async function POST(request: NextRequest) {
       assignmentTitle: assignment.title,
       instructions: assignment.instructions,
       maxPoints: assignment.maxPoints,
-      startDate: assignment.startDate,
-      dueDate: assignment.dueDate
+      startDate: assignment.startDate ? String(assignment.startDate) : undefined,
+      dueDate: String(assignment.dueDate)
     }).catch(err => {
       console.warn('[Create Assignment] Brightspace topic error:', err);
       return null;

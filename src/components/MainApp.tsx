@@ -356,29 +356,33 @@ export default function MainApp() {
           </button>
         )}
 
-        <button
-          onClick={() => { setCurrentView('problems'); setSelectedQuestion(null); }}
-          className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
-            currentView === 'problems'
-              ? 'bg-blue-600 text-white shadow-xs font-semibold'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
-          }`}
-        >
-          <BookOpen size={13} />
-          <span>Library</span>
-        </button>
+        {!isLearner && (
+          <>
+            <button
+              onClick={() => { setCurrentView('problems'); setSelectedQuestion(null); }}
+              className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+                currentView === 'problems'
+                  ? 'bg-blue-600 text-white shadow-xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
+              }`}
+            >
+              <BookOpen size={13} />
+              <span>Library</span>
+            </button>
 
-        <button
-          onClick={() => setCurrentView('compiler')}
-          className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
-            currentView === 'compiler'
-              ? 'bg-blue-600 text-white shadow-xs font-semibold'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
-          }`}
-        >
-          <Code2 size={13} />
-          <span>Free Code</span>
-        </button>
+            <button
+              onClick={() => setCurrentView('compiler')}
+              className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+                currentView === 'compiler'
+                  ? 'bg-blue-600 text-white shadow-xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
+              }`}
+            >
+              <Code2 size={13} />
+              <span>Free Code</span>
+            </button>
+          </>
+        )}
         
         <button
           onClick={() => { setCurrentView('community'); setSelectedQuestion(null); }}
@@ -444,7 +448,7 @@ export default function MainApp() {
 
       return (
         <div className="space-y-4">
-          {courseContainers.length > 1 && (
+          {courseContainers.length > 1 && !isLearner && (
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-semibold text-slate-500">Modules:</span>
               <div className="flex flex-wrap gap-1.5">
