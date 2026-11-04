@@ -88,7 +88,6 @@ export default function LearnerAssignmentSolver({
   const [webModeView, setWebModeView] = useState<'code' | 'preview' | 'split'>('code');
   const [isOutputDrawerOpen, setIsOutputDrawerOpen] = useState(false);
   const [solverPaneMode, setSolverPaneMode] = useState<'split' | 'left' | 'right'>('split');
-  const [autoExitCountdown, setAutoExitCountdown] = useState<number | null>(null);
 
   const currentAssignmentQuestion = assignment.questions?.[activeQuestionIndex];
 
@@ -1030,25 +1029,6 @@ SELECT * FROM table_name;
   const isAlreadySubmitted = (myRecord?.status === 'SUBMITTED' || myRecord?.status === 'REVIEWED' || myRecord?.status === 'EXPORTED');
   const isFinished = isAlreadySubmitted || Boolean(submissionFeedback);
 
-  // Auto-exit countdown when assessment is submitted
-  useEffect(() => {
-    if (Boolean(submissionFeedback) && autoExitCountdown === null) {
-      setAutoExitCountdown(5);
-    }
-  }, [submissionFeedback, autoExitCountdown]);
-
-  useEffect(() => {
-    if (autoExitCountdown === null) return;
-    if (autoExitCountdown <= 0) {
-      onBack();
-      return;
-    }
-    const timer = setTimeout(() => {
-      setAutoExitCountdown(prev => (prev !== null ? prev - 1 : null));
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [autoExitCountdown, onBack]);
-
   if (isFinished) {
     const finalScore = latestScore ?? submissionFeedback?.score ?? myRecord?.score ?? 0;
     const finalMax = submissionFeedback?.maxScore ?? assignment.maxPoints ?? 100;
@@ -1099,12 +1079,6 @@ SELECT * FROM table_name;
             </>
           )}
         </div>
-
-        {autoExitCountdown !== null && autoExitCountdown > 0 && (
-          <p className="text-xs text-slate-400 animate-pulse">
-            Automatically exiting in <span className="font-bold text-slate-700 dark:text-slate-200">{autoExitCountdown}</span> seconds...
-          </p>
-        )}
 
         <div className="pt-2 flex justify-center">
           <Button

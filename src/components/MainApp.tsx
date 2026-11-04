@@ -437,9 +437,9 @@ export default function MainApp() {
 
       // Resolve active container dynamically from LTI context or database
       const currentContainer: AssessmentContainer = activeContainer || {
-        id: 'cnt_cs101_default',
+        id: resourceLinkId ? `cnt_${resourceLinkId.replace(/[^a-zA-Z0-9_-]/g, '_')}` : 'cnt_cs101_default',
         courseId: activeCourse.id,
-        name: resourceLinkTitle || 'Programming',
+        name: resourceLinkTitle || 'Assessments',
         description: 'Course assessment container',
         createdBy: 'usr_faculty',
         createdAt: new Date().toISOString(),
@@ -504,7 +504,7 @@ export default function MainApp() {
 
     // 3. Resolve active container dynamically from LTI context or database
     const currentContainer: AssessmentContainer = activeContainer || {
-      id: 'cnt_cs101_default',
+      id: resourceLinkId ? `cnt_${resourceLinkId.replace(/[^a-zA-Z0-9_-]/g, '_')}` : 'cnt_cs101_default',
       courseId: activeCourse.id,
       name: resourceLinkTitle || 'Programming',
       description: 'Course assessment container',
