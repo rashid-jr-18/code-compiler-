@@ -67,6 +67,27 @@ export default function ContainerManager({
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<Array<{ questionId: string; points: number }>>([]);
   const [questionSearch, setQuestionSearch] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSyncingRoster, setIsSyncingRoster] = useState(false);
+
+  const handleSyncRoster = async () => {
+    setIsSyncingRoster(true);
+    const toastId = toast.loading('Syncing class roster from Brightspace...');
+    try {
+      const res = await fetch(`/api/courses/${course.id}/sync-roster`, {
+        method: 'POST',
+        headers: { 'x-user-role': 'FACULTY' }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Sync failed');
+      toast.success(`Successfully synced ${data.count} learners from Brightspace!`, { id: toastId });
+      fetchChildAssessments();
+      onContainerUpdated?.();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to sync roster from Brightspace', { id: toastId });
+    } finally {
+      setIsSyncingRoster(false);
+    }
+  };
 
   // Fetch child assessments under this specific container
   const fetchChildAssessments = async () => {
@@ -286,6 +307,18 @@ export default function ContainerManager({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          <Button
+            onClick={handleSyncRoster}
+            disabled={isSyncingRoster}
+            variant="outline"
+            size="sm"
+            className="h-8.5 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium px-3 gap-1.5 rounded-lg"
+            title="Fetch and sync enrolled students from Brightspace"
+          >
+            <Users size={14} className={isSyncingRoster ? 'animate-spin' : ''} />
+            <span>Sync Roster</span>
+          </Button>
+
           <Button
             onClick={() => {
               if (onSetAssignment) {

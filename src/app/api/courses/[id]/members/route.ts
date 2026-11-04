@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { requireCourseAccess, requireRole } from '@/lib/auth';
+import { syncBrightspaceCourseClasslist } from '@/lib/brightspaceContent';
 
 export async function GET(
   request: NextRequest,
@@ -10,7 +11,21 @@ export async function GET(
   const auth = requireCourseAccess(request, id);
   if (auth instanceof NextResponse) return auth;
 
-  const members = db.getCourseMembers(id);
+  let members = db.getCourseMembers(id);
+  const learnerCount = members.filter(m => m.role === 'LEARNER').length;
+
+  // If instructor or admin requests members and no learners enrolled yet, auto-sync from Brightspace
+  if (learnerCount === 0 && (auth.user.role === 'FACULTY' || auth.user.role === 'ADMIN')) {
+    try {
+      const syncResult = await syncBrightspaceCourseClasslist(id);
+      if (syncResult.success && syncResult.count > 0) {
+        members = db.getCourseMembers(id);
+      }
+    } catch {
+      // ignore sync errors and fallback to existing members
+    }
+  }
+
   return NextResponse.json(members);
 }
 

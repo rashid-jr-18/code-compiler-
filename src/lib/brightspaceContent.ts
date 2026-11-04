@@ -19,17 +19,16 @@ export interface CreateBrightspaceTopicResult {
   error?: string;
 }
 
-/**
- * Creates both:
- * 1. An Assignment (Dropbox) Folder in Brightspace (/d2l/lms/dropbox/admin/folders_manage.d2l)
- *    Matching standard format: "(EX) <Title> (Code Assessment)"
- * 2. A Topic Quicklink under the course Content Module in Brightspace Course Content sidebar.
- */
-export async function createBrightspaceTopic(params: CreateBrightspaceTopicParams): Promise<CreateBrightspaceTopicResult> {
-  const { courseId, moduleId, assignmentId, assignmentTitle, instructions, maxPoints, startDate, dueDate } = params;
-  const orgUnitId = String(courseId).replace(/^crs_/, '');
+export interface BrightspaceSyncRosterResult {
+  success: boolean;
+  count: number;
+  error?: string;
+}
 
-  const host = process.env.BRIGHTSPACE_HOST || 'corplms.d2l-partners.brightspace.com';
+/**
+ * Reusable helper to obtain a Brightspace OAuth2 Access Token using LTI 1.3 Client Credentials Assertion.
+ */
+export async function getBrightspaceAccessToken(customScope?: string): Promise<string | null> {
   const rawTokenUrl = process.env.LTI_TOKEN_URL;
   const tokenUrl = (rawTokenUrl && !rawTokenUrl.includes('your-institution'))
     ? rawTokenUrl
@@ -37,21 +36,10 @@ export async function createBrightspaceTopic(params: CreateBrightspaceTopicParam
 
   const privateKey = process.env.LTI_TOOL_PRIVATE_KEY;
   const clientId = process.env.LTI_CLIENT_ID;
-  const appBaseUrl = process.env.APP_BASE_URL && !process.env.APP_BASE_URL.includes('yourdomain.com')
-    ? process.env.APP_BASE_URL
-    : 'https://learning.edutechcloud.com/compiler';
-
-  const cleanBase = appBaseUrl.replace(/\/$/, '');
-  const quicklinkUrl = cleanBase.endsWith('/compiler')
-    ? `${cleanBase}/api/lti/launch?assignment_id=${encodeURIComponent(assignmentId)}`
-    : `${cleanBase}/compiler/api/lti/launch?assignment_id=${encodeURIComponent(assignmentId)}`;
-
-  console.log(`[Brightspace Sync] Initiating Brightspace sync for "${assignmentTitle}" (OrgUnit: ${orgUnitId})...`);
 
   if (!privateKey || !clientId) {
-    const msg = 'LTI_TOOL_PRIVATE_KEY or LTI_CLIENT_ID not configured in environment';
-    console.warn(`[Brightspace Sync] Skipped: ${msg}`);
-    return { success: false, quicklinkUrl, error: msg };
+    console.warn('[Brightspace Token] Missing LTI_TOOL_PRIVATE_KEY or LTI_CLIENT_ID in environment');
+    return null;
   }
 
   try {
@@ -76,7 +64,8 @@ export async function createBrightspaceTopic(params: CreateBrightspaceTopicParam
       }
     });
 
-    console.log(`[Brightspace Sync] Requesting OAuth token from ${tokenUrl}...`);
+    const scope = customScope || 'core:*:* dropbox:*:* content:*:* content:modules:manage content:topics:manage users:*:* classlist:*:* enrollments:*:* https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly';
+
     const tokenRes = await fetch(tokenUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -84,20 +73,54 @@ export async function createBrightspaceTopic(params: CreateBrightspaceTopicParam
         grant_type: 'client_credentials',
         client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         client_assertion: clientAssertion,
-        scope: 'core:*:* dropbox:*:* content:*:* content:modules:manage content:topics:manage'
+        scope
       })
     });
 
     if (!tokenRes.ok) {
       const errText = await tokenRes.text();
-      console.error(`[Brightspace Sync] OAuth Token failed HTTP ${tokenRes.status}:`, errText);
-      return { success: false, quicklinkUrl, error: `Brightspace OAuth token error (${tokenRes.status}): ${errText}` };
+      console.error(`[Brightspace Token] Failed HTTP ${tokenRes.status}:`, errText);
+      return null;
     }
 
-    const { access_token } = await tokenRes.json();
-    console.log('[Brightspace Sync] OAuth token obtained successfully.');
+    const tokenData = await tokenRes.json();
+    return tokenData.access_token || null;
+  } catch (err: any) {
+    console.error('[Brightspace Token] Exception obtaining token:', err?.message || err);
+    return null;
+  }
+}
 
-    // -------------------------------------------------------------------------
+/**
+ * Creates both:
+ * 1. An Assignment (Dropbox) Folder in Brightspace (/d2l/lms/dropbox/admin/folders_manage.d2l)
+ *    Matching standard format: "(EX) <Title> (Code Assessment)"
+ * 2. A Topic Quicklink under the course Content Module in Brightspace Course Content sidebar.
+ */
+export async function createBrightspaceTopic(params: CreateBrightspaceTopicParams): Promise<CreateBrightspaceTopicResult> {
+  const { courseId, moduleId, assignmentId, assignmentTitle, instructions, maxPoints, startDate, dueDate } = params;
+  const orgUnitId = String(courseId).replace(/^crs_/, '');
+
+  const host = process.env.BRIGHTSPACE_HOST || 'corplms.d2l-partners.brightspace.com';
+  const appBaseUrl = process.env.APP_BASE_URL && !process.env.APP_BASE_URL.includes('yourdomain.com')
+    ? process.env.APP_BASE_URL
+    : 'https://learning.edutechcloud.com/compiler';
+
+  const cleanBase = appBaseUrl.replace(/\/$/, '');
+  const quicklinkUrl = cleanBase.endsWith('/compiler')
+    ? `${cleanBase}/api/lti/launch?assignment_id=${encodeURIComponent(assignmentId)}`
+    : `${cleanBase}/compiler/api/lti/launch?assignment_id=${encodeURIComponent(assignmentId)}`;
+
+  console.log(`[Brightspace Sync] Initiating Brightspace sync for "${assignmentTitle}" (OrgUnit: ${orgUnitId})...`);
+
+  const access_token = await getBrightspaceAccessToken();
+  if (!access_token) {
+    const msg = 'Could not obtain Brightspace OAuth token (check LTI_TOOL_PRIVATE_KEY and LTI_CLIENT_ID)';
+    console.warn(`[Brightspace Sync] Skipped: ${msg}`);
+    return { success: false, quicklinkUrl, error: msg };
+  }
+
+  try {
     // STEP 1: Create Brightspace Assignment (Dropbox) Folder
     // Appears in /d2l/lms/dropbox/admin/folders_manage.d2l as "(EX) Title (Code Assessment)"
     // -------------------------------------------------------------------------
@@ -245,4 +268,137 @@ export async function createBrightspaceTopic(params: CreateBrightspaceTopicParam
       error: err?.message || String(err)
     };
   }
+}
+
+/**
+ * Synchronizes the complete classlist of enrolled learners from Brightspace for a given course.
+ * Uses either LTI 1.3 NRPS (Names and Role Provisioning Service) or Brightspace Valence REST API.
+ */
+export async function syncBrightspaceCourseClasslist(
+  courseId: string,
+  nrpsUrl?: string
+): Promise<BrightspaceSyncRosterResult> {
+  const orgUnitId = String(courseId).replace(/^crs_/, '');
+  const host = process.env.BRIGHTSPACE_HOST || 'corplms.d2l-partners.brightspace.com';
+
+  console.log(`[Brightspace Classlist Sync] Starting roster sync for course "${courseId}" (OrgUnit: ${orgUnitId})...`);
+
+  const accessToken = await getBrightspaceAccessToken();
+  if (!accessToken) {
+    console.warn('[Brightspace Classlist Sync] Cannot sync: Missing Brightspace access token.');
+    return { success: false, count: 0, error: 'Could not obtain Brightspace access token' };
+  }
+
+  let rawMembers: any[] = [];
+
+  // Attempt 1: LTI 1.3 NRPS Membership Container
+  if (nrpsUrl) {
+    try {
+      console.log(`[Brightspace Classlist Sync] Querying LTI 1.3 NRPS: ${nrpsUrl}`);
+      const nrpsRes = await fetch(nrpsUrl, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Accept': 'application/vnd.ims.lti-nrps.v2.membershipcontainer+json'
+        }
+      });
+      if (nrpsRes.ok) {
+        const nrpsData = await nrpsRes.json();
+        if (nrpsData && Array.isArray(nrpsData.members)) {
+          rawMembers = nrpsData.members.map((m: any) => ({
+            Identifier: m.user_id || m.sub || m.identifier,
+            DisplayName: m.name || `${m.given_name || ''} ${m.family_name || ''}`.trim(),
+            UserName: m.email ? m.email.split('@')[0] : (m.user_id || 'learner'),
+            Email: m.email || `${m.user_id}@brightspace.edu`,
+            RoleName: (m.roles || []).some((r: string) => /learner|student/i.test(r)) ? 'Student' : 'Instructor'
+          }));
+          console.log(`[Brightspace Classlist Sync] NRPS fetched ${rawMembers.length} members successfully.`);
+        }
+      } else {
+        console.warn(`[Brightspace Classlist Sync] NRPS returned HTTP ${nrpsRes.status}`);
+      }
+    } catch (e: any) {
+      console.warn('[Brightspace Classlist Sync] NRPS query exception:', e?.message || e);
+    }
+  }
+
+  // Attempt 2: Brightspace Valence Classlist REST API
+  if (rawMembers.length === 0) {
+    const versions = ['1.74', '1.82', '1.67', '1.45'];
+    for (const v of versions) {
+      try {
+        const url = `https://${host}/d2l/api/le/${v}/${orgUnitId}/classlist/`;
+        console.log(`[Brightspace Classlist Sync] Trying Valence classlist API v${v} (${url})...`);
+        const res = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json'
+          }
+        });
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            rawMembers = list;
+            console.log(`[Brightspace Classlist Sync] Valence v${v} returned ${list.length} members!`);
+            break;
+          }
+        } else {
+          console.warn(`[Brightspace Classlist Sync] Valence v${v} returned HTTP ${res.status}`);
+        }
+      } catch (e: any) {
+        console.warn(`[Brightspace Classlist Sync] Valence v${v} exception:`, e?.message || e);
+      }
+    }
+  }
+
+  if (rawMembers.length === 0) {
+    console.warn(`[Brightspace Classlist Sync] No members returned for course ${orgUnitId}.`);
+    return { success: false, count: 0, error: 'No members returned from Brightspace classlist' };
+  }
+
+  // Filter to learners / students (exclude instructors and admins)
+  const learners = rawMembers.filter((m: any) => {
+    const role = (m.RoleName || '').toLowerCase();
+    const roles = Array.isArray(m.roles) ? m.roles.map((r: string) => r.toLowerCase()) : [];
+    const isLearner = role.includes('student') || role.includes('learner') || roles.some((r: string) => r.includes('student') || r.includes('learner'));
+    const isTeacher = role.includes('instructor') || role.includes('faculty') || role.includes('teacher') || role.includes('admin') || roles.some((r: string) => r.includes('instructor') || r.includes('faculty'));
+    return isLearner || !isTeacher;
+  });
+
+  console.log(`[Brightspace Classlist Sync] Found ${learners.length} learners out of ${rawMembers.length} total members.`);
+
+  // Upsert each learner into the local database and enroll them into the course and existing assignments
+  const { db } = await import('@/lib/db');
+  let syncedCount = 0;
+
+  for (const learner of learners) {
+    const userId = String(learner.Identifier || learner.user_id || learner.Id || '').trim();
+    if (!userId) continue;
+
+    const name = learner.DisplayName || `${learner.FirstName || ''} ${learner.LastName || ''}`.trim() || learner.UserName || `Student ${userId}`;
+    const email = learner.Email || learner.email || `${userId}@brightspace.edu`;
+
+    db.upsertUser({
+      id: userId,
+      name,
+      email,
+      role: 'LEARNER'
+    });
+
+    db.addCourseMember(courseId, userId, 'LEARNER');
+    syncedCount++;
+  }
+
+  // Ensure all existing assignments in this course also enroll these learners
+  const courseAssignments = db.getAssignmentsByCourse(courseId);
+  for (const asg of courseAssignments) {
+    for (const learner of learners) {
+      const userId = String(learner.Identifier || learner.user_id || learner.Id || '').trim();
+      if (userId) {
+        db.ensureAssignmentLearner(asg.id, userId);
+      }
+    }
+  }
+
+  console.log(`[Brightspace Classlist Sync] Successfully synced and enrolled ${syncedCount} learners into course "${courseId}"!`);
+  return { success: true, count: syncedCount };
 }

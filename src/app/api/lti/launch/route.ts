@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { syncBrightspaceCourseClasslist } from '@/lib/brightspaceContent';
 
 /**
  * LTI 1.3 / LTI Launch Handler
@@ -183,6 +184,16 @@ export async function POST(request: NextRequest) {
       course = db.createCourse(courseTitle, rawContextId);
     }
     db.addCourseMember(course.id, userId, isInstructor ? 'FACULTY' : 'LEARNER');
+
+    // 2.0 If Instructor launched, automatically trigger background roster sync from Brightspace
+    const nrpsClaim = payload['https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice'] || {};
+    const nrpsUrl = nrpsClaim.context_memberships_url;
+
+    if (isInstructor) {
+      syncBrightspaceCourseClasslist(course.id, nrpsUrl).catch(e => {
+        console.warn('[LTI Launch] Background classlist sync note:', e);
+      });
+    }
 
     // 2.1 Bind AGS LineItem URL and enroll student if targeted launch
     if (assignmentId) {
