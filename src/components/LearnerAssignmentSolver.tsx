@@ -1095,22 +1095,14 @@ SELECT * FROM table_name;
           )}
         </div>
 
-        {/* Exit & Navigation Options */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+        {/* Exit Assessment */}
+        <div className="pt-2 flex items-center justify-center">
           <Button
             onClick={handleExitCourse}
-            className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+            className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 cursor-pointer"
           >
-            <LogOut size={14} />
-            <span>Exit Assessment to Dashboard</span>
-          </Button>
-          <Button
-            onClick={onBack}
-            variant="outline"
-            className="w-full sm:w-auto px-5 py-2.5 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <Layers size={14} />
-            <span>Choose Different Module</span>
+            <LogOut size={15} />
+            <span>Exit Assessment</span>
           </Button>
         </div>
       </div>
