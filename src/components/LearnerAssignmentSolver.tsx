@@ -31,7 +31,9 @@ import {
   Terminal,
   ChevronDown,
   ChevronUp,
-  Trash2
+  Trash2,
+  LogOut,
+  Layers
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useEditorPreferences, getEffectiveEditorTheme } from '@/hooks/useEditorPreferences';
@@ -1035,6 +1037,19 @@ SELECT * FROM table_name;
     const passed = submissionFeedback?.passedTests ?? (myRecord?.status === 'SUBMITTED' ? (assignment.questions?.length || 1) : 0);
     const total = submissionFeedback?.totalTests ?? (assignment.questions?.length || 1);
 
+    const handleExitCourse = () => {
+      if (typeof window !== 'undefined') {
+        try {
+          if (window.parent && window.parent !== window) {
+            window.parent.postMessage({ type: 'D2L_EXIT' }, '*');
+          }
+        } catch {
+          // ignore cross-origin restrictions
+        }
+      }
+      onBack();
+    };
+
     return (
       <div className="max-w-xl mx-auto my-10 p-6 sm:p-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-300 dark:border-slate-800 shadow-xl text-center space-y-6">
         <div className="w-16 h-16 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
@@ -1043,7 +1058,7 @@ SELECT * FROM table_name;
 
         <div className="space-y-2">
           <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
-            Exam Finished & Locked
+            Assessment Completed & Locked
           </span>
           <h2 className="text-2xl font-black text-slate-900 dark:text-white">
             Your assessment &quot;{assignment.title}&quot; is submitted!
@@ -1080,12 +1095,22 @@ SELECT * FROM table_name;
           )}
         </div>
 
-        <div className="pt-2 flex justify-center">
+        {/* Exit & Navigation Options */}
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button
+            onClick={handleExitCourse}
+            className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <LogOut size={14} />
+            <span>Exit Assessment to Dashboard</span>
+          </Button>
           <Button
             onClick={onBack}
-            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-sm"
+            variant="outline"
+            className="w-full sm:w-auto px-5 py-2.5 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 cursor-pointer"
           >
-            Exit Assessment Now
+            <Layers size={14} />
+            <span>Choose Different Module</span>
           </Button>
         </div>
       </div>

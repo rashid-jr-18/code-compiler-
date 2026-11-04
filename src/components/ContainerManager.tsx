@@ -195,11 +195,15 @@ export default function ContainerManager({
     try {
       const res = await fetch(`/api/assignments/${id}`, {
         method: 'DELETE',
-        headers: { 'x-user-role': 'FACULTY' }
+        headers: { 
+          'x-user-role': 'FACULTY',
+          'x-user-id': 'usr_faculty'
+        }
       });
       if (!res.ok) throw new Error('Delete failed');
       toast.success(`"${title}" deleted successfully`);
       fetchChildAssessments();
+      onContainerUpdated?.();
     } catch (err) {
       toast.error('Failed to delete assessment');
     } finally {

@@ -277,7 +277,6 @@ int main() {
           actualOutput: actualOutput.trim(),
           expectedOutput: testCase.expectedOutput.trim(),
           executionTime: parseFloat(result.time || '0'),
-          memory: result.memory,
           error: result.stderr || result.compile_output || undefined,
           points: passed ? testCase.points : 0,
           maxPoints: testCase.points,
@@ -286,8 +285,7 @@ int main() {
 
       setTestResults(results);
 
-      const overallStatus = passedTests === results.length ? 'Accepted' : 
-                           passedTests > 0 ? 'Partially Accepted' : 'Wrong Answer';
+      const overallStatus: 'Accepted' | 'Wrong Answer' = passedTests === results.length ? 'Accepted' : 'Wrong Answer';
 
       const submission: SubmissionResult = {
         questionId: question.id,

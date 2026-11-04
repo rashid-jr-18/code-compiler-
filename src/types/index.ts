@@ -463,6 +463,7 @@ export interface CommunityPost {
   language?: string;
   tags: string[];
   upvotes: string[]; // userIds who upvoted
+  downvotes?: string[]; // userIds who downvoted
   repliesCount: number;
   createdAt: string;
   updatedAt: string;
@@ -471,6 +472,8 @@ export interface CommunityPost {
 export interface CommunityReply {
   id: string;
   postId: string;
+  parentReplyId?: string;
+  replyToAuthorName?: string;
   authorId: string;
   authorName: string;
   authorRole: 'FACULTY' | 'LEARNER' | 'ADMIN';
@@ -479,6 +482,7 @@ export interface CommunityReply {
   language?: string;
   isAccepted?: boolean;
   upvotes: string[];
+  downvotes?: string[];
   createdAt: string;
 }
 

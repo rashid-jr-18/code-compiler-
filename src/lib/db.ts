@@ -987,16 +987,17 @@ class PersistentDatabase {
   }
 
   deleteAssignment(id: string): boolean {
-    const existed = this.assignments.delete(id);
+    const cleanId = id.trim();
+    const existed = this.assignments.delete(cleanId) || this.assignments.delete(id);
     if (existed) {
       // Remove related learners and submissions
       Array.from(this.assignmentLearners.entries()).forEach(([alId, al]) => {
-        if (al.assignmentId === id) {
+        if (al.assignmentId === cleanId || al.assignmentId === id) {
           this.assignmentLearners.delete(alId);
         }
       });
       Array.from(this.submissions.entries()).forEach(([sId, s]) => {
-        if (s.assignmentId === id) {
+        if (s.assignmentId === cleanId || s.assignmentId === id) {
           this.submissions.delete(sId);
         }
       });
@@ -1119,18 +1120,36 @@ class PersistentDatabase {
     return post;
   }
 
-  getCommunityReplies(postId: string): CommunityReply[] {
-    return Array.from(this.communityReplies.values())
-      .filter(r => r.postId === postId)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  togglePostDownvote(postId: string, userId: string): CommunityPost | undefined {
+    const post = this.communityPosts.get(postId);
+    if (!post) return undefined;
+    if (!post.downvotes) post.downvotes = [];
+    const index = post.downvotes.indexOf(userId);
+    if (index > -1) {
+      post.downvotes.splice(index, 1);
+    } else {
+      post.downvotes.push(userId);
+    }
+    this.persist();
+    return post;
   }
 
-  createCommunityReply(reply: Omit<CommunityReply, 'id' | 'upvotes' | 'createdAt'>): CommunityReply {
+  getCommunityReplies(postId: string, sort?: 'best' | 'newest'): CommunityReply[] {
+    const replies = Array.from(this.communityReplies.values())
+      .filter(r => r.postId === postId);
+    if (sort === 'best') {
+      return replies.sort((a, b) => ((b.upvotes?.length || 0) - (b.downvotes?.length || 0)) - ((a.upvotes?.length || 0) - (a.downvotes?.length || 0)));
+    }
+    return replies.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }
+
+  createCommunityReply(reply: Omit<CommunityReply, 'id' | 'upvotes' | 'createdAt'> & { replyToAuthorName?: string }): CommunityReply {
     const now = new Date().toISOString();
     const newReply: CommunityReply = {
       ...reply,
       id: `reply_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
       upvotes: [],
+      downvotes: [],
       createdAt: now
     };
     this.communityReplies.set(newReply.id, newReply);
@@ -1153,6 +1172,20 @@ class PersistentDatabase {
       reply.upvotes.splice(index, 1);
     } else {
       reply.upvotes.push(userId);
+    }
+    this.persist();
+    return reply;
+  }
+
+  toggleReplyDownvote(replyId: string, userId: string): CommunityReply | undefined {
+    const reply = this.communityReplies.get(replyId);
+    if (!reply) return undefined;
+    if (!reply.downvotes) reply.downvotes = [];
+    const index = reply.downvotes.indexOf(userId);
+    if (index > -1) {
+      reply.downvotes.splice(index, 1);
+    } else {
+      reply.downvotes.push(userId);
     }
     this.persist();
     return reply;
@@ -1188,7 +1221,7 @@ class PersistentDatabase {
 
     userSubs.forEach(s => {
       attemptedIds.add(s.questionId);
-      if (s.overallStatus === 'Accepted' || (s.score != null && s.maxScore != null && s.score >= s.maxScore && s.maxScore > 0)) {
+      if (s.status === 'Accepted' || (s.score != null && s.score > 0)) {
         solvedIds.add(s.questionId);
       }
     });
@@ -1244,10 +1277,10 @@ class PersistentDatabase {
         difficulty: (q?.difficulty || 'Medium') as 'Easy' | 'Medium' | 'Hard',
         category: q?.category || 'Algorithm',
         language: s.languageId === 71 ? 'Python' : s.languageId === 63 ? 'JavaScript' : s.languageId === 54 ? 'C++' : s.languageId === 82 ? 'SQL' : 'Code',
-        status: s.overallStatus || 'Accepted',
+        status: s.status || 'Accepted',
         score: s.score,
-        maxScore: s.maxScore,
-        submittedAt: s.submittedAt
+        maxScore: 100,
+        submittedAt: typeof s.submittedAt === 'string' ? s.submittedAt : new Date(s.submittedAt).toISOString()
       };
     });
 

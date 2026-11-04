@@ -71,7 +71,7 @@ export default function CodeCompiler() {
         throw new Error(`Execution failed with status ${response.status}`);
       }
 
-      const result: ExecutionResult = await response.json();
+      const result: any = await response.json();
 
       setStdout(result.stdout || '');
       setStderr(result.stderr || '');

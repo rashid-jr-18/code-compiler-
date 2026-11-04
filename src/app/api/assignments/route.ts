@@ -15,24 +15,12 @@ export async function GET(request: NextRequest) {
   }
 
   const { user } = auth;
-  let assignments = containerId
+  const assignments = containerId
     ? db.getAssignmentsByContainer(containerId)
     : db.getAssignmentsByCourse(courseId!);
 
-  // If user is Admin or Faculty for this course, allow fallback in dev mode
+  // If user is Admin or Faculty: return assessments for this container/course directly
   if (user.role === 'ADMIN' || user.role === 'FACULTY') {
-    if (assignments.length === 0 && courseId) {
-      const courseAssignments = db.getAssignmentsByCourse(courseId);
-      if (courseAssignments.length > 0) {
-        assignments = courseAssignments;
-      }
-    }
-    if (assignments.length === 0) {
-      const defaultAssignments = db.getAssignmentsByContainer('cnt_cs101_default');
-      if (defaultAssignments.length > 0) {
-        assignments = defaultAssignments;
-      }
-    }
     return NextResponse.json(assignments);
   }
 
