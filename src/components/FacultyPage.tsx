@@ -22,7 +22,6 @@ import {
   Eye, 
   EyeOff, 
   Download, 
-  Link2, 
   Loader2, 
   Sparkles, 
   Globe, 
@@ -63,7 +62,7 @@ export default function FacultyPage({ initialMode = 'create', onBack }: FacultyP
   });
 
   // Universal Import state
-  const [importMode, setImportMode] = useState<'explore' | 'url' | 'smart-paste'>('explore');
+  const [importMode, setImportMode] = useState<'explore' | 'smart-paste'>('explore');
   const [selectedPlatform, setSelectedPlatform] = useState<'codechef' | 'leetcode' | 'hackerrank' | 'geeksforgeeks'>('codechef');
   const [searchTopic, setSearchTopic] = useState('all');
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -71,7 +70,6 @@ export default function FacultyPage({ initialMode = 'create', onBack }: FacultyP
   const [isSearching, setIsSearching] = useState(false);
   const [importingSlug, setImportingSlug] = useState<string | null>(null);
 
-  const [importInput, setImportInput] = useState('');
   const [smartPasteText, setSmartPasteText] = useState('');
   const [isImporting, setIsImporting] = useState(false);
 
@@ -109,9 +107,9 @@ export default function FacultyPage({ initialMode = 'create', onBack }: FacultyP
   };
 
   const performImport = async (slugOrUrl?: string, rawText?: string) => {
-    const textToImport = rawText ?? (importMode === 'smart-paste' ? smartPasteText : (slugOrUrl ?? importInput));
+    const textToImport = rawText ?? (importMode === 'smart-paste' ? smartPasteText : (slugOrUrl ?? ''));
     if (!textToImport || !textToImport.trim()) {
-      toast.error(importMode === 'smart-paste' ? 'Please paste problem text or markdown' : 'Please enter a problem URL or slug');
+      toast.error(importMode === 'smart-paste' ? 'Please paste problem text or markdown' : 'Please select a problem from the explorer');
       return;
     }
 
@@ -375,7 +373,7 @@ export default function FacultyPage({ initialMode = 'create', onBack }: FacultyP
                   </span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Import directly from LeetCode, HackerRank, CodeChef, GeeksforGeeks, freeCodeCamp, or Smart Paste.
+                  Browse curated problems or paste question text with sample input and output.
                 </p>
               </div>
             </div>
@@ -388,13 +386,6 @@ export default function FacultyPage({ initialMode = 'create', onBack }: FacultyP
                 className={`px-3 py-1 rounded-md transition-colors ${importMode === 'explore' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600'}`}
               >
                 Platform Explorer
-              </button>
-              <button
-                type="button"
-                onClick={() => setImportMode('url')}
-                className={`px-3 py-1 rounded-md transition-colors ${importMode === 'url' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600'}`}
-              >
-                By URL / Link
               </button>
               <button
                 type="button"
@@ -582,77 +573,7 @@ export default function FacultyPage({ initialMode = 'create', onBack }: FacultyP
             </div>
           )}
 
-          {/* Mode 2: Direct URL / Link */}
-          {importMode === 'url' && (
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-                <span className="text-slate-400 font-semibold">Supported:</span>
-                {['LeetCode', 'HackerRank', 'CodeChef', 'GeeksforGeeks', 'freeCodeCamp', 'TopCoder', 'Codeforces'].map(plat => (
-                  <span key={plat} className="px-1.5 py-0.5 rounded bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                    {plat}
-                  </span>
-                ))}
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <div className="relative flex-1">
-                  <Link2 size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    value={importInput}
-                    onChange={e => setImportInput(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') performImport(importInput); }}
-                    placeholder="Paste URL (e.g., leetcode.com/problems/two-sum or hackerrank.com/challenges/simple-array-sum)"
-                    className="w-full pl-9 pr-3 py-2 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <Button
-                  type="button"
-                  onClick={() => performImport(importInput)}
-                  disabled={isImporting || !importInput.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 h-9 shadow-xs shrink-0 flex items-center gap-1.5"
-                >
-                  {isImporting ? (
-                    <>
-                      <Loader2 size={14} className="animate-spin" />
-                      <span>Importing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles size={14} />
-                      <span>Fetch & Auto-Fill</span>
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              {/* Quick example chips */}
-              <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-blue-100 dark:border-blue-900/30 text-[11px] text-slate-500 dark:text-slate-400">
-                <span className="font-semibold text-slate-600 dark:text-slate-300">Quick Try:</span>
-                {[
-                  { label: 'LeetCode: Two Sum', val: 'two-sum' },
-                  { label: 'HackerRank: Simple Array Sum', val: 'https://www.hackerrank.com/challenges/simple-array-sum/problem' },
-                  { label: 'CodeChef: Number Mirror', val: 'https://www.codechef.com/problems/FLOW001' },
-                  { label: 'LeetCode: Valid Parentheses', val: 'valid-parentheses' },
-                  { label: 'GFG: Array Reverse', val: 'https://www.geeksforgeeks.org/problems/reverse-an-array/1' },
-                ].map(item => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => {
-                      setImportInput(item.val);
-                      performImport(item.val);
-                    }}
-                    className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-[11px]"
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Mode 3: Smart Text Paste */}
+          {/* Mode 2: Smart Text Paste */}
           {importMode === 'smart-paste' && (
             <div className="space-y-2">
               <textarea

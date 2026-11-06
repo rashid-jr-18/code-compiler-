@@ -278,10 +278,38 @@ export async function syncBrightspaceCourseClasslist(
   courseId: string,
   nrpsUrl?: string
 ): Promise<BrightspaceSyncRosterResult> {
+  const { db } = await import('@/lib/db');
   const orgUnitId = String(courseId).replace(/^crs_/, '');
-  const host = process.env.BRIGHTSPACE_HOST || 'corplms.d2l-partners.brightspace.com';
+  let host = process.env.BRIGHTSPACE_HOST;
 
-  console.log(`[Brightspace Classlist Sync] Starting roster sync for course "${courseId}" (OrgUnit: ${orgUnitId})...`);
+  if (!host || host.includes('corplms.d2l-partners')) {
+    if (nrpsUrl) {
+      try {
+        const u = new URL(nrpsUrl);
+        if (u.host) host = u.host;
+      } catch {}
+    }
+    if (!host) {
+      const courseAssignments = db.getAssignmentsByCourse(courseId);
+      for (const a of courseAssignments) {
+        if (a.lineItemUrl) {
+          try {
+            const u = new URL(a.lineItemUrl);
+            if (u.host) {
+              host = u.host;
+              break;
+            }
+          } catch {}
+        }
+      }
+    }
+  }
+
+  if (!host) {
+    host = 'corpinside21.partners.brightspace.com';
+  }
+
+  console.log(`[Brightspace Classlist Sync] Starting roster sync for course "${courseId}" (OrgUnit: ${orgUnitId}, Host: ${host})...`);
 
   const accessToken = await getBrightspaceAccessToken();
   if (!accessToken) {
@@ -367,7 +395,6 @@ export async function syncBrightspaceCourseClasslist(
   console.log(`[Brightspace Classlist Sync] Found ${learners.length} learners out of ${rawMembers.length} total members.`);
 
   // Upsert each learner into the local database and enroll them into the course and existing assignments
-  const { db } = await import('@/lib/db');
   let syncedCount = 0;
 
   for (const learner of learners) {

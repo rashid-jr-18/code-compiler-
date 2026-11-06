@@ -73,7 +73,24 @@ export default function LearnerAssignmentSolver({
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(() => getLanguageById(71) || LANGUAGES[0]);
   const [code, setCode] = useState<string>('');
   const [sampleInput, setSampleInput] = useState<string>('');
-  const [runOutput, setRunOutput] = useState<{ stdout?: string | null; stderr?: string | null; status?: string } | null>(null);
+  const [runOutput, setRunOutput] = useState<{ 
+    stdout?: string | null; 
+    stderr?: string | null; 
+    status?: string;
+    overallStatus?: string;
+    passedTests?: number;
+    totalTests?: number;
+    testResults?: Array<{
+      id: string;
+      passed: boolean;
+      input: string;
+      expectedOutput: string;
+      actualOutput: string;
+      error?: string;
+      time?: number;
+    }>;
+  } | null>(null);
+  const [selectedTestCaseTab, setSelectedTestCaseTab] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [latestScore, setLatestScore] = useState<number | null>(null);
@@ -339,7 +356,23 @@ SELECT * FROM table_name;
     }
     setIsRunning(true);
     setRunOutput(null);
-    const toastId = toast.loading('Running sample test...');
+    setSelectedTestCaseTab(0);
+    const toastId = toast.loading('Running code against test cases...');
+
+    // Extract visible sample test cases for real LeetCode-style verification
+    const sampleCases = (question?.testCases && question.testCases.length > 0)
+      ? question.testCases.filter(tc => !tc.isHidden).map((tc, idx) => ({
+          id: tc.id || `tc_${idx + 1}`,
+          input: tc.input || '',
+          expectedOutput: tc.expectedOutput || ''
+        }))
+      : (question?.sampleInput || question?.sampleOutput)
+      ? [{
+          id: 'sample_1',
+          input: question.sampleInput || '',
+          expectedOutput: question.sampleOutput || ''
+        }]
+      : [];
 
     try {
       const res = await fetch('/compiler/api/code/run', {
@@ -348,7 +381,8 @@ SELECT * FROM table_name;
         body: JSON.stringify({
           sourceCode: code,
           languageId: selectedLanguage.id,
-          stdin: sampleInput
+          stdin: sampleInput,
+          testCases: sampleCases.length > 0 ? sampleCases : undefined
         })
       });
 
@@ -361,7 +395,16 @@ SELECT * FROM table_name;
       } else {
         setIsOutputDrawerOpen(true);
       }
-      toast.success(isWebMode ? 'Preview updated!' : 'Run complete!', { id: toastId });
+
+      if (data.overallStatus === 'Accepted') {
+        toast.success(`All ${data.totalTests || 1} test cases passed!`, { id: toastId });
+      } else if (data.overallStatus === 'Wrong Answer') {
+        toast.error(`Wrong Answer: ${data.passedTests || 0}/${data.totalTests || 0} test cases passed`, { id: toastId });
+      } else if (data.overallStatus === 'Compilation Error') {
+        toast.error('Compilation Error: Please check your syntax', { id: toastId });
+      } else {
+        toast.success(isWebMode ? 'Preview updated!' : 'Run complete!', { id: toastId });
+      }
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Execution failed', { id: toastId });
     } finally {
@@ -887,7 +930,7 @@ SELECT * FROM table_name;
   const rightPanel = (
     <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl shadow-sm h-full flex flex-col overflow-hidden">
       {/* Editor Header Bar */}
-      <div className="px-3 sm:px-4 py-2 bg-slate-100/90 dark:bg-slate-900/90 border-b border-slate-300 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
+      <div className="relative z-30 px-3 sm:px-4 py-2 bg-slate-100/90 dark:bg-slate-900/90 border-b border-slate-300 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 shrink-0">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
             <Code2 size={15} className="text-blue-600 dark:text-blue-400" />
@@ -938,6 +981,7 @@ SELECT * FROM table_name;
 
           <LanguageSwitcher
             className="w-40 sm:w-44"
+            align="left"
             supportedLanguages={allowedLanguages || question?.supportedLanguages}
             selectedLanguage={selectedLanguage}
             onLanguageSelect={setSelectedLanguage}
@@ -1043,21 +1087,24 @@ SELECT * FROM table_name;
 
         {/* Collapsible Output / Test Results Drawer (Non-Web mode) */}
         {!isWebMode && (runOutput || isRunning) && (
-          <div className={`border-t border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col transition-all duration-200 shrink-0 ${isOutputDrawerOpen ? 'h-48' : 'h-8'}`}>
+          <div className={`border-t border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col transition-all duration-200 shrink-0 ${isOutputDrawerOpen ? (runOutput?.testResults ? 'h-64 sm:h-72' : 'h-48') : 'h-8'}`}>
             <div 
               onClick={() => setIsOutputDrawerOpen(prev => !prev)}
               className="px-3 py-1.5 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none"
             >
               <div className="flex items-center gap-2 font-semibold">
                 <Terminal size={12} className="text-blue-500" />
-                <span>Execution Output</span>
+                <span>Test Execution & Results</span>
                 {runOutput && (
-                  <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
-                    runOutput.status === 'Success' || runOutput.status === 'Accepted'
-                      ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                      : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border flex items-center gap-1 ${
+                    runOutput.overallStatus === 'Accepted' || (!runOutput.overallStatus && (runOutput.status === 'Success' || runOutput.status === 'Accepted'))
+                      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                      : 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800'
                   }`}>
-                    {runOutput.status}
+                    <span>{runOutput.overallStatus || runOutput.status}</span>
+                    {runOutput.totalTests !== undefined && (
+                      <span>({runOutput.passedTests}/{runOutput.totalTests} Passed)</span>
+                    )}
                   </span>
                 )}
               </div>
@@ -1078,9 +1125,70 @@ SELECT * FROM table_name;
             </div>
 
             {isOutputDrawerOpen && (
-              <div className="flex-1 p-3 font-mono text-xs overflow-y-auto space-y-1 bg-slate-50 dark:bg-slate-950">
+              <div className="flex-1 p-3 font-mono text-xs overflow-y-auto space-y-2 bg-slate-50 dark:bg-slate-950">
                 {isSqlMode ? (
                   <SqlResultTable output={runOutput?.stdout} error={runOutput?.stderr} isLoading={isRunning} />
+                ) : runOutput?.testResults && runOutput.testResults.length > 0 ? (
+                  <div className="space-y-2.5">
+                    {/* LeetCode-style Test Case Selector Tabs */}
+                    <div className="flex items-center gap-1.5 pb-1.5 border-b border-slate-200 dark:border-slate-800 overflow-x-auto no-scrollbar">
+                      {runOutput.testResults.map((tc, idx) => (
+                        <button
+                          key={tc.id || idx}
+                          type="button"
+                          onClick={() => setSelectedTestCaseTab(idx)}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                            selectedTestCaseTab === idx
+                              ? 'bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xs font-bold border border-slate-300 dark:border-slate-700'
+                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
+                          }`}
+                        >
+                          <span className={`w-2 h-2 rounded-full ${tc.passed ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                          <span>Case {idx + 1}</span>
+                          {tc.passed ? (
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">✓</span>
+                          ) : (
+                            <span className="text-[10px] text-rose-600 dark:text-rose-400 font-bold">✗</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Selected Test Case Detail Cards */}
+                    {runOutput.testResults[selectedTestCaseTab] && (() => {
+                      const curCase = runOutput.testResults[selectedTestCaseTab];
+                      return (
+                        <div className="space-y-2 text-xs font-mono">
+                          <div>
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Input</div>
+                            <pre className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 whitespace-pre-wrap max-h-24 overflow-y-auto">
+                              {curCase.input || '(no input)'}
+                            </pre>
+                          </div>
+
+                          <div>
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">Expected Output</div>
+                            <pre className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-emerald-700 dark:text-emerald-400 whitespace-pre-wrap max-h-24 overflow-y-auto">
+                              {curCase.expectedOutput || '(empty)'}
+                            </pre>
+                          </div>
+
+                          <div>
+                            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-0.5">
+                              {curCase.passed ? 'Your Output (Matches Expected)' : 'Your Output (Wrong Output or Error)'}
+                            </div>
+                            <pre className={`p-2 rounded-lg border whitespace-pre-wrap max-h-28 overflow-y-auto ${
+                              curCase.passed
+                                ? 'bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                                : 'bg-rose-50/70 dark:bg-rose-950/30 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800'
+                            }`}>
+                              {curCase.actualOutput || (curCase.error ? curCase.error : '(no output produced)')}
+                            </pre>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
                 ) : (
                   <>
                     {runOutput?.stdout && (

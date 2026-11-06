@@ -10,6 +10,7 @@ import { Language } from '@/types';
 interface LanguageSwitcherProps {
   className?: string;
   buttonClassName?: string;
+  align?: 'left' | 'right';
   supportedLanguages?: number[]; // Optional filter for supported language IDs
   selectedLanguage?: Language;
   onLanguageSelect?: (language: Language) => void;
@@ -18,6 +19,7 @@ interface LanguageSwitcherProps {
 export default function LanguageSwitcher({ 
   className = '', 
   buttonClassName = '',
+  align = 'left',
   supportedLanguages,
   selectedLanguage: controlledLanguage,
   onLanguageSelect: controlledOnSelect
@@ -123,7 +125,7 @@ export default function LanguageSwitcher({
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="absolute z-[999] right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden"
+            className={`absolute z-[999] ${align === 'right' ? 'right-0' : 'left-0'} mt-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden`}
             variants={dropdownVariants}
             initial="closed"
             animate="open"

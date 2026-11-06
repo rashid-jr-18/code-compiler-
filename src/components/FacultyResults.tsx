@@ -17,7 +17,8 @@ import {
   Code2,
   FileCheck,
   AlertCircle,
-  RotateCcw
+  RotateCcw,
+  Users
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -37,6 +38,30 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
   const [inspectItem, setInspectItem] = useState<ResultItem | null>(null);
   const [exportingId, setExportingId] = useState<string | null>(null);
   const [lineItemUrl, setLineItemUrl] = useState<string | undefined>(assignment.lineItemUrl);
+  const [isSyncingRoster, setIsSyncingRoster] = useState(false);
+
+  const handleSyncRoster = async () => {
+    setIsSyncingRoster(true);
+    const toastId = toast.loading('Syncing latest student roster from Brightspace LMS...');
+    try {
+      const res = await fetch(`/compiler/api/courses/${assignment.courseId}/sync-roster`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-role': 'FACULTY'
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to sync classlist');
+
+      toast.success(`Classlist synced! ${data.count || 0} learners updated.`, { id: toastId });
+      fetchResults();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Sync failed', { id: toastId });
+    } finally {
+      setIsSyncingRoster(false);
+    }
+  };
 
   const fetchResults = async () => {
     try {
@@ -291,6 +316,18 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
               Export All Reviewed ({results.filter(r => r.reviewed && !r.exported).length})
             </Button>
           )}
+
+          <Button
+            onClick={handleSyncRoster}
+            disabled={isSyncingRoster}
+            variant="outline"
+            size="sm"
+            className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs gap-1.5 font-medium cursor-pointer shadow-2xs"
+            title="Sync all enrolled students from Brightspace Classlist"
+          >
+            <Users size={13} className={isSyncingRoster ? 'animate-spin text-blue-500' : 'text-slate-500'} />
+            <span>Sync Roster</span>
+          </Button>
 
           <Button
             onClick={() => {

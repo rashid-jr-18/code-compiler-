@@ -16,6 +16,14 @@ export async function GET(
     return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
   }
 
+  // Ensure all course learners are enrolled in this assignment
+  const courseMembers = db.getCourseMembers(assignment.courseId);
+  for (const cm of courseMembers) {
+    if (cm.role === 'LEARNER') {
+      db.ensureAssignmentLearner(assignmentId, cm.userId);
+    }
+  }
+
   const learners = db.getAssignmentLearners(assignmentId);
 
   // Attach latest submission data for each learner
