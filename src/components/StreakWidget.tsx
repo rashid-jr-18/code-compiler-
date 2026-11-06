@@ -72,7 +72,7 @@ export default function StreakWidget({ userId = 'usr_faculty', userRole = 'FACUL
   const currentStreakCount = streak?.currentStreak || 0;
 
   return (
-    <div className="relative inline-block" ref={popoverRef}>
+    <div className="relative inline-block z-50" ref={popoverRef}>
       {/* Trigger Button */}
       <button
         type="button"
@@ -96,7 +96,7 @@ export default function StreakWidget({ userId = 'usr_faculty', userRole = 'FACUL
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-80 sm:w-88 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 text-slate-800 dark:text-slate-100"
+            className="absolute right-0 top-full mt-2 w-80 sm:w-88 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-[9999] text-slate-800 dark:text-slate-100"
           >
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">

@@ -422,6 +422,27 @@ SELECT * FROM table_name;
       });
       toast.success('Submitted successfully! Score stored locally.', { id: toastId });
 
+      // Capture submission snapshot if camera proctoring is enabled
+      if (isSecurityEnabled && proctoringConfig?.enableCamera) {
+        try {
+          const finalFrame = captureFrame();
+          if (finalFrame) {
+            fetch('/compiler/api/proctoring/violation', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                assignmentId: assignment.id,
+                learnerId,
+                eventType: 'SUBMISSION_COMPLETE',
+                severity: 'INFO',
+                snapshotBase64: finalFrame,
+                notes: `Assessment successfully submitted with score ${resultScore}/${resultMax}`
+              })
+            }).catch(() => {});
+          }
+        } catch (e) {}
+      }
+
       // Clean up proctoring & exit fullscreen once submitted
       stopCamera();
       if (typeof document !== 'undefined' && document.fullscreenElement) {
@@ -575,6 +596,27 @@ SELECT * FROM table_name;
       localStorage.removeItem(timerStorageKey);
     }
 
+    // Capture auto-submit snapshot if camera proctoring is enabled
+    if (isSecurityEnabled && proctoringConfig?.enableCamera) {
+      try {
+        const autoFrame = captureFrame();
+        if (autoFrame) {
+          fetch('/compiler/api/proctoring/violation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              assignmentId: assignment.id,
+              learnerId,
+              eventType: 'AUTO_SUBMIT_CAPTURED',
+              severity: 'WARNING',
+              snapshotBase64: autoFrame,
+              notes: `Auto-submitted due to: ${reason}`
+            })
+          }).catch(() => {});
+        }
+      } catch (e) {}
+    }
+
     // Stop camera and release fullscreen immediately
     stopCamera();
     if (typeof document !== 'undefined' && document.fullscreenElement) {
@@ -679,6 +721,31 @@ SELECT * FROM table_name;
       await enterFullscreen();
     }
     setIsPreCheckDone(true);
+
+    // Capture initial entry snapshot immediately upon starting exam
+    if (isSecurityEnabled && proctoringConfig?.enableCamera) {
+      setTimeout(async () => {
+        try {
+          const initialFrame = captureFrame();
+          if (initialFrame) {
+            await fetch('/compiler/api/proctoring/violation', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                assignmentId: assignment.id,
+                learnerId,
+                eventType: 'SESSION_START',
+                severity: 'INFO',
+                snapshotBase64: initialFrame,
+                notes: 'Learner completed pre-check and entered exam session'
+              })
+            });
+          }
+        } catch (err) {
+          console.warn('[Proctoring] Entry snapshot error:', err);
+        }
+      }, 500);
+    }
   };
 
   // Live Countdown Timer Interval
@@ -1260,12 +1327,25 @@ SELECT * FROM table_name;
         problemTitle={question?.title}
       />
 
+      {/* Persistent off-screen video element for continuous camera proctoring frame capture */}
+      {isSecurityEnabled && proctoringConfig?.enableCamera && (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="fixed -top-[9999px] -left-[9999px] w-[320px] h-[240px] pointer-events-none opacity-0"
+          aria-hidden="true"
+        />
+      )}
+
       {/* Secure Pre-Check Gate Modal */}
       {isSecurityEnabled && proctoringConfig && !isPreCheckDone && (
         <ProctoringPreCheckModal
           isOpen={!isPreCheckDone}
           assignmentTitle={assignment.title}
           config={proctoringConfig}
+          stream={stream}
           videoRef={videoRef}
           isStreaming={isStreaming}
           cameraError={cameraError}

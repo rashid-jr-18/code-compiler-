@@ -79,16 +79,24 @@ export async function POST(request: NextRequest) {
       rawForm['lineitem'] ||
       rawForm['custom_lineitem'];
 
-    const rawRoles: string[] = payload['https://purl.imsglobal.org/spec/lti/claim/roles'] || 
+    const rawRolesClaim = payload['https://purl.imsglobal.org/spec/lti/claim/roles'] || 
       payload['roles'] ||
-      (rawForm['roles'] ? rawForm['roles'].split(',') : []) ||
-      (rawForm['role'] ? [rawForm['role']] : []) ||
-      (rawForm['ext_d2l_role'] ? [rawForm['ext_d2l_role']] : []) ||
-      (custom['roles'] ? [custom['roles']] : []);
+      rawForm['roles'] ||
+      rawForm['role'] ||
+      rawForm['ext_d2l_role'] ||
+      custom['roles'] ||
+      custom['role'] ||
+      [];
+
+    const rawRoles: string[] = Array.isArray(rawRolesClaim) 
+      ? rawRolesClaim.map(String) 
+      : typeof rawRolesClaim === 'string' 
+      ? rawRolesClaim.split(',').map(s => s.trim()) 
+      : [];
 
     console.log('[LTI Launch] Raw roles detected:', rawRoles);
 
-    let isInstructor = rawRoles.some((r: string) => {
+    const isInstructor = rawRoles.some((r: string) => {
       const lower = String(r).toLowerCase();
       return lower.includes('instructor') ||
         lower.includes('faculty') ||
@@ -96,7 +104,30 @@ export async function POST(request: NextRequest) {
         lower.includes('admin') ||
         lower.includes('staff') ||
         lower.includes('teacher') ||
-        lower.includes('teachingassistant');
+        lower.includes('professor') ||
+        lower.includes('trainer') ||
+        lower.includes('mentor') ||
+        lower.includes('facilitator') ||
+        lower.includes('lecturer') ||
+        lower.includes('tutor') ||
+        lower.includes('evaluator') ||
+        lower.includes('grader') ||
+        lower.includes('teachingassistant') ||
+        lower.includes('courseleader') ||
+        lower.includes('course_admin');
+    });
+
+    const isExplicitLearner = rawRoles.some((r: string) => {
+      const lower = String(r).toLowerCase();
+      return lower.includes('learner') || 
+        lower.includes('student') || 
+        lower.includes('trainee') ||
+        lower.includes('scholar') ||
+        lower.includes('participant') ||
+        lower.includes('cadet') ||
+        lower.includes('apprentice') ||
+        lower.includes('candidate') ||
+        lower.includes('member');
     });
 
     const userId = payload.sub || 
@@ -134,15 +165,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Dynamic role check from name/email if roles claim was omitted
-    if (!isInstructor) {
-      const combined = `${userName} ${userEmail}`.toLowerCase();
-      if (combined.includes('instructor') || combined.includes('faculty') || combined.includes('admin')) {
-        isInstructor = true;
+    // Determine final authoritative role
+    let userRole = 'learner';
+    if (isInstructor) {
+      userRole = 'faculty';
+    } else if (isExplicitLearner) {
+      userRole = 'learner';
+    } else {
+      // Fallback: check username/email only if no role claim was present
+      const combined = `${userName} ${userEmail} ${userId}`.toLowerCase();
+      if (combined.includes('instructor') || combined.includes('faculty') || combined.includes('teacher') || combined.includes('admin')) {
+        userRole = 'faculty';
+      } else {
+        userRole = 'learner';
       }
     }
-
-    const userRole = isInstructor ? 'faculty' : 'learner';
     
     // Resolve course context (e.g. "Advanced C++")
     const courseTitle = context.title || rawForm['context_title'] || 'Advanced C++';
@@ -324,8 +361,11 @@ export async function GET(request: NextRequest) {
   if (cookieUserId && !redirectUrl.searchParams.has('user_id')) {
     redirectUrl.searchParams.set('user_id', cookieUserId);
   }
-  if (cookieRole && !redirectUrl.searchParams.has('role')) {
-    redirectUrl.searchParams.set('role', cookieRole);
+
+  if (!redirectUrl.searchParams.has('role')) {
+    const targetUserId = (redirectUrl.searchParams.get('user_id') || cookieUserId || '').toLowerCase();
+    const isTeacher = targetUserId.includes('instructor') || targetUserId.includes('faculty') || targetUserId.includes('teacher');
+    redirectUrl.searchParams.set('role', cookieRole || (isTeacher ? 'faculty' : 'learner'));
   }
   if (cookieCourseId && !redirectUrl.searchParams.has('course_id')) {
     redirectUrl.searchParams.set('course_id', cookieCourseId);

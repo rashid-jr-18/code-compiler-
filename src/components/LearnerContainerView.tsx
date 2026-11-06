@@ -16,7 +16,6 @@ import {
   RotateCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import StreakWidget from '@/components/StreakWidget';
 
 interface LearnerContainerViewProps {
   container: AssessmentContainer;
@@ -60,7 +59,7 @@ export default function LearnerContainerView({
   }, [container.id, course.id, learnerId]);
 
   return (
-    <div className="space-y-4 sm:space-y-5 w-full max-w-5xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-7xl mx-auto">
       {/* Container Header */}
       <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-300 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
@@ -81,22 +80,15 @@ export default function LearnerContainerView({
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <StreakWidget
-            userId={learnerId}
-            userRole="LEARNER"
-          />
-
-          <Button
-            onClick={fetchAssessments}
-            variant="outline"
-            size="sm"
-            className="h-8.5 w-8.5 p-0 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
-            title="Refresh Assessments"
-          >
-            <RotateCw size={14} className={isLoading ? 'animate-spin' : ''} />
-          </Button>
-        </div>
+        <Button
+          onClick={fetchAssessments}
+          variant="outline"
+          size="sm"
+          className="h-8.5 w-8.5 p-0 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
+          title="Refresh Assessments"
+        >
+          <RotateCw size={14} className={isLoading ? 'animate-spin' : ''} />
+        </Button>
       </div>
 
       {/* Available Child Assessments */}

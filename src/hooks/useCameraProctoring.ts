@@ -98,6 +98,16 @@ export function useCameraProctoring({
     }
   }, []);
 
+  // Ensure persistent video element always stays bound to the active MediaStream
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      if (videoRef.current.srcObject !== stream) {
+        videoRef.current.srcObject = stream;
+      }
+      videoRef.current.play().catch(e => console.warn('[Proctoring] Stream sync play warning:', e));
+    }
+  }, [stream]);
+
   // Stop camera stream
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -113,10 +123,17 @@ export function useCameraProctoring({
 
   // Capture current frame as low-bandwidth JPEG Base64
   const captureFrame = useCallback((): string | null => {
-    if (!videoRef.current || !isStreaming) return null;
+    if (!videoRef.current || !streamRef.current) return null;
     try {
       const video = videoRef.current;
-      if (video.videoWidth === 0 || video.videoHeight === 0) return null;
+      if (!video.srcObject && streamRef.current) {
+        video.srcObject = streamRef.current;
+        video.play().catch(() => {});
+      }
+      if (video.videoWidth === 0 || video.videoHeight === 0) {
+        console.warn('[Proctoring] captureFrame skipped: video dimensions are 0x0');
+        return null;
+      }
 
       const canvas = document.createElement('canvas');
       canvas.width = 480;
@@ -131,7 +148,7 @@ export function useCameraProctoring({
       console.warn('[Proctoring] Failed to capture frame:', err);
       return null;
     }
-  }, [isStreaming]);
+  }, []);
 
   // Periodic heartbeat snapshot capture
   useEffect(() => {

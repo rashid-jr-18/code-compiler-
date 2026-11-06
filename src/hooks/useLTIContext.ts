@@ -91,14 +91,51 @@ export const useLTIContext = (): LTIContext => {
         let userRole: 'student' | 'instructor' | 'admin' | 'faculty' | 'learner' = 'learner';
         const lowerUserId = (userId || '').toLowerCase();
         
-        // Explicitly prioritize learner IDs (e.g. learner009, usr_learner_1) over stale faculty cookies
-        if (lowerUserId.includes('learner') || lowerUserId.includes('student')) {
-          userRole = 'learner';
-        } else if (rawRole.toLowerCase().includes('instructor') || rawRole.toLowerCase().includes('faculty')) {
+        // 1. Authoritative Brightspace Role check (LTI 1.3 claims)
+        const isBrightspaceInstructor = rawRole.toLowerCase().includes('instructor') || 
+          rawRole.toLowerCase().includes('faculty') ||
+          rawRole.toLowerCase().includes('teacher') ||
+          rawRole.toLowerCase().includes('professor') ||
+          rawRole.toLowerCase().includes('trainer') ||
+          rawRole.toLowerCase().includes('mentor') ||
+          rawRole.toLowerCase().includes('facilitator') ||
+          rawRole.toLowerCase().includes('lecturer') ||
+          rawRole.toLowerCase().includes('tutor') ||
+          rawRole.toLowerCase().includes('evaluator') ||
+          rawRole.toLowerCase().includes('grader') ||
+          rawRole.toLowerCase().includes('staff') ||
+          rawRole.toLowerCase().includes('teachingassistant') ||
+          rawRole.toLowerCase().includes('courseleader') ||
+          rawRole.toLowerCase().includes('course_admin');
+
+        const isBrightspaceAdmin = rawRole.toLowerCase().includes('admin');
+        const isBrightspaceLearner = rawRole.toLowerCase().includes('learner') || 
+          rawRole.toLowerCase().includes('student') ||
+          rawRole.toLowerCase().includes('trainee') ||
+          rawRole.toLowerCase().includes('scholar') ||
+          rawRole.toLowerCase().includes('participant') ||
+          rawRole.toLowerCase().includes('cadet') ||
+          rawRole.toLowerCase().includes('apprentice') ||
+          rawRole.toLowerCase().includes('candidate') ||
+          rawRole.toLowerCase().includes('member');
+
+        if (isBrightspaceInstructor) {
           userRole = 'faculty';
-        } else if (rawRole.toLowerCase().includes('admin')) {
+        } else if (isBrightspaceAdmin) {
           userRole = 'admin';
+        } else if (isBrightspaceLearner) {
+          userRole = 'learner';
+        } else if (
+          lowerUserId.includes('instructor') || 
+          lowerUserId.includes('faculty') || 
+          lowerUserId.includes('teacher') ||
+          lowerUserId.includes('professor') ||
+          lowerUserId.includes('trainer')
+        ) {
+          // Fallback if role claim omitted: instructor account (e.g. instructor009)
+          userRole = 'faculty';
         } else {
+          // Default for all student accounts (e.g. learner, learner009, Emma, alice) is strictly learner
           userRole = 'learner';
         }
 

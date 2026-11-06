@@ -65,7 +65,7 @@ export default function MainApp() {
   const { questions } = useQuestionStore();
   const { isLTISession, isLoading, error, userRole, userId, courseId, courseTitle, resourceLinkId, resourceLinkTitle, assignmentId } = useLTIContext();
 
-  const currentRole = (userRole?.toLowerCase() || 'faculty') as 'admin' | 'faculty' | 'instructor' | 'student' | 'learner';
+  const currentRole = (userRole?.toLowerCase() || 'learner') as 'admin' | 'faculty' | 'instructor' | 'student' | 'learner';
   const isFacultyOrAdmin = currentRole === 'faculty' || currentRole === 'instructor' || currentRole === 'admin';
   const isLearner = !isFacultyOrAdmin;
 
@@ -255,10 +255,8 @@ export default function MainApp() {
   };
 
   const renderNavigation = () => (
-    <motion.nav
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 mb-3 sm:mb-4 rounded-xl shadow-xs overflow-hidden"
+    <nav
+      className="relative z-50 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 mb-3 sm:mb-4 rounded-xl shadow-xs"
     >
       {/* Tier 1: Brand Header & User Badges */}
       <div className="px-3 sm:px-4 py-2 flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800">
@@ -411,7 +409,7 @@ export default function MainApp() {
           </button>
         )}
       </div>
-    </motion.nav>
+    </nav>
   );
 
   const pageBgClass = "relative min-h-screen bg-slate-100/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200";
@@ -657,9 +655,9 @@ export default function MainApp() {
 
     return (
       <div className={pageBgClass}>
-        <div className={`relative z-10 mx-auto ${isDirectLaunch ? 'w-full px-2 sm:px-4 py-2 sm:py-3' : isSolvingAssessment ? 'w-full max-w-[1720px] p-3 sm:p-5' : isWideView ? 'w-full max-w-[1680px] p-3 sm:p-5' : 'w-full max-w-7xl px-3 sm:px-6 py-3 sm:py-5'}`}>
+        <div className={`relative z-10 mx-auto ${isDirectLaunch ? 'w-full max-w-[1720px] p-4 sm:p-6' : isSolvingAssessment ? 'w-full max-w-[1720px] p-4 sm:p-6' : isWideView ? 'w-full max-w-[1680px] p-4 sm:p-6' : 'w-full max-w-7xl p-4 sm:p-6'}`}>
           {isDirectLaunch ? (
-            <div className="flex items-center justify-between py-2 px-3 sm:px-4 mb-2 sm:mb-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs">
+            <div className="relative z-50 flex items-center justify-between py-2 px-3 sm:px-4 mb-3 sm:mb-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs">
               <div className="flex items-center gap-2">
                 <Code2 className="text-blue-600 dark:text-blue-400" size={20} />
                 <span className="font-bold text-sm text-slate-900 dark:text-white">EduTech Compiler</span>

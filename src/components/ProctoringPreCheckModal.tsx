@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldAlert, Camera, Lock, Clock, CheckCircle2, AlertTriangle, Eye, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,8 @@ interface ProctoringPreCheckModalProps {
   isOpen: boolean;
   assignmentTitle: string;
   config: ProctoringConfig;
-  videoRef: React.RefObject<HTMLVideoElement | null>;
+  stream?: MediaStream | null;
+  videoRef?: React.RefObject<HTMLVideoElement | null>;
   isStreaming: boolean;
   cameraError: string | null;
   onStartCamera: () => Promise<boolean>;
@@ -23,6 +24,7 @@ export default function ProctoringPreCheckModal({
   isOpen,
   assignmentTitle,
   config,
+  stream,
   videoRef,
   isStreaming,
   cameraError,
@@ -33,6 +35,14 @@ export default function ProctoringPreCheckModal({
 }: ProctoringPreCheckModalProps) {
   const [consentGiven, setConsentGiven] = useState(false);
   const [isRequestingCamera, setIsRequestingCamera] = useState(false);
+  const internalPreviewRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    if (internalPreviewRef.current && stream) {
+      internalPreviewRef.current.srcObject = stream;
+      internalPreviewRef.current.play().catch(e => console.warn('[PreCheckModal] Video play error:', e));
+    }
+  }, [stream, isStreaming]);
 
   if (!isOpen) return null;
 
@@ -151,7 +161,7 @@ export default function ProctoringPreCheckModal({
 
                 <div className="relative aspect-video w-full max-w-sm mx-auto max-h-[170px] bg-slate-950 rounded-xl overflow-hidden border-2 border-dashed border-slate-300 dark:border-slate-800 flex items-center justify-center">
                   <video
-                    ref={videoRef}
+                    ref={internalPreviewRef}
                     autoPlay
                     playsInline
                     muted

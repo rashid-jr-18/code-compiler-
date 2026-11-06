@@ -12,12 +12,62 @@ export interface AuthContext {
  * Inspects session cookies, LTI authorization headers, or dev headers.
  */
 export function getAuthenticatedUser(request: NextRequest): User | null {
-  // 1. Check for custom authentication / dev mode header or URL query
-  const devUserId = request.headers.get('x-user-id') || request.nextUrl.searchParams.get('userId') || request.nextUrl.searchParams.get('user_id');
-  const rawRole = (request.headers.get('x-user-role') || request.nextUrl.searchParams.get('role'))?.toUpperCase();
+  // 1. Check for custom authentication / dev mode header, URL query, or cookie
+  const devUserId = request.headers.get('x-user-id') || 
+    request.nextUrl.searchParams.get('userId') || 
+    request.nextUrl.searchParams.get('user_id') || 
+    request.cookies.get('user_id')?.value;
 
+  const rawRole = (
+    request.headers.get('x-user-role') || 
+    request.nextUrl.searchParams.get('role') || 
+    request.cookies.get('user_role')?.value
+  )?.toUpperCase();
+
+  // If user ID is passed, resolve or dynamically provision user
   if (devUserId) {
-    const user = db.getUserById(devUserId) || db.getUserByLtiSubject(devUserId);
+    let user = db.getUserById(devUserId) || db.getUserByLtiSubject(devUserId);
+    if (!user) {
+      const lower = devUserId.toLowerCase().trim();
+      for (const u of db.users.values()) {
+        if (u.id.toLowerCase() === lower || u.email?.toLowerCase().startsWith(`${lower}@`)) {
+          user = u;
+          break;
+        }
+      }
+    }
+
+    // Auto-provision this user if they don't exist yet
+    if (!user) {
+      const lowerDevId = devUserId.toLowerCase();
+      const isTeacher = rawRole === 'FACULTY' || 
+        rawRole === 'INSTRUCTOR' || 
+        rawRole === 'ADMIN' || 
+        lowerDevId.includes('instructor') || 
+        lowerDevId.includes('faculty') ||
+        lowerDevId.includes('teacher') ||
+        lowerDevId.includes('professor') ||
+        lowerDevId.includes('trainer') ||
+        lowerDevId.includes('mentor') ||
+        lowerDevId.includes('evaluator') ||
+        lowerDevId.includes('grader');
+
+      user = db.upsertUser({
+        id: devUserId,
+        name: devUserId,
+        email: `${devUserId}@brightspace.edu`,
+        role: isTeacher ? (rawRole === 'ADMIN' ? 'ADMIN' : 'FACULTY') : 'LEARNER'
+      });
+    }
+
+    // If explicit role is requested and user exists, sync role
+    if (user && rawRole) {
+      const targetRole = (rawRole === 'ADMIN') ? 'ADMIN' : (rawRole === 'FACULTY' || rawRole === 'INSTRUCTOR') ? 'FACULTY' : 'LEARNER';
+      if (user.role !== targetRole) {
+        user = db.upsertUser({ ...user, role: targetRole });
+      }
+    }
+
     if (user) return user;
   }
 
@@ -32,15 +82,8 @@ export function getAuthenticatedUser(request: NextRequest): User | null {
     return db.getUserById('usr_student_alice') || null;
   }
 
-  // 3. Check for authorization cookie / session
-  const cookieUserId = request.cookies.get('user_id')?.value;
-  if (cookieUserId) {
-    const user = db.getUserById(cookieUserId) || db.getUserByLtiSubject(cookieUserId);
-    if (user) return user;
-  }
-
-  // 4. Default fallback for testing / dev experience: Prof. Alan Turing
-  return db.getUserById('usr_faculty') || null;
+  // 3. Default fallback for LMS experience is strictly LEARNER, never faculty
+  return db.getUserById('usr_student_alice') || null;
 }
 
 /**
