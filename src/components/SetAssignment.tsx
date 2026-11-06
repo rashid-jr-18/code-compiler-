@@ -74,7 +74,7 @@ export default function SetAssignment({
     }
 
     // Fetch questions from API
-    fetch('/api/questions', {
+    fetch('/compiler/api/questions', {
       headers: {
         'x-user-role': 'FACULTY'
       }
@@ -97,7 +97,7 @@ export default function SetAssignment({
       .catch(err => console.error('Failed to load questions:', err));
 
     // Fetch enrolled learners in this course
-    fetch(`/api/courses/${course.id}/members`)
+    fetch(`/compiler/api/courses/${course.id}/members`)
       .then(async res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -165,7 +165,7 @@ export default function SetAssignment({
     const toastId = toast.loading('Creating course assignment...');
 
     try {
-      const response = await fetch('/api/assignments', {
+      const response = await fetch('/compiler/api/assignments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

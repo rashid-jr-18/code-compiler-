@@ -18,7 +18,7 @@ export default function StreakWidget({ userId = 'usr_faculty', userRole = 'FACUL
 
   const fetchStreak = async () => {
     try {
-      const res = await fetch('/api/users/streak', {
+      const res = await fetch('/compiler/api/users/streak', {
         headers: {
           'x-user-id': userId,
           'x-user-role': userRole.toUpperCase()

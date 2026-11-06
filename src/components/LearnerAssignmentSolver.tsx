@@ -111,7 +111,7 @@ export default function LearnerAssignmentSolver({
       if (found) {
         setResolvedQuestion(found);
       } else {
-        fetch(`/api/questions/${qId}`)
+        fetch(`/compiler/api/questions/${qId}`)
           .then(res => res.ok ? res.json() : null)
           .then(data => { if (data) setResolvedQuestion(data); })
           .catch(() => {});
@@ -338,7 +338,7 @@ SELECT * FROM table_name;
     const toastId = toast.loading('Running sample test...');
 
     try {
-      const res = await fetch('/api/code/run', {
+      const res = await fetch('/compiler/api/code/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -386,7 +386,7 @@ SELECT * FROM table_name;
     const toastId = toast.loading('Evaluating authoritative test cases...');
 
     try {
-      const res = await fetch(`/api/assignments/${assignment.id}/submit`, {
+      const res = await fetch(`/compiler/api/assignments/${assignment.id}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -421,7 +421,7 @@ SELECT * FROM table_name;
 
       // Record Streak for this learner
       const isFullScore = resultScore >= resultMax && resultMax > 0;
-      fetch('/api/users/streak', {
+      fetch('/compiler/api/users/streak', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -528,7 +528,7 @@ SELECT * FROM table_name;
       const frameBase64 = captureFrame();
 
       try {
-        await fetch('/api/proctoring/violation', {
+        await fetch('/compiler/api/proctoring/violation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -572,7 +572,7 @@ SELECT * FROM table_name;
     const toastId = toast.loading(`${reason}. Auto-submitting test...`);
 
     try {
-      const res = await fetch(`/api/assignments/${assignment.id}/submit`, {
+      const res = await fetch(`/compiler/api/assignments/${assignment.id}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -593,7 +593,7 @@ SELECT * FROM table_name;
       toast.success('Assessment auto-submitted successfully!', { id: toastId });
 
       // Mark proctoring session as TERMINATED_VIOLATION or COMPLETED
-      fetch('/api/proctoring/session', {
+      fetch('/compiler/api/proctoring/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -650,7 +650,7 @@ SELECT * FROM table_name;
     }
 
     try {
-      await fetch('/api/proctoring/session', {
+      await fetch('/compiler/api/proctoring/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

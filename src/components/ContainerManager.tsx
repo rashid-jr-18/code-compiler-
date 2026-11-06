@@ -73,7 +73,7 @@ export default function ContainerManager({
     setIsSyncingRoster(true);
     const toastId = toast.loading('Syncing class roster from Brightspace...');
     try {
-      const res = await fetch(`/api/courses/${course.id}/sync-roster`, {
+      const res = await fetch(`/compiler/api/courses/${course.id}/sync-roster`, {
         method: 'POST',
         headers: { 'x-user-role': 'FACULTY' }
       });
@@ -93,7 +93,7 @@ export default function ContainerManager({
   const fetchChildAssessments = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/assignments?containerId=${container.id}&courseId=${course.id}`, {
+      const res = await fetch(`/compiler/api/assignments?containerId=${container.id}&courseId=${course.id}`, {
         headers: { 'x-user-role': 'FACULTY' }
       });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -112,7 +112,7 @@ export default function ContainerManager({
     fetchChildAssessments();
 
     // Fetch problem library questions for assessment creation
-    fetch('/api/questions', { headers: { 'x-user-role': 'FACULTY' } })
+    fetch('/compiler/api/questions', { headers: { 'x-user-role': 'FACULTY' } })
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) setAvailableQuestions(data);
@@ -136,7 +136,7 @@ export default function ContainerManager({
     const toastId = toast.loading(`Creating "${assessmentName}"...`);
 
     try {
-      const res = await fetch('/api/assignments', {
+      const res = await fetch('/compiler/api/assignments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +184,7 @@ export default function ContainerManager({
 
     const toastId = toast.loading('Updating assessment...');
     try {
-      const res = await fetch(`/api/assignments/${editingAssessment.id}`, {
+      const res = await fetch(`/compiler/api/assignments/${editingAssessment.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -214,7 +214,7 @@ export default function ContainerManager({
 
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/assignments/${id}`, {
+      const res = await fetch(`/compiler/api/assignments/${id}`, {
         method: 'DELETE',
         headers: { 
           'x-user-role': 'FACULTY',
@@ -233,7 +233,7 @@ export default function ContainerManager({
   };
 
   const handleExportCsv = (asg: Assignment) => {
-    const downloadUrl = `/api/assignments/${asg.id}/export`;
+    const downloadUrl = `/compiler/api/assignments/${asg.id}/export`;
     const link = document.createElement('a');
     link.href = downloadUrl;
     link.setAttribute('download', `assessment_${asg.title}_results.csv`);

@@ -45,7 +45,7 @@ export default function QuestionBrowser({
 
   // Sync questions from persistent backend API on mount
   useEffect(() => {
-    fetch('/api/questions')
+    fetch('/compiler/api/questions')
       .then(async res => {
         if (!res.ok) return [];
         return res.json();
@@ -98,7 +98,7 @@ export default function QuestionBrowser({
 
     try {
       setDeletingId(question.id);
-      const res = await fetch(`/api/questions?id=${encodeURIComponent(question.id)}`, {
+      const res = await fetch(`/compiler/api/questions?id=${encodeURIComponent(question.id)}`, {
         method: 'DELETE',
         headers: { 'x-user-role': isFacultyOrAdmin ? 'FACULTY' : 'LEARNER' }
       });

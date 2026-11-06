@@ -40,7 +40,7 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
   const fetchResults = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`/api/assignments/${assignment.id}/results`, {
+      const res = await fetch(`/compiler/api/assignments/${assignment.id}/results`, {
         headers: { 'x-user-role': 'FACULTY' }
       });
       if (!res.ok) throw new Error('Failed to load assessment results');
@@ -63,7 +63,7 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
   const handleToggleReviewed = async (item: ResultItem) => {
     const newReviewed = !item.reviewed;
     try {
-      const res = await fetch(`/api/assignments/${assignment.id}/results`, {
+      const res = await fetch(`/compiler/api/assignments/${assignment.id}/results`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +98,7 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
     const toastId = toast.loading(`Exporting grade for ${item.learner?.name}...`);
 
     try {
-      const res = await fetch('/api/d2l/grade-passback', {
+      const res = await fetch('/compiler/api/d2l/grade-passback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
     const toastId = toast.loading(`Exporting ${unexportedReviewed.length} reviewed grades to Brightspace...`);
 
     try {
-      const res = await fetch('/api/d2l/grade-passback', {
+      const res = await fetch('/compiler/api/d2l/grade-passback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -224,7 +224,7 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
           <Button
             onClick={() => {
               const link = document.createElement('a');
-              link.href = `/api/assignments/${assignment.id}/export`;
+              link.href = `/compiler/api/assignments/${assignment.id}/export`;
               link.setAttribute('download', `assessment_${assignment.title}_results.csv`);
               document.body.appendChild(link);
               link.click();

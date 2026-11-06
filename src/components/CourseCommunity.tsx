@@ -91,7 +91,7 @@ export default function CourseCommunity({
       if (filterType !== 'all') params.set('tag', filterType);
       if (searchQuery.trim()) params.set('search', searchQuery.trim());
 
-      const res = await fetch(`/api/community?${params.toString()}`, {
+      const res = await fetch(`/compiler/api/community?${params.toString()}`, {
         headers: {
           'x-user-id': userId,
           'x-user-role': userRole.toUpperCase()
@@ -116,7 +116,7 @@ export default function CourseCommunity({
     setSelectedPost(post);
     setIsLoadingReplies(true);
     try {
-      const res = await fetch(`/api/community/${post.id}`, {
+      const res = await fetch(`/compiler/api/community/${post.id}`, {
         headers: {
           'x-user-id': userId,
           'x-user-role': userRole.toUpperCase()
@@ -142,7 +142,7 @@ export default function CourseCommunity({
     setIsSubmittingPost(true);
     try {
       const tags = newTagInput.split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
-      const res = await fetch('/api/community', {
+      const res = await fetch('/compiler/api/community', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -182,7 +182,7 @@ export default function CourseCommunity({
 
   const handleToggleUpvote = async (postId: string) => {
     try {
-      const res = await fetch(`/api/community/${postId}`, {
+      const res = await fetch(`/compiler/api/community/${postId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -205,7 +205,7 @@ export default function CourseCommunity({
 
   const handleToggleDownvote = async (postId: string) => {
     try {
-      const res = await fetch(`/api/community/${postId}`, {
+      const res = await fetch(`/compiler/api/community/${postId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -234,7 +234,7 @@ export default function CourseCommunity({
 
     setIsSubmittingPostReply(true);
     try {
-      const res = await fetch(`/api/community/${selectedPost.id}`, {
+      const res = await fetch(`/compiler/api/community/${selectedPost.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -302,7 +302,7 @@ export default function CourseCommunity({
 
     setIsSubmittingCommentReply(prev => ({ ...prev, [parentComment.id]: true }));
     try {
-      const res = await fetch(`/api/community/${selectedPost.id}`, {
+      const res = await fetch(`/compiler/api/community/${selectedPost.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -343,7 +343,7 @@ export default function CourseCommunity({
   const handleToggleReplyUpvote = async (replyId: string) => {
     if (!selectedPost) return;
     try {
-      const res = await fetch(`/api/community/${selectedPost.id}`, {
+      const res = await fetch(`/compiler/api/community/${selectedPost.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -364,7 +364,7 @@ export default function CourseCommunity({
   const handleToggleReplyDownvote = async (replyId: string) => {
     if (!selectedPost) return;
     try {
-      const res = await fetch(`/api/community/${selectedPost.id}`, {
+      const res = await fetch(`/compiler/api/community/${selectedPost.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -385,7 +385,7 @@ export default function CourseCommunity({
   const handleMarkAccepted = async (replyId: string, currentStatus: boolean) => {
     if (!selectedPost) return;
     try {
-      const res = await fetch(`/api/community/${selectedPost.id}`, {
+      const res = await fetch(`/compiler/api/community/${selectedPost.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -23,7 +23,7 @@ export default function LearnerAssignments({
 
   useEffect(() => {
     setIsLoading(true);
-    fetch(`/api/assignments?courseId=${course.id}`, {
+    fetch(`/compiler/api/assignments?courseId=${course.id}`, {
       headers: {
         'x-user-id': learnerId,
         'x-user-role': 'LEARNER'

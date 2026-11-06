@@ -33,7 +33,7 @@ export default function LanguageSwitcher({
   useEffect(() => {
     // Automatically check and trigger Piston package installations
     const checkAndInstall = () => {
-      fetch('/api/piston/install-packages')
+      fetch('/compiler/api/piston/install-packages')
         .then(res => res.json())
         .then(data => {
           if (data.success) {

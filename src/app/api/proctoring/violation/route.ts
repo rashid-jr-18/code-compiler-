@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
         const filePath = path.join(proctoringDir, fileName);
 
         fs.writeFileSync(filePath, buffer);
-        evidenceImageUrl = `/api/proctoring/evidence/${safeAssignmentId}/${safeLearnerId}/${fileName}`;
+        evidenceImageUrl = `/compiler/api/proctoring/evidence/${safeAssignmentId}/${safeLearnerId}/${fileName}`;
       } catch (fileErr) {
         console.error('[Proctoring API] Error saving snapshot image:', fileErr);
       }

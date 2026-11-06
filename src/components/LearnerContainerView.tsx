@@ -35,7 +35,7 @@ export default function LearnerContainerView({
 
   const fetchAssessments = () => {
     setIsLoading(true);
-    fetch(`/api/assignments?containerId=${container.id}&courseId=${course.id}`, {
+    fetch(`/compiler/api/assignments?containerId=${container.id}&courseId=${course.id}`, {
       headers: {
         'x-user-id': learnerId,
         'x-user-role': 'LEARNER'

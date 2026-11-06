@@ -244,7 +244,7 @@ int main() {
       for (const testCase of question.testCases) {
         maxScore += testCase.points;
 
-        const response = await fetch('/api/piston/execute', {
+        const response = await fetch('/compiler/api/piston/execute', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -307,7 +307,7 @@ int main() {
         toast.success('🎉 All test cases passed!', { id: toastId });
         setActiveTab('results');
         // Record solved streak
-        fetch('/api/users/streak', {
+        fetch('/compiler/api/users/streak', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isSolved: true })
@@ -316,7 +316,7 @@ int main() {
         toast.error(`${passedTests}/${results.length} test cases passed`, { id: toastId });
         setActiveTab('results');
         // Record active participation streak
-        fetch('/api/users/streak', {
+        fetch('/compiler/api/users/streak', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isSolved: false })

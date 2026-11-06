@@ -73,7 +73,7 @@ export default function MainApp() {
   useEffect(() => {
     if (!assignmentId) return;
 
-    fetch(`/api/assignments/${assignmentId}`, {
+    fetch(`/compiler/api/assignments/${assignmentId}`, {
       headers: {
         'x-user-id': userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'),
         'x-user-role': isFacultyOrAdmin ? 'FACULTY' : 'LEARNER'
@@ -107,7 +107,7 @@ export default function MainApp() {
 
   // Fetch available courses for this user
   useEffect(() => {
-    fetch('/api/courses', {
+    fetch('/compiler/api/courses', {
       headers: {
         'x-user-id': userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'),
         'x-user-role': isFacultyOrAdmin ? (currentRole === 'admin' ? 'ADMIN' : 'FACULTY') : 'LEARNER'
@@ -139,7 +139,7 @@ export default function MainApp() {
     }
 
     // Fetch full course data from API
-    fetch(`/api/courses/${targetCourseId}`, {
+    fetch(`/compiler/api/courses/${targetCourseId}`, {
       headers: {
         'x-user-id': userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'),
         'x-user-role': isFacultyOrAdmin ? 'FACULTY' : 'LEARNER'
@@ -177,7 +177,7 @@ export default function MainApp() {
 
   // Load course assignments
   const loadCourseAssignments = () => {
-    fetch(`/api/assignments?courseId=${activeCourse.id}`, {
+    fetch(`/compiler/api/assignments?courseId=${activeCourse.id}`, {
       headers: {
         'x-user-id': userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'),
         'x-user-role': isFacultyOrAdmin ? 'FACULTY' : 'LEARNER'
@@ -199,7 +199,7 @@ export default function MainApp() {
   const loadContainers = () => {
     const resLinkId = resourceLinkId || '';
     const resLinkTitle = resourceLinkTitle || '';
-    const url = `/api/containers?courseId=${activeCourse.id}&resourceLinkId=${encodeURIComponent(resLinkId)}&title=${encodeURIComponent(resLinkTitle)}`;
+    const url = `/compiler/api/containers?courseId=${activeCourse.id}&resourceLinkId=${encodeURIComponent(resLinkId)}&title=${encodeURIComponent(resLinkTitle)}`;
 
     fetch(url, {
       headers: {

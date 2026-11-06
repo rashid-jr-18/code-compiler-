@@ -143,7 +143,7 @@ export function useCameraProctoring({
       if (!frameBase64) return;
 
       try {
-        const res = await fetch('/api/proctoring/violation', {
+        const res = await fetch('/compiler/api/proctoring/violation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

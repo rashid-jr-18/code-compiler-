@@ -84,7 +84,7 @@ export default function FacultyPage({ initialMode = 'create', onBack }: FacultyP
       if (topic && topic !== 'all') params.set('topic', topic);
       if (kw) params.set('query', kw);
 
-      const res = await fetch(`/api/import/search?${params.toString()}`);
+      const res = await fetch(`/compiler/api/import/search?${params.toString()}`);
       const json = await res.json();
       if (json.success && json.results) {
         setSearchResults(json.results);
@@ -119,7 +119,7 @@ export default function FacultyPage({ initialMode = 'create', onBack }: FacultyP
     const toastId = toast.loading('Extracting problem details and test cases...');
 
     try {
-      const res = await fetch('/api/import/leetcode', {
+      const res = await fetch('/compiler/api/import/leetcode', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -303,7 +303,7 @@ export default function FacultyPage({ initialMode = 'create', onBack }: FacultyP
     addQuestion(question);
 
     // Persist to backend database as well
-    fetch('/api/questions', {
+    fetch('/compiler/api/questions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

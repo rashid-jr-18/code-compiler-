@@ -55,7 +55,7 @@ export default function CodeCompiler() {
     const toastId = toast.loading('Executing code...');
 
     try {
-      const response = await fetch('/api/piston/execute', {
+      const response = await fetch('/compiler/api/piston/execute', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
