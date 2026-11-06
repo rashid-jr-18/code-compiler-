@@ -715,6 +715,19 @@ class PersistentDatabase {
     return newCourse;
   }
 
+  updateCourse(id: string, updates: Partial<Course>): Course | undefined {
+    const course = this.courses.get(id);
+    if (!course) return undefined;
+    const updated: Course = {
+      ...course,
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+    this.courses.set(id, updated);
+    this.persist();
+    return updated;
+  }
+
   getCourseMembers(courseId: string): CourseMember[] {
     return Array.from(this.courseMembers.values())
       .filter(cm => cm.courseId === courseId)
@@ -1017,6 +1030,39 @@ class PersistentDatabase {
     return Array.from(this.submissions.values()).filter(
       s => s.assignmentId === assignmentId && s.learnerId === learnerId
     );
+  }
+
+  resetAssignmentAttempt(assignmentId: string, learnerId: string): boolean {
+    const al = Array.from(this.assignmentLearners.values()).find(
+      a => a.assignmentId === assignmentId && a.learnerId === learnerId
+    );
+    if (al) {
+      this.updateAssignmentLearner(al.id, {
+        status: 'ASSIGNED',
+        score: 0,
+        reviewed: false,
+        reviewedAt: undefined,
+        reviewedBy: undefined,
+        exported: false,
+        passbackStatus: undefined,
+        passbackError: undefined
+      });
+    }
+
+    for (const [subId, sub] of this.submissions.entries()) {
+      if (sub.assignmentId === assignmentId && sub.learnerId === learnerId) {
+        this.submissions.delete(subId);
+      }
+    }
+
+    for (const [sessId, sess] of this.proctoringSessions.entries()) {
+      if (sess.assignmentId === assignmentId && sess.learnerId === learnerId) {
+        this.proctoringSessions.delete(sessId);
+      }
+    }
+
+    this.persist();
+    return true;
   }
 
   // --- Streaks & Activity ---

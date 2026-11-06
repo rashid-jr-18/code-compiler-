@@ -16,7 +16,8 @@ import {
   ExternalLink,
   Code2,
   FileCheck,
-  AlertCircle
+  AlertCircle,
+  RotateCcw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -164,6 +165,64 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
     }
   };
 
+  const handleMarkAllReviewed = async () => {
+    const unreviewed = results.filter(r => !r.reviewed && r.status !== 'ASSIGNED');
+    if (unreviewed.length === 0) {
+      toast('All submitted assessments are already reviewed.', { icon: 'ℹ️' });
+      return;
+    }
+
+    const toastId = toast.loading(`Marking ${unreviewed.length} submissions as reviewed...`);
+    try {
+      const res = await fetch(`/compiler/api/assignments/${assignment.id}/results`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-role': 'FACULTY'
+        },
+        body: JSON.stringify({ action: 'REVIEW_ALL' })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to mark all as reviewed');
+
+      toast.success(`Marked ${data.count || unreviewed.length} submissions as reviewed!`, { id: toastId });
+      setResults(prev => prev.map(r => r.status !== 'ASSIGNED' ? { ...r, reviewed: true, status: 'REVIEWED' } : r));
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to mark reviewed', { id: toastId });
+    }
+  };
+
+  const handleResetAttempt = async (item: ResultItem) => {
+    if (!window.confirm(`Are you sure you want to allow "${item.learner?.name}" to rewrite the exam? This will clear their current score and submission so they can take the assessment again.`)) {
+      return;
+    }
+
+    const toastId = toast.loading(`Resetting attempt for ${item.learner?.name}...`);
+    try {
+      const res = await fetch(`/compiler/api/assignments/${assignment.id}/results`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-role': 'FACULTY'
+        },
+        body: JSON.stringify({
+          action: 'RESET_ATTEMPT',
+          assignmentLearnerId: item.id,
+          learnerId: item.learnerId
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to reset attempt');
+
+      toast.success(`Attempt reset for ${item.learner?.name}. They can now retake the assessment!`, { id: toastId });
+      fetchResults();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Failed to reset attempt', { id: toastId });
+    }
+  };
+
   const reviewedCount = results.filter(r => r.reviewed).length;
   const exportedCount = results.filter(r => r.exported).length;
 
@@ -208,6 +267,18 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
             <span className="text-slate-500">Exported: </span>
             <span className="font-bold text-emerald-600 dark:text-emerald-400">{exportedCount}/{results.length}</span>
           </div>
+
+          {results.some(r => !r.reviewed && r.status !== 'ASSIGNED') && (
+            <Button
+              onClick={handleMarkAllReviewed}
+              size="sm"
+              variant="outline"
+              className="border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-xs gap-1.5 shadow-2xs font-semibold"
+            >
+              <CheckCircle2 size={13} className="text-blue-600 dark:text-blue-400" />
+              Mark All as Reviewed ({results.filter(r => !r.reviewed && r.status !== 'ASSIGNED').length})
+            </Button>
+          )}
 
           {results.some(r => r.reviewed && !r.exported) && (
             <Button
@@ -340,6 +411,18 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
                     {/* Actions */}
                     <td className="px-5 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {item.status !== 'ASSIGNED' && (
+                          <Button
+                            onClick={() => handleResetAttempt(item)}
+                            variant="outline"
+                            size="sm"
+                            className="border-amber-300 dark:border-amber-700/60 text-xs gap-1 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 font-medium"
+                            title="Reset submission so the learner can re-take this assessment"
+                          >
+                            <RotateCcw size={12} /> Allow Re-attempt
+                          </Button>
+                        )}
+
                         {item.latestSubmission && (
                           <Button
                             onClick={() => setInspectItem(item)}
@@ -456,24 +539,39 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
               </div>
 
               {/* Modal Footer */}
-              <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3">
-                <Button
-                  onClick={() => setInspectItem(null)}
-                  variant="outline"
-                  size="sm"
-                >
-                  Close
-                </Button>
+              <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
                 <Button
                   onClick={() => {
-                    handleToggleReviewed(inspectItem);
-                    setInspectItem(prev => prev ? { ...prev, reviewed: !prev.reviewed } : null);
+                    handleResetAttempt(inspectItem);
+                    setInspectItem(null);
                   }}
+                  variant="outline"
                   size="sm"
-                  className={inspectItem.reviewed ? 'bg-amber-600 text-white' : 'bg-green-600 text-white'}
+                  className="border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-xs font-semibold gap-1.5"
                 >
-                  {inspectItem.reviewed ? 'Unmark Reviewed' : 'Mark as Reviewed'}
+                  <RotateCcw size={13} />
+                  Allow Student Re-attempt
                 </Button>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => setInspectItem(null)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      handleToggleReviewed(inspectItem);
+                      setInspectItem(prev => prev ? { ...prev, reviewed: !prev.reviewed } : null);
+                    }}
+                    size="sm"
+                    className={inspectItem.reviewed ? 'bg-amber-600 text-white' : 'bg-green-600 text-white'}
+                  >
+                    {inspectItem.reviewed ? 'Unmark Reviewed' : 'Mark as Reviewed'}
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </div>

@@ -93,20 +93,20 @@ export default function LanguageSwitcher({
     <div className={`relative ${className}`}>
       <motion.button
         type="button"
-        className={`flex items-center justify-between w-full h-9 px-2.5 text-left bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 rounded-lg shadow-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30 transition-all text-xs ${buttonClassName}`}
+        className={`flex items-center justify-between w-full h-8.5 px-2.5 text-left bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-300 dark:border-slate-600 hover:border-blue-500 dark:hover:border-blue-400 rounded-lg shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all text-xs font-semibold ${buttonClassName}`}
         onClick={() => setIsOpen(!isOpen)}
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
       >
         <div className="flex items-center space-x-2 truncate min-w-0">
-          <div className="w-5 h-5 rounded-md bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center flex-shrink-0 text-blue-600 dark:text-blue-400">
-            <Code className="w-3 h-3" />
+          <div className="w-5 h-5 rounded-md bg-blue-600 text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
+            <Code className="w-3 h-3 stroke-[2.5]" />
           </div>
           <div className="truncate flex items-center gap-1.5 min-w-0">
-            <span className="font-semibold text-slate-900 dark:text-slate-100 truncate text-xs">
+            <span className="font-bold text-slate-900 dark:text-white truncate text-xs">
               {selectedLanguage?.name || 'Select Language'}
             </span>
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono shrink-0">
+            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-mono font-bold shrink-0 bg-blue-50 dark:bg-blue-950/80 px-1 py-0.2 rounded border border-blue-200 dark:border-blue-800">
               .{selectedLanguage?.extension}
             </span>
           </div>
@@ -114,7 +114,7 @@ export default function LanguageSwitcher({
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
-          className="ml-1.5 flex-shrink-0 text-slate-400"
+          className="ml-1.5 flex-shrink-0 text-slate-500 dark:text-slate-400"
         >
           <ChevronDown className="w-3.5 h-3.5" />
         </motion.div>
@@ -123,15 +123,14 @@ export default function LanguageSwitcher({
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="absolute z-50 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl shadow-xl overflow-hidden"
+            className="absolute z-[999] right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden"
             variants={dropdownVariants}
             initial="closed"
             animate="open"
             exit="closed"
             style={{ 
               width: '320px',
-              maxWidth: '90vw',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)'
+              maxWidth: '90vw'
             }}
           >
             <div className="p-3 border-b border-border/80 bg-slate-50/70 dark:bg-slate-800/50">

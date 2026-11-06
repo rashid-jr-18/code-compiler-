@@ -189,6 +189,10 @@ export async function POST(request: NextRequest) {
     const nrpsClaim = payload['https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice'] || {};
     const nrpsUrl = nrpsClaim.context_memberships_url;
 
+    if (nrpsUrl && course.nrpsUrl !== nrpsUrl) {
+      db.updateCourse(course.id, { nrpsUrl });
+    }
+
     if (isInstructor) {
       syncBrightspaceCourseClasslist(course.id, nrpsUrl).catch(e => {
         console.warn('[LTI Launch] Background classlist sync note:', e);

@@ -17,9 +17,9 @@ export async function POST(
     const body = await request.json();
     const { questionId, sourceCode, languageId } = body;
 
-    if (!questionId || !sourceCode || !languageId) {
+    if (!questionId || !sourceCode || !String(sourceCode).trim() || !languageId) {
       return NextResponse.json({
-        error: 'questionId, sourceCode, and languageId are required'
+        error: 'questionId, valid sourceCode, and languageId are required. Empty code cannot be submitted.'
       }, { status: 400 });
     }
 

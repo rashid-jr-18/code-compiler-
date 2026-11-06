@@ -333,6 +333,10 @@ SELECT * FROM table_name;
   }, [activeQuestionIndex, question, selectedLanguage]);
 
   const handleRunSample = async () => {
+    if (!code || !code.trim()) {
+      toast.error('Please write some code before running tests.');
+      return;
+    }
     setIsRunning(true);
     setRunOutput(null);
     const toastId = toast.loading('Running sample test...');
@@ -381,6 +385,11 @@ SELECT * FROM table_name;
   const handleSubmitAuthoritative = async () => {
     const curQ = questionRef.current;
     if (!curQ || isSubmittingRef.current) return;
+
+    if (!codeRef.current || !codeRef.current.trim()) {
+      toast.error('Cannot submit empty code! Please write your solution first.');
+      return;
+    }
 
     setIsSubmitting(true);
     const toastId = toast.loading('Evaluating authoritative test cases...');
@@ -485,6 +494,9 @@ SELECT * FROM table_name;
     if (typeof window !== 'undefined') {
       localStorage.setItem(timerStorageKey, Date.now().toString());
     }
+    setTimeRemaining(durationSeconds);
+    warned5MinRef.current = false;
+    warned1MinRef.current = false;
     setHasStartedExam(true);
   };
 
@@ -684,8 +696,8 @@ SELECT * FROM table_name;
       const remaining = Math.max(0, durationSeconds - elapsed);
       setTimeRemaining(remaining);
 
-      // 5-minute warning alert
-      if (remaining <= 300 && remaining > 60 && !warned5MinRef.current) {
+      // 5-minute warning alert (only if duration > 5 mins and crossing 300s mark)
+      if (durationSeconds > 300 && remaining <= 300 && remaining >= 290 && !warned5MinRef.current) {
         warned5MinRef.current = true;
         toast('⚠️ 5 minutes remaining! Finish your code and prepare to submit.', {
           icon: '⏳',
@@ -693,8 +705,8 @@ SELECT * FROM table_name;
         });
       }
 
-      // 1-minute warning alert
-      if (remaining <= 60 && remaining > 0 && !warned1MinRef.current) {
+      // 1-minute warning alert (only when crossing 60s mark)
+      if (remaining <= 60 && remaining >= 52 && !warned1MinRef.current) {
         warned1MinRef.current = true;
         toast.error('🚨 1 minute remaining! Final auto-submission will trigger shortly.', {
           duration: 6000
@@ -1209,17 +1221,7 @@ SELECT * FROM table_name;
             </div>
           )}
 
-          {onOpenCommunity && question && (
-            <Button
-              onClick={() => onOpenCommunity(question.id, question.title)}
-              variant="outline"
-              size="sm"
-              className="h-8 flex items-center gap-1.5 px-3 text-xs shadow-xs font-semibold cursor-pointer border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40"
-            >
-              <MessageSquare size={13} />
-              <span>Discuss</span>
-            </Button>
-          )}
+
         </div>
       </div>
 

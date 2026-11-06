@@ -338,6 +338,7 @@ export interface Course {
   term?: string;
   facultyId?: string;
   ltiContextId?: string;
+  nrpsUrl?: string;
   createdAt?: Date | string;
   updatedAt?: Date | string;
 }

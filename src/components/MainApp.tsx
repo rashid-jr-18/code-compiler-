@@ -71,7 +71,7 @@ export default function MainApp() {
 
   // Direct Topic Launch: When launched from a specific Brightspace assessment topic, automatically route directly to that assessment
   useEffect(() => {
-    if (!assignmentId) return;
+    if (isLoading || !assignmentId) return;
 
     fetch(`/compiler/api/assignments/${assignmentId}`, {
       headers: {
@@ -107,6 +107,7 @@ export default function MainApp() {
 
   // Fetch available courses for this user
   useEffect(() => {
+    if (isLoading) return;
     fetch('/compiler/api/courses', {
       headers: {
         'x-user-id': userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'),
@@ -552,6 +553,15 @@ export default function MainApp() {
   };
 
   const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="min-h-screen bg-slate-100/70 dark:bg-slate-950 flex flex-col items-center justify-center p-4">
+          <div className="w-9 h-9 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mb-3" />
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Loading learning session...</p>
+        </div>
+      );
+    }
+
     let mainView;
     switch (currentView) {
       case 'course':
@@ -657,6 +667,11 @@ export default function MainApp() {
                 <span className="text-xs text-slate-500 font-medium">{activeCourse.title}</span>
               </div>
               <div className="flex items-center gap-2">
+                <StreakWidget 
+                  userId={userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice')}
+                  userRole={isFacultyOrAdmin ? (currentRole === 'admin' ? 'ADMIN' : 'FACULTY') : 'LEARNER'}
+                  onOpenProfile={() => setSelectedProfileUserId(userId || (isFacultyOrAdmin ? 'usr_faculty' : 'usr_student_alice'))}
+                />
                 <ThemeToggle />
                 <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${isFacultyOrAdmin ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800' : 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800'}`}>
                   {isFacultyOrAdmin ? 'FACULTY' : 'LEARNER'}

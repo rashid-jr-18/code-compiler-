@@ -47,6 +47,10 @@ export async function gradeSubmission(
     throw new Error(`Question with ID ${questionId} not found`);
   }
 
+  if (!sourceCode || !sourceCode.trim()) {
+    throw new Error('Submitted code is empty. Please provide a valid code implementation.');
+  }
+
   const assignment = db.getAssignmentById(assignmentId);
   const targetAssignmentQ = assignment?.questions?.find(q =>
     q.questionId === questionId ||

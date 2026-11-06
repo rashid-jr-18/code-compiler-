@@ -41,7 +41,7 @@ export async function GET(
   });
 }
 
-// Action to toggle reviewed status
+// Action to toggle reviewed status, review all, or reset attempt
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -52,8 +52,46 @@ export async function POST(
 
   try {
     const body = await request.json();
-    const { assignmentLearnerId, reviewed } = body;
+    const { action, assignmentLearnerId, reviewed, learnerId } = body;
 
+    // 1. Reset Attempt for student
+    if (action === 'RESET_ATTEMPT') {
+      const targetLearnerId = learnerId || (assignmentLearnerId ? db.assignmentLearners.get(assignmentLearnerId)?.learnerId : null);
+      if (!targetLearnerId) {
+        return NextResponse.json({ error: 'learnerId or valid assignmentLearnerId is required' }, { status: 400 });
+      }
+
+      db.resetAssignmentAttempt(assignmentId, targetLearnerId);
+      return NextResponse.json({
+        success: true,
+        message: 'Student attempt has been successfully reset. The learner can now retake the assessment.'
+      });
+    }
+
+    // 2. Mark All Submitted as Reviewed
+    if (action === 'REVIEW_ALL' || body.reviewAll) {
+      const learners = db.getAssignmentLearners(assignmentId);
+      let markedCount = 0;
+      for (const al of learners) {
+        if ((al.status === 'SUBMITTED' || !al.reviewed) && al.status !== 'ASSIGNED') {
+          db.updateAssignmentLearner(al.id, {
+            reviewed: true,
+            reviewedAt: new Date().toISOString(),
+            reviewedBy: auth.user.id,
+            status: 'REVIEWED'
+          });
+          markedCount++;
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        count: markedCount,
+        message: `Successfully marked ${markedCount} submissions as reviewed.`
+      });
+    }
+
+    // 3. Single record review toggle
     if (!assignmentLearnerId) {
       return NextResponse.json({ error: 'assignmentLearnerId is required' }, { status: 400 });
     }

@@ -16,6 +16,7 @@ import {
   RotateCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import StreakWidget from '@/components/StreakWidget';
 
 interface LearnerContainerViewProps {
   container: AssessmentContainer;
@@ -80,15 +81,22 @@ export default function LearnerContainerView({
           </p>
         </div>
 
-        <Button
-          onClick={fetchAssessments}
-          variant="outline"
-          size="sm"
-          className="h-8.5 w-8.5 p-0 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
-          title="Refresh Assessments"
-        >
-          <RotateCw size={14} className={isLoading ? 'animate-spin' : ''} />
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <StreakWidget
+            userId={learnerId}
+            userRole="LEARNER"
+          />
+
+          <Button
+            onClick={fetchAssessments}
+            variant="outline"
+            size="sm"
+            className="h-8.5 w-8.5 p-0 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
+            title="Refresh Assessments"
+          >
+            <RotateCw size={14} className={isLoading ? 'animate-spin' : ''} />
+          </Button>
+        </div>
       </div>
 
       {/* Available Child Assessments */}

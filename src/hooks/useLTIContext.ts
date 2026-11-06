@@ -88,11 +88,19 @@ export const useLTIContext = (): LTIContext => {
         const resourceLinkId = urlParams.get('resource_link_id') || ltiData.resource_link_id;
         const resourceLinkTitle = urlParams.get('resource_link_title') || ltiData.resource_link_title || ltiData.resource_link_description || 'Programming';
         const rawRole = urlParams.get('role') || urlParams.get('roles') || getCookie('user_role') || '';
-        const userRole = rawRole.toLowerCase().includes('instructor') || rawRole.toLowerCase().includes('faculty')
-          ? 'faculty'
-          : rawRole.toLowerCase().includes('admin')
-          ? 'admin'
-          : 'learner';
+        let userRole: 'student' | 'instructor' | 'admin' | 'faculty' | 'learner' = 'learner';
+        const lowerUserId = (userId || '').toLowerCase();
+        
+        // Explicitly prioritize learner IDs (e.g. learner009, usr_learner_1) over stale faculty cookies
+        if (lowerUserId.includes('learner') || lowerUserId.includes('student')) {
+          userRole = 'learner';
+        } else if (rawRole.toLowerCase().includes('instructor') || rawRole.toLowerCase().includes('faculty')) {
+          userRole = 'faculty';
+        } else if (rawRole.toLowerCase().includes('admin')) {
+          userRole = 'admin';
+        } else {
+          userRole = 'learner';
+        }
 
         console.log('%c🎓 [BRIGHTSPACE LTI ROLE IN BROWSER]', 'background: #2563eb; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
         console.log('👉 URL Query Role:', urlParams.get('role'));

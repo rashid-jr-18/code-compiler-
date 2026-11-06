@@ -231,6 +231,10 @@ int main() {
   };
 
   const runTestCases = async () => {
+    if (!code || !code.trim()) {
+      toast.error('Please write your solution code before running test cases.');
+      return;
+    }
     setIsLoading(true);
     setTestResults([]);
     const toastId = toast.loading('Running test cases...');

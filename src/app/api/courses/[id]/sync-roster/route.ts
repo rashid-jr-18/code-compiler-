@@ -15,7 +15,8 @@ export async function POST(
     return NextResponse.json({ error: 'Faculty or Admin role required' }, { status: 403 });
   }
 
-  const result = await syncBrightspaceCourseClasslist(id);
+  const course = db.getCourseById(id);
+  const result = await syncBrightspaceCourseClasslist(id, course?.nrpsUrl);
   const updatedMembers = db.getCourseMembers(id);
 
   return NextResponse.json({
