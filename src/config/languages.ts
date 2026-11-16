@@ -4,7 +4,7 @@ export const LANGUAGES: Language[] = [
   // Top Popular Languages
   {
     id: 100,
-    name: 'HTML / CSS / JS (Web)',
+    name: 'HTML (Web)',
     mime: 'text/html',
     extension: 'html',
     defaultCode: `<!DOCTYPE html>
@@ -841,7 +841,7 @@ export const getMonacoLanguage = (languageId: number): string => {
 };
 
 export const SUPPORTED_LANGUAGES = {
-  html: { pistonId: 100, name: 'HTML / CSS / JS (Web)', extension: 'html' },
+  html: { pistonId: 100, name: 'HTML (Web)', extension: 'html' },
   python: { pistonId: 71, name: 'Python 3', extension: 'py' },
   javascript: { pistonId: 63, name: 'JavaScript (Node.js)', extension: 'js' },
   typescript: { pistonId: 74, name: 'TypeScript', extension: 'ts' },
