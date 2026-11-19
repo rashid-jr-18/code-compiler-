@@ -215,7 +215,11 @@ export default function MainApp() {
       .then(data => {
         if (data && data.container) {
           setActiveContainer(data.container);
-          setCourseContainers([data.container]);
+          if (Array.isArray(data.allContainers) && data.allContainers.length > 0) {
+            setCourseContainers(data.allContainers);
+          } else {
+            setCourseContainers([data.container]);
+          }
         } else if (Array.isArray(data) && data.length > 0) {
           setCourseContainers(data);
           setActiveContainer(prev => (prev && data.some((c: AssessmentContainer) => c.id === prev.id)) ? prev : data[0]);
@@ -355,33 +359,29 @@ export default function MainApp() {
           </button>
         )}
 
-        {!isLearner && (
-          <>
-            <button
-              onClick={() => { setCurrentView('problems'); setSelectedQuestion(null); }}
-              className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
-                currentView === 'problems'
-                  ? 'bg-blue-600 text-white shadow-xs font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
-              }`}
-            >
-              <BookOpen size={13} />
-              <span>Library</span>
-            </button>
+        <button
+          onClick={() => { setCurrentView('problems'); setSelectedQuestion(null); }}
+          className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+            currentView === 'problems'
+              ? 'bg-blue-600 text-white shadow-xs font-semibold'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
+          }`}
+        >
+          <BookOpen size={13} />
+          <span>Library</span>
+        </button>
 
-            <button
-              onClick={() => setCurrentView('compiler')}
-              className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
-                currentView === 'compiler'
-                  ? 'bg-blue-600 text-white shadow-xs font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
-              }`}
-            >
-              <Code2 size={13} />
-              <span>Free Code</span>
-            </button>
-          </>
-        )}
+        <button
+          onClick={() => setCurrentView('compiler')}
+          className={`flex items-center gap-1.5 font-medium text-xs px-3 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+            currentView === 'compiler'
+              ? 'bg-blue-600 text-white shadow-xs font-semibold'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Code2 size={13} />
+          <span>Free Code</span>
+        </button>
         
         <button
           onClick={() => { setCurrentView('community'); setSelectedQuestion(null); }}
@@ -447,7 +447,7 @@ export default function MainApp() {
 
       return (
         <div className="space-y-4">
-          {courseContainers.length > 1 && !isLearner && (
+          {courseContainers.length > 1 && (
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-semibold text-slate-500">Modules:</span>
               <div className="flex flex-wrap gap-1.5">

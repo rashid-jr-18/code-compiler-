@@ -28,9 +28,11 @@ export async function GET(request: NextRequest) {
 
     if (container) {
       const childAssessments = db.getAssignmentsByContainer(container.id);
+      const allCourseContainers = courseId ? db.getContainersByCourse(courseId) : [container];
       return NextResponse.json({
         container,
-        assessmentCount: childAssessments.length
+        assessmentCount: childAssessments.length,
+        allContainers: allCourseContainers
       });
     }
   }

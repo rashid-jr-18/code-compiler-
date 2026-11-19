@@ -981,8 +981,9 @@ class PersistentDatabase {
   }
 
   getAssignmentsByContainer(containerId: string): Assignment[] {
+    const targetContainer = this.containers.get(containerId);
     return Array.from(this.assignments.values())
-      .filter(a => a.containerId === containerId)
+      .filter(a => a.containerId === containerId || (!a.containerId && targetContainer && a.courseId === targetContainer.courseId))
       .map(a => this.populateAssignment(a));
   }
 
