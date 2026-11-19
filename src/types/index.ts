@@ -61,10 +61,18 @@ export interface PistonConfig {
   apiUrl: string;
 }
 
+export type ExecutionMode = 'standard' | 'function';
+
+export interface FunctionParameter {
+  name: string;
+  type: string; // e.g. 'integer' | 'float' | 'string' | 'boolean' | 'array' | 'object' | 'any'
+  description?: string;
+}
+
 export interface TestCase {
   id: string;
-  input: string;
-  expectedOutput: string;
+  input: any; // string for standard mode; Array of args (or stringified JSON) for function mode
+  expectedOutput: any; // string for standard mode; typed value (or stringified JSON) for function mode
   points: number;
   description?: string;
   isHidden?: boolean;
@@ -87,6 +95,13 @@ export interface Question {
   createdBy?: string;
   createdAt?: Date | string;
   updatedAt?: Date | string;
+
+  // LeetCode-style Function-Based Evaluation Mode
+  executionMode?: ExecutionMode; // 'standard' (default) | 'function'
+  functionName?: string; // e.g. 'is_palindrome'
+  parameters?: (string | FunctionParameter)[]; // e.g. ['x'] or [{ name: 'x', type: 'integer' }]
+  returnType?: string; // e.g. 'boolean' | 'integer' | 'float' | 'string' | 'array' | 'object' | 'void'
+  starterCode?: Record<string | number, string>; // Language ID or extension -> starter code snippet
 }
 
 export interface TestResult {

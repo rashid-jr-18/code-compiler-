@@ -447,26 +447,6 @@ export default function MainApp() {
 
       return (
         <div className="space-y-4">
-          {courseContainers.length > 1 && (
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-semibold text-slate-500">Modules:</span>
-              <div className="flex flex-wrap gap-1.5">
-                {courseContainers.map(c => (
-                  <button
-                    key={c.id}
-                    onClick={() => setActiveContainer(c)}
-                    className={`px-3 py-1 rounded-md text-xs font-medium transition-all border ${
-                      currentContainer.id === c.id
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-400'
-                    }`}
-                  >
-                    {c.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
           <LearnerContainerView
             container={currentContainer}
             course={activeCourse}
@@ -515,26 +495,6 @@ export default function MainApp() {
     // 4. Faculty Workspace View -> Dynamic Container Assessment Management
     return (
       <div className="space-y-4">
-        {courseContainers.length > 1 && (
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-semibold text-slate-500">Modules:</span>
-            <div className="flex flex-wrap gap-1.5">
-              {courseContainers.map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => setActiveContainer(c)}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all border ${
-                    currentContainer.id === c.id
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                      : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-400'
-                  }`}
-                >
-                  {c.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
         <ContainerManager
           container={currentContainer}
           course={activeCourse}
