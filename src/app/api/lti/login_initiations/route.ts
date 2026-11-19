@@ -105,6 +105,13 @@ async function handleOidcInitiation(request: NextRequest) {
       maxAge: 3600
     });
   } else {
+    response.cookies.set('assignment_id', '', {
+      path: '/',
+      httpOnly: false,
+      secure: true,
+      sameSite: 'none',
+      maxAge: 0
+    });
     response.cookies.delete('assignment_id');
   }
 

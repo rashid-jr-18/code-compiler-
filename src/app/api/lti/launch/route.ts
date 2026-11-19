@@ -189,13 +189,32 @@ export async function POST(request: NextRequest) {
     const resourceLinkId = resourceLink.id || rawForm['resource_link_id'] || `rl_${Date.now()}`;
     const resourceLinkTitle = resourceLink.title || rawForm['resource_link_title'] || 'Code Assessment & Compiler';
 
-    // Extract assignment_id if launch originated from a specific Brightspace assessment topic
+    // Extract target_link_uri to check if assignment_id was encoded in the target link
+    const targetLinkUri = (payload && payload['https://purl.imsglobal.org/spec/lti/claim/target_link_uri']) ||
+      rawForm['target_link_uri'] ||
+      request.nextUrl.searchParams.get('target_link_uri') ||
+      '';
+
+    let targetLinkAssignmentId: string | undefined = undefined;
+    if (targetLinkUri) {
+      try {
+        const parsedTarget = new URL(targetLinkUri, 'https://learning.edutechcloud.com');
+        targetLinkAssignmentId = parsedTarget.searchParams.get('assignment_id') || undefined;
+      } catch (e) {
+        // ignore parse error
+      }
+    }
+
+    // Extract assignment_id strictly if launch originated from a specific Brightspace assessment topic
+    // NOTE: NEVER read assignment_id from cookies! Reading cookies causes general tool launches
+    // (e.g. Code Assessment & Compiler 1.3) to falsely inherit assessment IDs from prior launches.
     const assignmentId = request.nextUrl.searchParams.get('assignment_id') ||
       rawForm['assignment_id'] ||
       rawForm['custom_assignment_id'] ||
-      request.cookies.get('assignment_id')?.value ||
+      targetLinkAssignmentId ||
       (custom && custom.assignment_id) ||
-      (payload && payload['https://purl.imsglobal.org/spec/lti/claim/custom']?.assignment_id);
+      (payload && payload['https://purl.imsglobal.org/spec/lti/claim/custom']?.assignment_id) ||
+      undefined;
 
     console.log('========================================================');
     console.log('🔍 [BRIGHTSPACE LTI LAUNCH ROLES DEBUG]');
@@ -290,6 +309,8 @@ export async function POST(request: NextRequest) {
     redirectUrl.searchParams.set('resource_link_title', resourceLinkTitle);
     if (assignmentId) {
       redirectUrl.searchParams.set('assignment_id', assignmentId);
+    } else {
+      redirectUrl.searchParams.delete('assignment_id');
     }
 
     // 303 See Other forces the browser to transition from HTTP POST to HTTP GET
@@ -312,6 +333,7 @@ export async function POST(request: NextRequest) {
     if (assignmentId) {
       response.cookies.set('assignment_id', assignmentId, cookieOptions);
     } else {
+      response.cookies.set('assignment_id', '', { ...cookieOptions, maxAge: 0 });
       response.cookies.delete('assignment_id');
     }
 
@@ -336,13 +358,25 @@ export async function GET(request: NextRequest) {
     proto = 'https';
   }
 
-  const assignmentId = request.nextUrl.searchParams.get('assignment_id') ||
-    request.cookies.get('assignment_id')?.value;
+  const targetLinkUri = request.nextUrl.searchParams.get('target_link_uri') || '';
+  let targetLinkAssignmentId: string | undefined = undefined;
+  if (targetLinkUri) {
+    try {
+      const parsedTarget = new URL(targetLinkUri, 'https://learning.edutechcloud.com');
+      targetLinkAssignmentId = parsedTarget.searchParams.get('assignment_id') || undefined;
+    } catch {
+      // ignore parse error
+    }
+  }
+
+  const assignmentId = request.nextUrl.searchParams.get('assignment_id') || targetLinkAssignmentId || undefined;
 
   const redirectUrl = new URL(`${proto}://${host}/compiler`);
 
   if (assignmentId) {
     redirectUrl.searchParams.set('assignment_id', assignmentId);
+  } else {
+    redirectUrl.searchParams.delete('assignment_id');
   }
 
   // Forward all other search parameters if provided
@@ -387,6 +421,9 @@ export async function GET(request: NextRequest) {
   response.cookies.set('lti_session', 'active', cookieOptions);
   if (assignmentId) {
     response.cookies.set('assignment_id', assignmentId, cookieOptions);
+  } else {
+    response.cookies.set('assignment_id', '', { ...cookieOptions, maxAge: 0 });
+    response.cookies.delete('assignment_id');
   }
 
   return response;

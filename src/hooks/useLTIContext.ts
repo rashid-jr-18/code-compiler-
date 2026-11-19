@@ -64,7 +64,7 @@ export const useLTIContext = (): LTIContext => {
             courseTitle: devCourseTitle,
             resourceLinkId: devResourceLinkId,
             resourceLinkTitle: devResourceLinkTitle,
-            assignmentId: assignmentContext?.id || 'dev_assignment_789',
+            assignmentId: urlParams.get('assignment_id') || assignmentContext?.id || undefined,
             quizId: quizContext?.id,
             userRole: devRole,
             isLoading: false,
