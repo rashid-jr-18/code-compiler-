@@ -180,9 +180,9 @@ export default function ResizableSplitPane({
             <div className="w-[2px] h-full bg-slate-300 dark:bg-slate-700 group-hover:bg-blue-500 group-active:bg-blue-600 transition-colors" />
             
             {/* Center Grab Indicator */}
-            <div className="absolute w-4 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 shadow-md flex items-center justify-center gap-0.5 group-hover:border-blue-500 group-hover:scale-105 transition-all">
-              <div className="w-0.5 h-3 bg-slate-500 dark:bg-slate-400 rounded-full" />
-              <div className="w-0.5 h-3 bg-slate-500 dark:bg-slate-400 rounded-full" />
+            <div className="absolute w-4 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 shadow-sm flex items-center justify-center gap-0.5 group-hover:border-blue-500 group-hover:shadow-md transition-all">
+              <div className="w-0.5 h-3 bg-slate-400 dark:bg-slate-500 rounded-full" />
+              <div className="w-0.5 h-3 bg-slate-400 dark:bg-slate-500 rounded-full" />
             </div>
           </div>
         )}

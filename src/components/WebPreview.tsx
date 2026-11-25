@@ -127,38 +127,41 @@ export default function WebPreview({ htmlCode, cssCode = '', jsCode = '' }: WebP
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex flex-col h-full overflow-hidden">
-      {/* Top Header with Eye Symbol Preview Button */}
-      <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2">
-          {/* Eye Symbol Preview Badge / Button */}
-          <button
-            type="button"
-            onClick={handleRefresh}
-            title="Click to reload preview"
-            className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium shadow-sm transition-colors cursor-pointer"
-          >
-            <Eye size={15} />
-            <span>Preview</span>
-          </button>
+      {/* Modern Browser Chrome / Header Bar */}
+      <div className="px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-xs">
+        {/* Left: Window Dots & Address / Live pill */}
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          {/* Traffic light dots */}
+          <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-400/80 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400/80 inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400/80 inline-block" />
+          </div>
+
+          {/* Browser Address Mockup */}
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-xs font-mono max-w-[260px] truncate shadow-2xs">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate">preview.localhost:3000</span>
+          </div>
 
           <button
             type="button"
             onClick={handleRefresh}
             title="Reload Preview"
-            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+            className="p-1 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/70 dark:hover:bg-slate-800 transition-colors shrink-0"
           >
             <RotateCw size={13} className={isLoading ? 'animate-spin' : ''} />
           </button>
         </div>
 
-        {/* Console Toggle Button */}
+        {/* Right: Console Toggle */}
         <button
           type="button"
           onClick={() => setIsConsoleOpen(prev => !prev)}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-medium transition-all ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all shrink-0 cursor-pointer ${
             isConsoleOpen
-              ? 'bg-slate-800 text-white border-slate-800 dark:bg-slate-800 dark:text-white dark:border-slate-700 shadow-xs'
-              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
+              ? 'bg-slate-900 text-white border-slate-900 dark:bg-slate-800 dark:text-white dark:border-slate-700 shadow-xs'
+              : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
           <Terminal size={12} />
