@@ -1035,25 +1035,35 @@ SELECT * FROM table_name;
         {isWebMode ? (
           <div className="flex-1 flex flex-row w-full h-full min-h-0 overflow-hidden">
             {/* Monaco Editor in Web Mode */}
-            <div className={`h-full flex flex-col min-h-0 ${webModeView === 'code' ? 'w-full' : webModeView === 'split' ? 'w-1/2 border-r border-slate-300 dark:border-slate-800' : 'hidden'}`}>
-              <Editor
-                height="100%"
-                language={getMonacoLanguage(selectedLanguage.id)}
-                value={code}
-                onChange={value => setCode(value || '')}
-                beforeMount={registerMonacoThemes}
-                theme={getEffectiveEditorTheme(preferences.colorTheme, resolvedTheme)}
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: preferences.fontSize,
-                  wordWrap: preferences.wordWrap,
-                  quickSuggestions: !preferences.disableAutocomplete,
-                  suggestOnTriggerCharacters: !preferences.disableAutocomplete,
-                  lineNumbers: 'on',
-                  automaticLayout: true,
-                  fontFamily: 'JetBrains Mono, Menlo, Monaco, Consolas, monospace',
-                }}
-              />
+            <div className={`h-full flex flex-col min-h-0 ${webModeView === 'code' ? 'w-full' : webModeView === 'split' ? 'w-1/2 border-r border-slate-200 dark:border-slate-800' : 'hidden'}`}>
+              {/* Optional sub-bar to balance preview header height if in split view */}
+              <div className="px-3 py-1.5 bg-slate-100/70 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs h-[38px] shrink-0">
+                <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-mono text-xs">
+                  <Code2 size={13} className="text-blue-500" />
+                  <span>index.html</span>
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Source</span>
+              </div>
+              <div className="flex-1 min-h-0">
+                <Editor
+                  height="100%"
+                  language={getMonacoLanguage(selectedLanguage.id)}
+                  value={code}
+                  onChange={value => setCode(value || '')}
+                  beforeMount={registerMonacoThemes}
+                  theme={getEffectiveEditorTheme(preferences.colorTheme, resolvedTheme)}
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: preferences.fontSize,
+                    wordWrap: preferences.wordWrap,
+                    quickSuggestions: !preferences.disableAutocomplete,
+                    suggestOnTriggerCharacters: !preferences.disableAutocomplete,
+                    lineNumbers: 'on',
+                    automaticLayout: true,
+                    fontFamily: 'JetBrains Mono, Menlo, Monaco, Consolas, monospace',
+                  }}
+                />
+              </div>
             </div>
 
             {/* Web Preview in Web Mode */}

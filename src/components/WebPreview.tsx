@@ -126,9 +126,9 @@ export default function WebPreview({ htmlCode, cssCode = '', jsCode = '' }: WebP
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm flex flex-col h-full overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border-0 rounded-none flex flex-col h-full w-full overflow-hidden">
       {/* Modern Browser Chrome / Header Bar */}
-      <div className="px-3.5 py-2 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-xs">
+      <div className="px-3.5 py-1.5 bg-slate-100/70 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 text-xs h-[38px] shrink-0">
         {/* Left: Window Dots & Address / Live pill */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           {/* Traffic light dots */}
