@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Assignment, AssignmentLearner, AuthoritativeSubmission } from '@/types';
+import { Assignment, AssignmentLearner, AuthoritativeSubmission, ProctoringSession } from '@/types';
 import { Button } from '@/components/ui/button';
 import { 
   CheckCircle2, 
@@ -18,7 +18,11 @@ import {
   FileCheck,
   AlertCircle,
   RotateCcw,
-  Users
+  Users,
+  Camera,
+  ShieldAlert,
+  AlertTriangle,
+  Image as ImageIcon
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -30,12 +34,15 @@ interface FacultyResultsProps {
 
 interface ResultItem extends AssignmentLearner {
   latestSubmission?: AuthoritativeSubmission | null;
+  proctoringSession?: ProctoringSession | null;
 }
 
 export default function FacultyResults({ assignment, onBack, isDirectLaunch = false }: FacultyResultsProps) {
   const [results, setResults] = useState<ResultItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [inspectItem, setInspectItem] = useState<ResultItem | null>(null);
+  const [inspectTab, setInspectTab] = useState<'code' | 'proctoring'>('code');
+  const [selectedSnapshot, setSelectedSnapshot] = useState<string | null>(null);
   const [exportingId, setExportingId] = useState<string | null>(null);
   const [lineItemUrl, setLineItemUrl] = useState<string | undefined>(assignment.lineItemUrl);
   const [isSyncingRoster, setIsSyncingRoster] = useState(false);
@@ -462,12 +469,35 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
 
                         {item.latestSubmission && (
                           <Button
-                            onClick={() => setInspectItem(item)}
+                            onClick={() => {
+                              setInspectItem(item);
+                              setInspectTab('code');
+                            }}
                             variant="outline"
                             size="sm"
                             className="border-slate-200 dark:border-slate-700 text-xs gap-1 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                           >
                             <Eye size={12} /> Inspect
+                          </Button>
+                        )}
+
+                        {item.proctoringSession && (
+                          <Button
+                            onClick={() => {
+                              setInspectItem(item);
+                              setInspectTab('proctoring');
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className={`text-xs gap-1 font-medium ${
+                              item.proctoringSession.totalViolations > 0
+                                ? 'border-amber-300 text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-400'
+                                : 'border-blue-200 text-blue-700 bg-blue-50 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-400'
+                            }`}
+                            title="View Proctoring Snapshots & Integrity Timeline"
+                          >
+                            <Camera size={12} />
+                            <span>Evidence ({item.proctoringSession.events?.filter(e => e.evidenceImageUrl).length || 0})</span>
                           </Button>
                         )}
 
@@ -503,81 +533,317 @@ export default function FacultyResults({ assignment, onBack, isDirectLaunch = fa
         </div>
       </div>
 
-      {/* Code Inspection Modal */}
+      {/* Code & Proctoring Inspection Modal */}
       <AnimatePresence>
-        {inspectItem && inspectItem.latestSubmission && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        {inspectItem && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden shadow-xl flex flex-col"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl w-full max-w-4xl max-h-[92vh] overflow-hidden shadow-2xl flex flex-col"
             >
               {/* Modal Header */}
-              <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Code2 className="text-blue-600 dark:text-blue-400" />
-                    {inspectItem.learner?.name}&apos;s Submission
+              <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50/70 dark:bg-slate-900/90">
+                <div className="min-w-0">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 truncate">
+                    <Code2 className="text-blue-600 dark:text-blue-400 shrink-0" size={18} />
+                    <span>{inspectItem.learner?.name}&apos;s Evaluation & Evidence</span>
                   </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Score: <span className="font-semibold text-blue-600 dark:text-blue-400">{inspectItem.score}/{assignment.maxPoints} pts</span> • Status: {inspectItem.latestSubmission.status}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    <span>
+                      Score: <strong className="text-blue-600 dark:text-blue-400">{inspectItem.score}/{assignment.maxPoints} pts</strong>
+                    </span>
+                    <span>•</span>
+                    <span>Status: <strong>{inspectItem.status}</strong></span>
+                    {inspectItem.proctoringSession && (
+                      <>
+                        <span>•</span>
+                        <span className={`inline-flex items-center gap-1 font-semibold ${
+                          inspectItem.proctoringSession.totalViolations > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
+                        }`}>
+                          <ShieldAlert size={12} />
+                          {inspectItem.proctoringSession.totalViolations} Violation{inspectItem.proctoringSession.totalViolations !== 1 ? 's' : ''}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
+
+                {/* Tabs Switcher: Code vs Proctoring Evidence */}
+                <div className="flex items-center gap-1 bg-slate-200/80 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-semibold shrink-0">
+                  <button
+                    onClick={() => setInspectTab('code')}
+                    className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
+                      inspectTab === 'code'
+                        ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <Code2 size={13} />
+                    <span>Code & Tests</span>
+                  </button>
+
+                  <button
+                    onClick={() => setInspectTab('proctoring')}
+                    className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 cursor-pointer ${
+                      inspectTab === 'proctoring'
+                        ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <Camera size={13} />
+                    <span>Evidence Snapshots</span>
+                    {inspectItem.proctoringSession?.events && (
+                      <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+                        {inspectItem.proctoringSession.events.filter(e => e.evidenceImageUrl).length}
+                      </span>
+                    )}
+                  </button>
+                </div>
+
                 <button
-                  onClick={() => setInspectItem(null)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg"
+                  onClick={() => {
+                    setInspectItem(null);
+                    setSelectedSnapshot(null);
+                  }}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white text-base cursor-pointer shrink-0"
                 >
                   ✕
                 </button>
               </div>
 
               {/* Modal Content */}
-              <div className="p-6 space-y-4 overflow-y-auto flex-1">
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">
-                    Submitted Source Code
-                  </label>
-                  <pre className="p-4 bg-slate-950 text-slate-100 rounded-lg font-mono text-sm overflow-x-auto max-h-64 shadow-inner border border-slate-800">
-                    {inspectItem.latestSubmission.code}
-                  </pre>
-                </div>
+              <div className="p-5 space-y-4 overflow-y-auto flex-1 min-h-[360px]">
+                {inspectTab === 'code' ? (
+                  inspectItem.latestSubmission ? (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">
+                          Submitted Source Code
+                        </label>
+                        <pre className="p-4 bg-slate-950 text-slate-100 rounded-lg font-mono text-sm overflow-x-auto max-h-64 shadow-inner border border-slate-800">
+                          {inspectItem.latestSubmission.code}
+                        </pre>
+                      </div>
 
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-2">
-                    Test Case Results Breakdown
-                  </label>
-                  <div className="space-y-2">
-                    {inspectItem.latestSubmission.testResults?.map((tr, idx) => (
-                      <div
-                        key={tr.testCaseId || idx}
-                        className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between text-xs"
-                      >
-                        <div className="flex items-center gap-2">
-                          {tr.passed ? (
-                            <CheckCircle2 size={16} className="text-emerald-500" />
-                          ) : (
-                            <XCircle size={16} className="text-rose-500" />
-                          )}
-                          <span className="font-semibold text-slate-900 dark:text-white">
-                            Test Case {idx + 1}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400">
-                          {tr.executionTime && <span>{tr.executionTime.toFixed(3)}s</span>}
-                          <span className="font-semibold text-slate-900 dark:text-white">
-                            {tr.points}/{tr.maxPoints} pts
-                          </span>
+                      <div>
+                        <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-2">
+                          Test Case Results Breakdown
+                        </label>
+                        <div className="space-y-2">
+                          {inspectItem.latestSubmission.testResults?.map((tr, idx) => (
+                            <div
+                              key={tr.testCaseId || idx}
+                              className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between text-xs"
+                            >
+                              <div className="flex items-center gap-2">
+                                {tr.passed ? (
+                                  <CheckCircle2 size={16} className="text-emerald-500" />
+                                ) : (
+                                  <XCircle size={16} className="text-rose-500" />
+                                )}
+                                <span className="font-semibold text-slate-900 dark:text-white">
+                                  Test Case {idx + 1}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-4 text-slate-500 dark:text-slate-400">
+                                {tr.executionTime && <span>{tr.executionTime.toFixed(3)}s</span>}
+                                <span className="font-semibold text-slate-900 dark:text-white">
+                                  {tr.points}/{tr.maxPoints} pts
+                                </span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-slate-400 text-sm">
+                      No code submission recorded for this student yet.
+                    </div>
+                  )
+                ) : (
+                  /* Proctoring Evidence Tab */
+                  <div className="space-y-4">
+                    {!inspectItem.proctoringSession ? (
+                      <div className="text-center py-12 text-slate-400 text-sm">
+                        <ShieldAlert className="w-10 h-10 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                        <p className="font-medium text-slate-700 dark:text-slate-300">No Proctoring Session on Record</p>
+                        <p className="text-xs text-slate-400 mt-1">This assessment may have been taken without webcam proctoring enabled.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {/* Session Summary Card */}
+                        <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+                          <div>
+                            <span className="text-slate-400 font-medium">Session Status: </span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200 ml-1">{inspectItem.proctoringSession.status}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 font-medium">Consent Given At: </span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-300 ml-1">
+                              {new Date(inspectItem.proctoringSession.consentAcceptedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 font-medium">Total Events Recorded: </span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-300 ml-1">
+                              {inspectItem.proctoringSession.events?.length || 0}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Snapshot Gallery & Security Log Grid */}
+                        <div>
+                          <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2.5 flex items-center gap-1.5">
+                            <ImageIcon size={14} className="text-blue-500" />
+                            <span>Captured Camera Frames ({inspectItem.proctoringSession.events?.filter(e => e.evidenceImageUrl).length || 0})</span>
+                          </h4>
+
+                          {inspectItem.proctoringSession.events?.filter(e => e.evidenceImageUrl).length === 0 ? (
+                            <div className="p-6 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-400">
+                              No image snapshots were captured during this exam session.
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                              {inspectItem.proctoringSession.events
+                                ?.filter(e => e.evidenceImageUrl)
+                                .map((evt, idx) => (
+                                  <div
+                                    key={evt.id || idx}
+                                    onClick={() => setSelectedSnapshot(evt.evidenceImageUrl || null)}
+                                    className="group relative bg-slate-900 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs cursor-pointer hover:border-blue-500 hover:shadow-md transition-all"
+                                  >
+                                    <div className="aspect-4/3 w-full bg-slate-950 flex items-center justify-center overflow-hidden">
+                                      <img
+                                        src={evt.evidenceImageUrl}
+                                        alt={`Evidence ${idx + 1}`}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                        loading="lazy"
+                                      />
+                                    </div>
+
+                                    <div className="p-2 bg-white dark:bg-slate-900 text-[10px]">
+                                      <div className="flex items-center justify-between gap-1">
+                                        <span className={`px-1.5 py-0.5 rounded-sm font-semibold truncate ${
+                                          evt.severity === 'CRITICAL' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300' :
+                                          evt.severity === 'WARNING' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                                          'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                                        }`}>
+                                          {evt.eventType.replace(/_/g, ' ')}
+                                        </span>
+                                        <span className="text-slate-400 whitespace-nowrap">
+                                          {new Date(evt.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                        </span>
+                                      </div>
+                                      {evt.notes && (
+                                        <p className="text-slate-500 dark:text-slate-400 truncate mt-1 text-[9.5px]">
+                                          {evt.notes}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Full Audit Log Table */}
+                        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                          <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                            Session Event Timeline
+                          </h4>
+                          <div className="max-h-48 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-lg text-xs">
+                            <table className="w-full text-left">
+                              <thead className="bg-slate-100 dark:bg-slate-800/80 text-[10px] uppercase font-bold text-slate-500 sticky top-0">
+                                <tr>
+                                  <th className="p-2">Time</th>
+                                  <th className="p-2">Event</th>
+                                  <th className="p-2">Severity</th>
+                                  <th className="p-2">Notes</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-[11px]">
+                                {inspectItem.proctoringSession.events?.map((e, i) => (
+                                  <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-850">
+                                    <td className="p-2 whitespace-nowrap text-slate-400">
+                                      {new Date(e.timestamp).toLocaleTimeString()}
+                                    </td>
+                                    <td className="p-2 font-medium text-slate-700 dark:text-slate-300">
+                                      {e.eventType}
+                                    </td>
+                                    <td className="p-2">
+                                      <span className={`px-1.5 py-0.5 rounded-xs font-semibold text-[10px] ${
+                                        e.severity === 'CRITICAL' ? 'text-rose-600 bg-rose-50 dark:bg-rose-950/40' :
+                                        e.severity === 'WARNING' ? 'text-amber-600 bg-amber-50 dark:bg-amber-950/40' :
+                                        'text-slate-500 bg-slate-100 dark:bg-slate-800'
+                                      }`}>
+                                        {e.severity}
+                                      </span>
+                                    </td>
+                                    <td className="p-2 text-slate-500 truncate max-w-xs">{e.notes || '-'}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Modal Footer */}
-              <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+              <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
                 <Button
+                  onClick={() => {
+                    handleResetAttempt(inspectItem);
+                    setInspectItem(null);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 text-xs font-semibold gap-1.5"
+                >
+                  <RotateCcw size={13} />
+                  Allow Student Re-attempt
+                </Button>
+
+                <Button
+                  onClick={() => {
+                    setInspectItem(null);
+                    setSelectedSnapshot(null);
+                  }}
+                  size="sm"
+                  className="bg-slate-800 hover:bg-slate-900 text-white text-xs px-4"
+                >
+                  Close
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Fullscreen Snapshot Lightbox */}
+      <AnimatePresence>
+        {selectedSnapshot && (
+          <div 
+            onClick={() => setSelectedSnapshot(null)}
+            className="fixed inset-0 z-60 bg-black/85 flex items-center justify-center p-4 cursor-zoom-out"
+          >
+            <div className="relative max-w-3xl max-h-[85vh] bg-slate-950 p-2 rounded-xl shadow-2xl border border-slate-800">
+              <img
+                src={selectedSnapshot}
+                alt="Enlarged evidence frame"
+                className="max-h-[80vh] w-auto rounded-lg object-contain"
+              />
+              <p className="text-center text-xs text-slate-400 mt-2">Click anywhere to dismiss</p>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
                   onClick={() => {
                     handleResetAttempt(inspectItem);
                     setInspectItem(null);

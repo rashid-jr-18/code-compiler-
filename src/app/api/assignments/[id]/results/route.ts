@@ -26,14 +26,16 @@ export async function GET(
 
   const learners = db.getAssignmentLearners(assignmentId);
 
-  // Attach latest submission data for each learner
+  // Attach latest submission data & proctoring session for each learner
   const results = learners.map(al => {
     const submissions = db.getSubmissionsByAssignmentAndLearner(assignmentId, al.learnerId);
     const latestSubmission = submissions.length > 0 ? submissions[submissions.length - 1] : null;
+    const proctoringSession = db.getProctoringSession(assignmentId, al.learnerId) || null;
 
     return {
       ...al,
-      latestSubmission
+      latestSubmission,
+      proctoringSession
     };
   });
 
